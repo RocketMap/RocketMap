@@ -121,7 +121,7 @@ module.exports = function(grunt) {
   grunt.registerTask('css-build', ['sass', 'cssmin']);
   grunt.registerTask('js-lint', ['eslint']);
 
-  grunt.registerTask('build', ['clean', 'js-build', 'css-build']);
+  grunt.registerTask('build', ['lint', 'clean', 'js-build', 'css-build']);
   grunt.registerTask('lint', ['js-lint']);
   grunt.registerTask('default', ['build', 'watch']);
 
