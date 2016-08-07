@@ -28,6 +28,7 @@ from queue import Queue, Empty
 from pgoapi import PGoApi
 from pgoapi.utilities import f2i
 from pgoapi import utilities as util
+from pgoapi.exceptions import AuthException
 
 from . import config
 from .models import parse_map
@@ -254,13 +255,20 @@ def check_login(args, account, api, position):
 
     # Try to login (a few times, but don't get stuck here)
     i = 0
-    while not api.login(account['auth_service'], account['username'], account['password'], position[0], position[1], position[2], False):
-        if i >= args.login_retries:
-            raise TooManyLoginAttempts('Exceeded login attempts')
-        else:
-            i += 1
-            log.error('Failed to login to Pokemon Go with account %s. Trying again in %g seconds', account['username'], args.login_delay)
-            time.sleep(args.login_delay)
+    api.set_position(position[0], position[1], position[2])
+    while i < args.login_retries:
+        try:
+            api.set_authentication(provider = account['auth_service'], username = account['username'], password = account['password'])
+            break
+        except AuthException:
+            if i >= args.login_retries:
+                raise TooManyLoginAttempts('Exceeded login attempts')
+            else:
+                i += 1
+                log.error('Failed to login to Pokemon Go with account %s. Trying again in %g seconds', account['username'], args.login_delay)
+                time.sleep(args.login_delay)
+
+    api.activate_signature("encrypt.dll")
 
     log.debug('Login for account %s successful', account['username'])
 
