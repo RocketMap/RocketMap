@@ -1,7 +1,7 @@
 {
   "name": "PokemonGo Map",
   "description": "Live visualization of all the Pokémon (with option to show gyms and pokéstops) in an area on Pokémon Go.",
-  "repository": "https://github.com/AHAAAAAAA/PokemonGo-Map",
+  "repository": "https://github.com/PokemonGoMap/PokemonGo-Map",
   "website": "https://jz6.github.io/PoGoMap/",
   "env": {
     "AUTH_SERVICE": {
