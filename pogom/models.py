@@ -338,6 +338,7 @@ def parse_map(map_dict, step_location):
                         'latitude': f['latitude'],
                         'longitude': f['longitude'],
                         'disappear_time': calendar.timegm(lure_expiration.timetuple()),
+                        'last_modified_time': f['last_modified_timestamp_ms'],
                         'is_lured': True
                     }
                     send_to_webhook('pokemon', webhook_data)
