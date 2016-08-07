@@ -1,4 +1,4 @@
-https://github.com/AHAAAAAAA/PokemonGo-Map/wiki/How-to-use-Hex-Beehive-Generator
+https://www.jonaharagon.com/PoGoMapWiki/#!beehive.md
 
 Location_generator.py creates a list of locations in a hexagonal grid pattern around a central point.
 It generates a script to run all the workers for you.
