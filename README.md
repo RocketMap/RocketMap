@@ -23,7 +23,7 @@ Features:
 [![Deploy](https://raw.githubusercontent.com/sych74/PokemonGo-Map-in-Cloud/master/images/deploy-to-jelastic.png)](https://jelastic.com/install-application/?manifest=https://raw.githubusercontent.com/sych74/PokemonGo-Map-in-Cloud/master/manifest.jps) [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://github.com/PokemonGoMap/PokemonGo-Map/wiki/Heroku-Deployment) [![Deploy on Scalingo](https://cdn.scalingo.com/deploy/button.svg)](https://my.scalingo.com/deploy?source=https://github.com/PokemonGoMap/PokemonGo-Map)
 
 
-![Map](https://raw.githubusercontent.com/PokemonGoMap/PokemonGo-Map/master/static/cover.png)
+![Map](https://camo.githubusercontent.com/61d585e7706d136694f50ed2a092661b203a0a5d/687474703a2f2f70676d2e72656164746865646f63732e696f2f656e2f6c61746573742f5f696d616765732f636f7665722e706e67)
 
 ## How to setup
 
