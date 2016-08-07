@@ -15,7 +15,7 @@
 #no-gyms:               # disables gym scanning (default false)
 #no-pokemon:            # disables pokemon scanning (default false)
 #no-pokestops:          # disables pokestop scanning (default false)
-#scan-delay:            # default 5
+#scan-delay:            # default 10
 #step-limit:            # default 12
 
 # Misc
