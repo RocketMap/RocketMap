@@ -1,7 +1,7 @@
 Welcome to PokemonGo-Map's Documentation!
 =========================================
 
-Pokemon-Go Map is aiming to bring a live visualization map of nearby Pokémon, Pokéstops and gyms in a form of a web-app as well as native phone applications.
+Pokemon-Go Map gives you a live visualization map of nearby Pokémon, Pokéstops, and gyms in a form of a web-app as well as native phone application
 
 .. image:: _static/img/cover.png
     :align: center
