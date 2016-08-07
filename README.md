@@ -19,7 +19,7 @@ Features:
 [![Deploy](https://raw.githubusercontent.com/sych74/PokemonGo-Map-in-Cloud/master/images/deploy-to-jelastic.png)](https://jelastic.com/install-application/?manifest=https://raw.githubusercontent.com/sych74/PokemonGo-Map-in-Cloud/master/manifest.jps) [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://github.com/PokemonGoMap/PokemonGo-Map/wiki/Heroku-Deployment) [![Deploy on Scalingo](https://cdn.scalingo.com/deploy/button.svg)](https://my.scalingo.com/deploy?source=https://github.com/PokemonGoMap/PokemonGo-Map)
 
 
-#[Twitter] (https://twitter.com/PokemapDev), [Website] (https://jz6.github.io/PoGoMap/)#
+#[Twitter] (https://twitter.com/PokemapDevRE), [Website] (https://pokemongomap.github.io/PoGoMapWebsite//)#
 
 ![Map](https://raw.githubusercontent.com/PokemonGoMap/PokemonGo-Map/master/static/cover.png)
 
