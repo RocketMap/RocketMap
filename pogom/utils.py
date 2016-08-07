@@ -293,10 +293,19 @@ def get_encryption_lib_path():
             lib_path = os.path.join(os.path.dirname(__file__), "encrypt64bit.dll")
         else:
             lib_path = os.path.join(os.path.dirname(__file__), "encrypt32bit.dll")
+
     elif sys.platform == "darwin":
-        lib_path = os.path.join(os.path.dirname(__file__), "libencrypt-osx.so")
+        lib_path = os.path.join(os.path.dirname(__file__), "libencrypt-osx-64.so")
+
+    elif os.uname()[4].startswith("arm") and platform.architecture()[0] == '32bit':
+        lib_path = os.path.join(os.path.dirname(__file__), "libencrypt-linux-arm-32.so")
+
     elif sys.platform.startswith('linux'):
-        lib_path = os.path.join(os.path.dirname(__file__), "libencrypt.so")
+        if platform.architecture()[0] == '64bit':
+            lib_path = os.path.join(os.path.dirname(__file__), "libencrypt-linux-x86-64.so")
+        else:
+            lib_path = os.path.join(os.path.dirname(__file__), "libencrypt-linux-x86-32.so")
+
     else:
         err = "Unexpected/unsupported platform '{}'".format(sys.platform)
         log.error(err)
