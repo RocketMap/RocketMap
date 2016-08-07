@@ -2,7 +2,7 @@
 # PokemonGo Map![Python 2.7](https://img.shields.io/badge/python-2.7-blue.svg)[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/PoGoMapDev)
 
 
-#[Twitter] (https://twitter.com/PokemapDevRE), [Website] (https://pokemongomap.github.io/PoGoMapWebsite//)#
+#[Twitter] (https://twitter.com/PokemapDevRE), [Website] (https://pokemongomap.github.io/PoGoMapWebsite/)#
 
 For general support, join [our discord server](https://discord.gg/uAmEkcu).
 
