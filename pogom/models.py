@@ -40,7 +40,7 @@ def init_database(app):
             max_connections=args.db_max_connections,
             stale_timeout=300)
     else:
-        log.info('Connecting to local SQLLite database')
+        log.info('Connecting to local SQLite database')
         db = SqliteDatabase(args.db)
 
     app.config['DATABASE'] = db
