@@ -39,7 +39,7 @@ There is an [iOS port](https://github.com/istornz/iPokeGo) in the works. All iOS
 
 ## Warnings
 
-Using this software is against the ToS of the game. You can get banned, use this tool at your own risk.
+Use at your own risk! We are not responsible for anything that happens as a result of you using this application.
 
 
 ## Contributions
