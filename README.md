@@ -16,17 +16,17 @@ Features:
 * DB storage (sqlite or mysql) of all found pokemon
 * Incredibly fast, efficient searching algorithm (compared to everything else available)
 
-[![Deploy](https://raw.githubusercontent.com/sych74/PokemonGo-Map-in-Cloud/master/images/deploy-to-jelastic.png)](https://jelastic.com/install-application/?manifest=https://raw.githubusercontent.com/sych74/PokemonGo-Map-in-Cloud/master/manifest.jps) [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://github.com/AHAAAAAAA/PokemonGo-Map/wiki/Heroku-Deployment) [![Deploy on Scalingo](https://cdn.scalingo.com/deploy/button.svg)](https://my.scalingo.com/deploy?source=https://github.com/AHAAAAAAA/PokemonGo-Map)
+[![Deploy](https://raw.githubusercontent.com/sych74/PokemonGo-Map-in-Cloud/master/images/deploy-to-jelastic.png)](https://jelastic.com/install-application/?manifest=https://raw.githubusercontent.com/sych74/PokemonGo-Map-in-Cloud/master/manifest.jps) [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://github.com/PokemonGoMap/PokemonGo-Map/wiki/Heroku-Deployment) [![Deploy on Scalingo](https://cdn.scalingo.com/deploy/button.svg)](https://my.scalingo.com/deploy?source=https://github.com/PokemonGoMap/PokemonGo-Map)
 
 
 #[Twitter] (https://twitter.com/PokemapDev), [Website] (https://jz6.github.io/PoGoMap/)#
 
-![Map](https://raw.githubusercontent.com/AHAAAAAAA/PokemonGo-Map/master/static/cover.png)
+![Map](https://raw.githubusercontent.com/PokemonGoMap/PokemonGo-Map/master/static/cover.png)
 
 
 ## How to setup
 
-For instructions on how to setup and run the tool, please refer to the project [wiki](https://github.com/AHAAAAAAA/PokemonGo-Map/wiki), or the [video guide](https://www.youtube.com/watch?v=RJKAulPCkRI).
+For instructions on how to setup and run the tool, please refer to the project [wiki](https://github.com/PokemonGoMap/PokemonGo-Map/wiki), or the [video guide](https://www.youtube.com/watch?v=RJKAulPCkRI).
 
 
 ## Android Version
@@ -44,6 +44,6 @@ Using this software is against the ToS of the game. You can get banned, use this
 
 ## Contributions
 
-Please submit all pull requests to [develop](https://github.com/AHAAAAAAA/PokemonGo-Map/tree/develop) branch.
+Please submit all pull requests to [develop](https://github.com/PokemonGoMap/PokemonGo-Map/tree/develop) branch.
 
 Building off [tejado's python pgoapi](https://github.com/tejado/pgoapi), [Mila432](https://github.com/Mila432/Pokemon_Go_API)'s API, [leegao's additions](https://github.com/leegao/pokemongo-api-demo/tree/simulation) and [Flask-GoogleMaps](https://github.com/rochacbruno/Flask-GoogleMaps). Current version relies primarily on the pgoapi and Google Maps JS API.
