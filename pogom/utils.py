@@ -286,16 +286,20 @@ def send_to_webhook(message_type, message):
 
 def get_encryption_lib_path():
     lib_path = ""
-    if os.name is "nt":
+    if sys.platform == "win32":
         lib_path = os.path.join(os.path.dirname(__file__), "encrypt.dll")
-    elif os.name is "posix":
+    elif sys.platform == "darwin":
+        lib_path = os.path.join(os.path.dirname(__file__), "libencrypt-osx.so")
+    elif sys.platform.startswith('linux'):
         lib_path = os.path.join(os.path.dirname(__file__), "libencrypt.so")
     else:
-        log.error("Operating system not supported")
-        return ""
+        err = "Unexpected/unsupported platform '{}'".format(sys.platform)
+        log.error(err)
+        raise Exception(err)
+
     if not os.path.isfile(lib_path):
-        log.error("Could not find encryption library [encrypt.dll (Windows) or"
-                + " libencrypt.so (Linux)]. Please make sure it's in the pogom"
-                + " directory")
-        return ""
+        err = "Could not find {} encryption library {}".format(sys.platform, lib_path)
+        log.error(err)
+        raise Exception(err)
+
     return lib_path
