@@ -17,6 +17,7 @@ Search Architecture:
    - Shares a global lock for map parsing
 '''
 
+import os
 import logging
 import time
 import math
@@ -268,7 +269,13 @@ def check_login(args, account, api, position):
                 log.error('Failed to login to Pokemon Go with account %s. Trying again in %g seconds', account['username'], args.login_delay)
                 time.sleep(args.login_delay)
 
-    api.activate_signature("encrypt.dll")
+    lib_path = ""
+    if os.name is "nt":
+        lib_path = os.path.join(os.path.dirname(__file__), "encrypt.dll")
+    elif os.name is "posix":
+        lib_path = os.path.join(os.path.dirname(__file__), "libencrypt.so")
+
+    api.activate_signature(lib_path)
 
     log.debug('Login for account %s successful', account['username'])
 
