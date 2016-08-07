@@ -37,10 +37,6 @@ There is an [Android port](https://github.com/omkarmoghe/Pokemap) in the works. 
 
 There is an [iOS port](https://github.com/istornz/iPokeGo) in the works. All iOS related prs and issues please refer to this [repo](https://github.com/istornz/iPokeGo).
 
-## Warnings
-
-Use at your own risk! We are not responsible for anything that happens as a result of you using this application.
-
 
 ## Contributions
 
