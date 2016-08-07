@@ -306,6 +306,9 @@ def get_encryption_lib_path():
         else:
             lib_path = os.path.join(os.path.dirname(__file__), "libencrypt-linux-x86-32.so")
 
+    elif sys.platform.startswith('freebsd-10'):
+        lib_path = os.path.join(os.path.dirname(__file__), "libencrypt-freebsd10-64.so") 
+
     else:
         err = "Unexpected/unsupported platform '{}'".format(sys.platform)
         log.error(err)
