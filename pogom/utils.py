@@ -283,3 +283,19 @@ def send_to_webhook(message_type, message):
                 log.debug('Response timeout on webhook endpoint %s', w)
             except requests.exceptions.RequestException as e:
                 log.debug(e)
+
+def get_encryption_lib_path():
+    lib_path = ""
+    if os.name is "nt":
+        lib_path = os.path.join(os.path.dirname(__file__), "encrypt.dll")
+    elif os.name is "posix":
+        lib_path = os.path.join(os.path.dirname(__file__), "libencrypt.so")
+    else:
+        log.error("Operating system not supported")
+        return ""
+    if not os.path.isfile(lib_path):
+        log.error("Could not find encryption library [encrypt.dll (Windows) or"
+                + " libencrypt.so (Linux)]. Please make sure it's in the pogom"
+                + " directory")
+        return ""
+    return lib_path

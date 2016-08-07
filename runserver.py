@@ -42,7 +42,7 @@ from flask_cors import CORS
 
 from pogom import config
 from pogom.app import Pogom
-from pogom.utils import get_args, insert_mock_data
+from pogom.utils import get_args, insert_mock_data, get_encryption_lib_path
 
 from pogom.search import search_overseer_thread, fake_search_loop
 from pogom.models import init_database, create_tables, drop_tables, Pokemon, Pokestop, Gym
@@ -50,6 +50,11 @@ from pogom.models import init_database, create_tables, drop_tables, Pokemon, Pok
 from pgoapi import utilities as util
 
 if __name__ == '__main__':
+    # Check if we have the proper encryption library file and get its path
+    encryption_lib_path = get_encryption_lib_path()
+    if encryption_lib_path is "":
+        sys.exit(1)
+
     args = get_args()
 
     if args.debug:
@@ -123,7 +128,7 @@ if __name__ == '__main__':
         # Gather the pokemons!
         if not args.mock:
             log.debug('Starting a real search thread')
-            search_thread = Thread(target=search_overseer_thread, args=(args, new_location_queue, pause_bit))
+            search_thread = Thread(target=search_overseer_thread, args=(args, new_location_queue, pause_bit, encryption_lib_path))
         else:
             log.debug('Starting a fake search thread')
             insert_mock_data(position)
