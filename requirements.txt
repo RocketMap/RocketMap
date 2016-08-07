@@ -20,4 +20,4 @@ xxhash
 sphinx==1.4.5
 sphinx-autobuild==0.6.0
 recommonmark==0.4.0
-sphinx_rtd_theme==0.1.10-alpha
+sphinx_rtd_theme==0.1.9
