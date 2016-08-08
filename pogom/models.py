@@ -411,6 +411,14 @@ def clean_database():
             .where((ScannedLocation.last_modified <
                 (datetime.utcnow() - timedelta(minutes=30)))))
     query.execute()
+
+    if args.purge_data > 0:
+        query = (Pokemon
+                .delete()
+                .where((Pokemon.disappear_time <
+                    (datetime.utcnow() - timedelta(hours=args.purge_data)))))
+        query.execute()
+
     flaskDb.close_db(None)
 
 
