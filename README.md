@@ -1,5 +1,5 @@
 
-# PokemonGo Map![Python 2.7](https://img.shields.io/badge/python-2.7-blue.svg)[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/PoGoMapDev)
+# PokemonGo Map ![Python 2.7](https://img.shields.io/badge/python-2.7-blue.svg) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/PoGoMapDev) [![Build Status](https://travis-ci.org/PokemonGoMap/PokemonGo-Map.svg?branch=develop)](https://travis-ci.org/PokemonGoMap/PokemonGo-Map)
 
 
 #[Twitter] (https://twitter.com/PokemapDevRE), [Website] (https://pokemongomap.github.io/PoGoMapWebsite/)#
