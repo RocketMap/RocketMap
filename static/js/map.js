@@ -760,10 +760,18 @@ function showInBoundsMarkers(markers) {
       }
     }
 
-    if (show && !markers[key].marker.getMap()) {
-      markers[key].marker.setMap(map);
-    } else if (!show && markers[key].marker.getMap()) {
-      markers[key].marker.setMap(null);
+    if (show && !marker.getMap()) {
+      marker.setMap(map);
+      // Not all markers can be animated (ex: scan locations)
+      if ( marker.setAnimation && marker.oldAnimation ) {
+        marker.setAnimation(marker.oldAnimation);
+      }
+    } else if (!show && marker.getMap()) {
+      // Not all markers can be animated (ex: scan locations)
+      if ( marker.getAnimation ) {
+        marker.oldAnimation = marker.getAnimation();
+      }
+      marker.setMap(null);
     }
   });
 }
