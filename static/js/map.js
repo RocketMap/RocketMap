@@ -1386,8 +1386,9 @@ $(function() {
   });
 
   $("#nav-accordion").accordion({
-    active: false,
+    active: 0,
     collapsible: true,
+    heightStyle: "content",
   });
 
 });
