@@ -1,12 +1,8 @@
 # Google Maps Key
 
-This project uses Google Maps. There's one map coupled with the project, but as it gets more popular we'll definitely hit the rate-limit making the map unusable.
+This project uses Google Maps. Each instance of Google Maps requires an API key to make it functional. This is quick guide to setting up your own key.
 
-## Common error
-
-![Map Error](../_static/img/EOdAqUo.png)
-
-## How to fix
+## Getting the API Key
 
 1. Go to [Google API Console](https://console.developers.google.com/)
 
@@ -40,7 +36,6 @@ This project uses Google Maps. There's one map coupled with the project, but as 
      - Choose Google Places API Web Service
      - Click 'ENABLE'
 
-## Configuration of API Key
+## Using the API Key
 
-1. Navigate to your pokemon map directory, and inside the config folder you will find config.ini.
-2. Add your previously created Google API key in this file, save it, and re-run the server! it should be working now! If you see an error, make sure you actually enabled the Javascript API in Step 5.
+The google maps api key may either be installed in `config/config.ini` file, or you can provide it as a command line parameter like `-k 'your key here'`

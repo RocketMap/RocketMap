@@ -29,9 +29,10 @@
     "grunt-usemin": "latest"
   },
   "scripts": {
-    "postinstall": "./node_modules/.bin/grunt build",
-    "build": "./node_modules/.bin/grunt build",
-    "lint": "./node_modules/.bin/grunt lint"
+    "postinstall": "grunt build",
+    "build": "grunt build",
+    "watch": "grunt default",
+    "lint": "grunt lint"
   },
   "repository": {
     "type": "git",

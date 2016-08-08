@@ -1,6 +1,6 @@
 # DigitalOcean
 
-**Note:** There have been reports of Niantic servers blocking requests from DigitalOcean's major IP blocks (as well as Amazon AWS, and Microsoft Azure): login failures with the Error 403 are due to this. If you are experiencing this issue there is nothing we can do about it at this time.
+> **Warning** -- Most cloud providers have been IP blocked from accessing the API
 
 ## Prerequisites
 
