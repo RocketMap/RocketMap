@@ -9,7 +9,7 @@ First, make a copy of [this Google Sheets page](https://docs.google.com/spreadsh
 Now open a Terminal and clone the develop branch to a local directory:
 
 ```
-git clone -b develop https://github.com/AHAAAAAAA/PokemonGo-Map.git
+git clone -b develop https://github.com/PokemonGoMap/PokemonGo-Map.git
 ```
 
 Go to Tools / Hex-Beehive-Generator:
