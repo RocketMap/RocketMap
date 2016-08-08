@@ -22,20 +22,10 @@ directory='/path/to/your/runserver/directory/' # Path to the folder containing r
 
 # Check to see if supervisor folder/subfolder exists if not make it
 if [ ! -d ~/supervisor/hex$hexnum ]; then
-  mkdir -p supervisor/hex$hexnum
+  mkdir -p ~/supervisor/hex$hexnum
 fi
 
-# Copy supervisor files to ~/supervisor for first install or to reset (deleting supervisord.conf)
-if [ ! -f ~/supervisor/supervisord.conf ]; then
-  cp supervisord.conf ~/supervisor/supervisord.conf
-  sed -i "s,DIRECTORY,$directory," "$HOME/supervisor/supervisord.conf"
-  cp gen-workers.sh ~/supervisor/gen-workers.sh
-  cp template.ini ~/supervisor/template.ini
-  cd "$HOME/supervisor" || exit 1
-  exit 0
-fi
-
-# Change Directory to ~/supervisor
+# Change Directory to ~/supervisor in script subshell
 cd "$HOME/supervisor" || exit 1
 
 # Cleaning up directory
@@ -64,11 +54,10 @@ while read -r line; do
   ((acct1+=numacct))
 done < $coords
 
-cp supervisord.conf ~/supervisor/supervisord.conf
 sed -i "s,DIRECTORY,$directory," "$HOME/supervisor/supervisord.conf"
 sed -i "s/LOC/$initloc/" "$HOME/supervisor/supervisord.conf"
 
 # Adding the folder to supervisord.conf [inclues]
-if [ -z grep -i $("hex$hexnum/\*.ini" supervisord.conf) ]; then
+if [ -z $(grep -i "hex$hexnum/\*.ini" supervisord.conf) ]; then
   echo "files = hex$hexnum/*.ini" >> supervisord.conf
 fi

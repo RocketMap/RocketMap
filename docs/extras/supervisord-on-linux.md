@@ -14,10 +14,11 @@
 cd into your root PokemonGO Map folder. Then:
 
     cd contrib/supervisord/
-    ./gen-workers.sh
+    ./install-reinstall.sh
 
-When this completes, you will be in your `~/supervisord` directory with all the required files. (this copies itself and the required files so that there is no conflict when doing a `git pull`. Now we are going to edit your local copy of gen-workers.sh:
-
+When this completes, you will have all the required files. (this copies itself and the required files so that there is no conflict when doing a `git pull`. Now we are going to edit your local copy of gen-workers.sh:
+    
+    cd ~/supervisor
     nano gen-workers.sh
 
 
