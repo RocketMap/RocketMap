@@ -36,4 +36,4 @@ CMD [ "sh" ]
 RUN apk add --update ca-certificates build-base nodejs ruby ruby-dev libffi-dev git
 
 # For travis-ci
-RUN gem install travis
+RUN gem install travis --no-ri --no-rdoc
