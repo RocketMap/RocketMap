@@ -66,7 +66,7 @@ if __name__ == '__main__':
     # Let's not forget to run Grunt / Only needed when running with webserver
     if not args.no_server:
         if not os.path.exists(os.path.join(os.path.dirname(__file__), 'static/dist')):
-            log.critical('Please run "grunt build" before starting the server');
+            log.critical('Missing front-end assets (static/dist) -- please run "npm install && npm run build" before starting the server');
             sys.exit();
 
     # These are very noisey, let's shush them up a bit
