@@ -13,7 +13,7 @@ Features:
 
 ## How to setup
 
-For instructions on how to setup and run the tool, please refer to the project [wiki](https://github.com/PokemonGoMap/PokemonGo-Map/wiki/supervisord-config-files)
+For instructions on how to setup and run the tool, please refer to the project [wiki](https://pgm.readthedocs.io/en/develop/extras/supervisord-on-linux.html)
 
 ## Warnings
 
