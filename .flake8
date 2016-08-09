@@ -1,0 +1,3 @@
+[flake8]
+ignore = E501
+exclude = node_modules,venv,.git,docs,Tools

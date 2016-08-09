@@ -17,12 +17,9 @@ Search Architecture:
    - Shares a global lock for map parsing
 '''
 
-import os
-import sys
 import logging
 import time
 import math
-import threading
 
 from threading import Thread, Lock
 from queue import Queue, Empty
@@ -32,67 +29,70 @@ from pgoapi.utilities import f2i
 from pgoapi import utilities as util
 from pgoapi.exceptions import AuthException
 
-from . import config
 from .models import parse_map
 
 log = logging.getLogger(__name__)
 
 TIMESTAMP = '\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000'
 
+
 def get_new_coords(init_loc, distance, bearing):
     """ Given an initial lat/lng, a distance(in kms), and a bearing (degrees),
     this will calculate the resulting lat/lng coordinates.
     """
-    R = 6378.1 #km radius of the earth
+    R = 6378.1  # km radius of the earth
     bearing = math.radians(bearing)
 
-    init_coords = [math.radians(init_loc[0]), math.radians(init_loc[1])] # convert lat/lng to radians
+    init_coords = [math.radians(init_loc[0]), math.radians(init_loc[1])]  # convert lat/lng to radians
 
-    new_lat = math.asin( math.sin(init_coords[0])*math.cos(distance/R) +
-        math.cos(init_coords[0])*math.sin(distance/R)*math.cos(bearing))
+    new_lat = math.asin(math.sin(init_coords[0]) * math.cos(distance / R) +
+                        math.cos(init_coords[0]) * math.sin(distance / R) * math.cos(bearing)
+                        )
 
-    new_lon = init_coords[1] + math.atan2(math.sin(bearing)*math.sin(distance/R)*math.cos(init_coords[0]),
-        math.cos(distance/R)-math.sin(init_coords[0])*math.sin(new_lat))
+    new_lon = init_coords[1] + math.atan2(math.sin(bearing) * math.sin(distance / R) * math.cos(init_coords[0]),
+                                          math.cos(distance / R) - math.sin(init_coords[0]) * math.sin(new_lat)
+                                          )
 
     return [math.degrees(new_lat), math.degrees(new_lon)]
 
+
 def generate_location_steps(initial_loc, step_count):
-    #Bearing (degrees)
+    # Bearing (degrees)
     NORTH = 0
     EAST = 90
     SOUTH = 180
     WEST = 270
 
     pulse_radius = 0.07                 # km - radius of players heartbeat is 70m
-    xdist = math.sqrt(3)*pulse_radius   # dist between column centers
-    ydist = 3*(pulse_radius/2)          # dist between row centers
+    xdist = math.sqrt(3) * pulse_radius   # dist between column centers
+    ydist = 3 * (pulse_radius / 2)          # dist between row centers
 
-    yield (initial_loc[0], initial_loc[1], 0) #insert initial location
+    yield (initial_loc[0], initial_loc[1], 0)  # insert initial location
 
     ring = 1
     loc = initial_loc
     while ring < step_count:
-        #Set loc to start at top left
+        # Set loc to start at top left
         loc = get_new_coords(loc, ydist, NORTH)
-        loc = get_new_coords(loc, xdist/2, WEST)
+        loc = get_new_coords(loc, xdist / 2, WEST)
         for direction in range(6):
             for i in range(ring):
-                if direction == 0: # RIGHT
+                if direction == 0:  # RIGHT
                     loc = get_new_coords(loc, xdist, EAST)
-                if direction == 1: # DOWN + RIGHT
+                if direction == 1:  # DOWN + RIGHT
                     loc = get_new_coords(loc, ydist, SOUTH)
-                    loc = get_new_coords(loc, xdist/2, EAST)
-                if direction == 2: # DOWN + LEFT
+                    loc = get_new_coords(loc, xdist / 2, EAST)
+                if direction == 2:  # DOWN + LEFT
                     loc = get_new_coords(loc, ydist, SOUTH)
-                    loc = get_new_coords(loc, xdist/2, WEST)
-                if direction == 3: # LEFT
+                    loc = get_new_coords(loc, xdist / 2, WEST)
+                if direction == 3:  # LEFT
                     loc = get_new_coords(loc, xdist, WEST)
-                if direction == 4: # UP + LEFT
+                if direction == 4:  # UP + LEFT
                     loc = get_new_coords(loc, ydist, NORTH)
-                    loc = get_new_coords(loc, xdist/2, WEST)
-                if direction == 5: # UP + RIGHT
+                    loc = get_new_coords(loc, xdist / 2, WEST)
+                if direction == 5:  # UP + RIGHT
                     loc = get_new_coords(loc, ydist, NORTH)
-                    loc = get_new_coords(loc, xdist/2, EAST)
+                    loc = get_new_coords(loc, xdist / 2, EAST)
                 yield (loc[0], loc[1], 0)
         ring += 1
 
@@ -121,12 +121,12 @@ def search_overseer_thread(args, new_location_queue, pause_bit, encryption_lib_p
         t = Thread(target=search_worker_thread,
                    name='search_worker_{}'.format(i),
                    args=(args, account, search_items_queue, parse_lock,
-                       encryption_lib_path))
+                         encryption_lib_path))
         t.daemon = True
         t.start()
 
     # A place to track the current location
-    current_location = False;
+    current_location = False
 
     # The real work starts here but will halt on pause_bit.set()
     while True:
@@ -219,7 +219,7 @@ def search_worker_thread(args, account, search_items_queue, parse_lock, encrypti
                     # Increase sleep delay between each failed scan
                     # By default scan_dela=5, scan_retries=5 so
                     # We'd see timeouts of 5, 10, 15, 20, 25
-                    sleep_time = args.scan_delay * (1+failed_total)
+                    sleep_time = args.scan_delay * (1 + failed_total)
 
                     # Ok, let's get started -- check our login status
                     check_login(args, account, api, step_location)
@@ -239,10 +239,10 @@ def search_worker_thread(args, account, search_items_queue, parse_lock, encrypti
                     # Got the response, lock for parsing and do so (or fail, whatever)
                     with parse_lock:
                         try:
-                            parsed = parse_map(response_dict, step_location)
+                            parse_map(response_dict, step_location)
                             log.debug('Search step %s completed', step)
                             search_items_queue.task_done()
-                            break # All done, get out of the request-retry loop
+                            break  # All done, get out of the request-retry loop
                         except KeyError:
                             log.exception('Search step %s map parsing failed, retrying request in %g seconds', step, sleep_time)
                             failed_total += 1
@@ -259,7 +259,7 @@ def check_login(args, account, api, position):
 
     # Logged in? Enough time left? Cool!
     if api._auth_provider and api._auth_provider._ticket_expire:
-        remaining_time = api._auth_provider._ticket_expire/1000 - time.time()
+        remaining_time = api._auth_provider._ticket_expire / 1000 - time.time()
         if remaining_time > 60:
             log.debug('Credentials remain valid for another %f seconds', remaining_time)
             return
@@ -269,7 +269,7 @@ def check_login(args, account, api, position):
     api.set_position(position[0], position[1], position[2])
     while i < args.login_retries:
         try:
-            api.set_authentication(provider = account['auth_service'], username = account['username'], password = account['password'])
+            api.set_authentication(provider=account['auth_service'], username=account['username'], password=account['password'])
             break
         except AuthException:
             if i >= args.login_retries:
@@ -281,17 +281,19 @@ def check_login(args, account, api, position):
 
     log.debug('Login for account %s successful', account['username'])
 
+
 def map_request(api, position):
     try:
         cell_ids = util.get_cell_ids(position[0], position[1])
-        timestamps = [0,] * len(cell_ids)
+        timestamps = [0, ] * len(cell_ids)
         return api.get_map_objects(latitude=f2i(position[0]),
-                            longitude=f2i(position[1]),
-                            since_timestamp_ms=timestamps,
-                            cell_id=cell_ids)
+                                   longitude=f2i(position[1]),
+                                   since_timestamp_ms=timestamps,
+                                   cell_id=cell_ids)
     except Exception as e:
         log.warning('Exception while downloading map: %s', e)
         return False
+
 
 class TooManyLoginAttempts(Exception):
     pass
