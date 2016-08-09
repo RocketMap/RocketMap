@@ -106,7 +106,7 @@ if __name__ == '__main__':
         altitude = requests.get(url).json()[u'results'][0][u'elevation']
         log.debug('Local altitude is: %sm', altitude)
         position = (position[0], position[1], altitude)
-    except requests.exceptions.RequestException:
+    except (requests.exceptions.RequestException, IndexError, KeyError):
         log.error('Unable to retrieve altitude from Google APIs; setting to 0')
 
     if not any(position):
