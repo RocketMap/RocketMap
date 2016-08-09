@@ -115,7 +115,8 @@ def get_args():
     parser.add_argument('--db-pass', help='Password for the database')
     parser.add_argument('--db-host', help='IP or hostname for the database')
     parser.add_argument('--db-port', help='Port for the database', type=int, default=3306)
-    parser.add_argument('--db-max_connections', help='Max connections for the database', type=int, default=5)
+    parser.add_argument('--db-max_connections', help='Max connections (per thread) for the database',
+                        type=int, default=5)
     parser.add_argument('-wh', '--webhook', help='Define URL(s) to POST webhook information to',
                         nargs='*', default=False, dest='webhooks')
     parser.set_defaults(DEBUG=False)
