@@ -307,6 +307,9 @@ def get_encryption_lib_path():
     elif os.uname()[4].startswith("arm") and platform.architecture()[0] == '32bit':
         lib_path = os.path.join(os.path.dirname(__file__), "libencrypt-linux-arm-32.so")
 
+    elif os.uname()[4].startswith("aarch64") and platform.architecture()[0] == '64bit':
+        lib_path = os.path.join(os.path.dirname(__file__), "libencrypt-linux-arm-64.so")
+
     elif sys.platform.startswith('linux'):
         if platform.architecture()[0] == '64bit':
             lib_path = os.path.join(os.path.dirname(__file__), "libencrypt-linux-x86-64.so")
