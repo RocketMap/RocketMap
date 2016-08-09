@@ -6,27 +6,27 @@
 
     <!-- Fav- & Apple-Touch-Icons -->
     <!-- Favicon -->
-    <link rel="shortcut icon" href="static/appicons/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='appicons/favicon.ico').lstrip('/') }}" type="image/x-icon">
     <!-- non-retina iPhone pre iOS 7 -->
-    <link rel="apple-touch-icon" href="static/appicons/114x114.png" sizes="57x57">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='appicons/114x114.png').lstrip('/') }}" sizes="57x57">
     <!-- non-retina iPad pre iOS 7 -->
-    <link rel="apple-touch-icon" href="static/appicons/144x144.png" sizes="72x72">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='appicons/144x144.png').lstrip('/') }}" sizes="72x72">
     <!-- non-retina iPad iOS 7 -->
-    <link rel="apple-touch-icon" href="static/appicons/152x152.png" sizes="76x76">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='appicons/152x152.png').lstrip('/') }}" sizes="76x76">
     <!-- retina iPhone pre iOS 7 -->
-    <link rel="apple-touch-icon" href="static/appicons/114x114.png" sizes="114x114">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='appicons/114x114.png').lstrip('/') }}" sizes="114x114">
     <!-- retina iPhone iOS 7 -->
-    <link rel="apple-touch-icon" href="static/appicons/120x120.png" sizes="120x120">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='appicons/120x120.png').lstrip('/') }}" sizes="120x120">
     <!-- retina iPad pre iOS 7 -->
-    <link rel="apple-touch-icon" href="static/appicons/144x144.png" sizes="144x144">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='appicons/144x144.png').lstrip('/') }}" sizes="144x144">
     <!-- retina iPad iOS 7 -->
-    <link rel="apple-touch-icon" href="static/appicons/152x152.png" sizes="152x152">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='appicons/152x152.png').lstrip('/') }}" sizes="152x152">
     <!-- retina iPhone 6 iOS 7 -->
-    <link rel="apple-touch-icon" href="static/appicons/180x180.png" sizes="180x180">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='appicons/180x180.png').lstrip('/') }}" sizes="180x180">
 
-    <link rel="stylesheet" href="static/dist/css/app.min.css">
-    <link rel="stylesheet" href="static/dist/css/statistics.min.css">
-    <script src="static/js/vendor/modernizr.custom.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/app.min.css').lstrip('/') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/statistics.min.css').lstrip('/') }}">
+    <script src="{{ url_for('static', filename='js/vendor/modernizr.custom.js').lstrip('/') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.9.1/polyfill.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/skel/3.0.1/skel.min.js"></script>
@@ -35,7 +35,7 @@
       var centerLat = {{lat}};
       var centerLng = {{lng}};
     </script>
-    <script src="static/dist/js/map.min.js"></script>
+    <script src="{{ url_for('static', filename='dist/js/map.min.js').lstrip('/') }}"></script>
 </head>
 <body>
         <!-- Header -->
@@ -61,11 +61,11 @@
             <h3 id="seen_header"></h3>
             <h1 id="seen_total"></h1>
         </div>
-        <div id="loading"><img src="static/images/loading.gif" alt="Loading"/></div>
+        <div id="loading"><img src="{{ url_for('static', filename='images/loading.gif').lstrip('/') }}" alt="Loading"/></div>
         <div class="container" id="seen_container">
         </div>
         <div id="location_details" class="overlay">
-            <div class="close" onclick="closeOverlay();"><img src="static/images/close.png" alt="Close" /></div>
+            <div class="close" onclick="closeOverlay();"><img src="{{ url_for('static', filename='images/close.png').lstrip('/') }}" alt="Close" /></div>
             <div class="location_header"><h3 id="location_header"></h3></div>
             <div class="content">
                 <div id="times_list" style="display: none;"></div>
@@ -74,7 +74,7 @@
                 </div>
             </div>
         </div>
-    <script src="static/dist/js/app.min.js"></script>
-    <script src="static/dist/js/statistics.min.js"></script>
+    <script src="{{ url_for('static', filename='dist/js/app.min.js').lstrip('/') }}"></script>
+    <script src="{{ url_for('static', filename='dist/js/statistics.min.js').lstrip('/') }}"></script>
 </body>
 </html>

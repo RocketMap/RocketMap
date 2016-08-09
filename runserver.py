@@ -41,6 +41,7 @@ if not hasattr(pgoapi, "__version__") or StrictVersion(pgoapi.__version__) < Str
 from threading import Thread, Event
 from queue import Queue
 from flask_cors import CORS
+from flask.ext import cache_bust
 
 from pogom import config
 from pogom.app import Pogom
@@ -161,6 +162,9 @@ if __name__ == '__main__':
 
     if args.cors:
         CORS(app);
+
+    # No more stale JS
+    cache_bust.init_cache_busting(app)
 
     app.set_search_control(pause_bit)
     app.set_location_queue(new_location_queue)
