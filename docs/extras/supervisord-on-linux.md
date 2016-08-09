@@ -1,4 +1,4 @@
-# Using Supervisord on Linux
+# Supervisord on Linux
 
 ## Assuming:
 
@@ -42,14 +42,14 @@ In this file, change the variables needed to suit your situation. Below is a sni
     st=5       # Step Count per worker
     sd=5       # Scan Delay per account
     ld=1       # Login Delay per account
-    directory='/path/to/your/runserver/directory/' # Path to the folder containing runserver.py
+    directory='/path/to/your/runserver/directory/' # Path to the folder containing runserver.py **NOTICE THE TRAILING /**
 
 As you saw above you will need to create a coords.txt (or whatever you decide to name it. I personally use city.stepcount.coords as my naming convention). We are going to use location_generator.py:
     
     cd (your Pokemon Go Map main folder here)
     python Tools/Hex-Beehive-Generator/location_generator.py -lat "yourlat" -lon "yourlon" -st 5 -lp 4 -or "~/supervisor/coords.txt"
 
-Then re-run the gen-workers.sh script
+Now run the gen-workers.sh script
 
     cd ~/supervisor
     ./gen-workers.sh

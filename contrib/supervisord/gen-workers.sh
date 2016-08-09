@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Name of coords file. If you do not have one use location_generator.py -or 
+# Name of coords file. If you do not have one use location_generator.py -or
 coords="coords.txt"
 
 # Webserver Location
@@ -18,7 +18,7 @@ auth="ptc" # The auth you use for all the accounts
 st=5       # Step Count per worker
 sd=5       # Scan Delay per account
 ld=1       # Login Delay per account
-directory='/path/to/your/runserver/directory/' # Path to the folder containing runserver.py
+directory='/path/to/your/runserver/directory/' # Path to the folder containing runserver.py **NOTICE THE TRAILING /**
 
 # Check to see if supervisor folder/subfolder exists if not make it
 if [ ! -d ~/supervisor/hex$hexnum ]; then
@@ -35,7 +35,7 @@ rm -f hex$hexnum/*.ini
 while read -r line; do
   ((worker++))
   printf -v n %02d $worker
-  cp template.ini "procs.d/worker_$n.ini"
+  cp template.ini "hex$hexnum/worker_$n.ini"
   user=$(for (( i = 1; i <= numacct; i++ )) do
            echo -n "-u ACCT$i "
          done)
