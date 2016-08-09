@@ -1441,14 +1441,14 @@ function processLuredPokemon (i, item) {
     return false
   }
   var item2 = {
-    pokestopId: item['pokestop_id'],
-    lureExpiration: item['lure_expiration'],
-    pokemonId: item['active_pokemon_id'],
-    latitude: item['latitude'] + 0.00005,
-    longitude: item['longitude'] + 0.00005,
-    pokemonName: item['active_pokemon_id'] in idToPokemon ? idToPokemon[item['active_pokemon_id']]['name'] : null,
-    pokemonRarity: item['active_pokemon_id'] in idToPokemon ? idToPokemon[item['active_pokemon_id']]['rarity'] : null,
-    disappearTime: item['lure_expiration']
+    'pokestop_id': item['pokestop_id'],
+    'lure_expiration': item['lure_expiration'],
+    'pokemon_id': item['active_pokemon_id'],
+    'latitude': item['latitude'] + 0.00005,
+    'longitude': item['longitude'] + 0.00005,
+    'pokemon_name': item['active_pokemon_id'] in idToPokemon ? idToPokemon[item['active_pokemon_id']]['name'] : null,
+    'pokemon_rarity': item['active_pokemon_id'] in idToPokemon ? idToPokemon[item['active_pokemon_id']]['rarity'] : null,
+    'disappear_time': item['lure_expiration']
   }
 
   if (!item2['pokemon_id']) {
