@@ -383,7 +383,12 @@ def parse_map(map_dict, step_location):
         'last_modified': datetime.utcnow(),
     }
 
-    flaskDb.connect_db()
+    while True:
+        try:
+            flaskDb.connect_db()
+            break
+        except:
+            log.warning('%s... Retrying', e)
 
     if pokemons and config['parse_pokemon']:
         pokemons_upserted = len(pokemons)
