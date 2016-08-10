@@ -126,7 +126,7 @@ def get_args():
     if args.only_server:
         if args.location is None:
             parser.print_usage()
-            print sys.argv[0] + ': error: arguments -l/--location is required'
+            print(sys.argv[0] + ": error: arguments -l/--location is required")
             sys.exit(1)
     else:
         errors = []
@@ -164,7 +164,7 @@ def get_args():
 
         if len(errors) > 0:
             parser.print_usage()
-            print sys.argv[0] + ": errors: \n - " + "\n - ".join(errors)
+            print(sys.argv[0] + ": errors: \n - " + "\n - ".join(errors))
             sys.exit(1)
 
         # Fill the pass/auth if set to a single value
