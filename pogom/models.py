@@ -10,6 +10,7 @@ from peewee import SqliteDatabase, InsertQuery, \
 from playhouse.flask_utils import FlaskDB
 from playhouse.pool import PooledMySQLDatabase
 from playhouse.shortcuts import RetryOperationalError
+from playhouse.migrate import migrate, MySQLMigrator, SqliteMigrator
 from datetime import datetime, timedelta
 from base64 import b64encode
 
@@ -23,7 +24,7 @@ log = logging.getLogger(__name__)
 args = get_args()
 flaskDb = FlaskDB()
 
-db_schema_version = 1
+db_schema_version = 2
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -196,6 +197,7 @@ class Pokestop(BaseModel):
     last_modified = DateTimeField(index=True)
     lure_expiration = DateTimeField(null=True, index=True)
     active_pokemon_id = IntegerField(null=True)
+    encounter_id = CharField(max_length=50)
 
     class Meta:
         indexes = ((('latitude', 'longitude'), False),)
@@ -357,7 +359,7 @@ def parse_map(map_dict, step_location):
                     }
                     send_to_webhook('pokemon', webhook_data)
                 else:
-                    lure_expiration, active_pokemon_id = None, None
+                    lure_expiration, active_pokemon_id, encounter_id = None, None, None
 
                 pokestops[f['id']] = {
                     'pokestop_id': f['id'],
@@ -367,7 +369,8 @@ def parse_map(map_dict, step_location):
                     'last_modified': datetime.utcfromtimestamp(
                         f['last_modified_timestamp_ms'] / 1000.0),
                     'lure_expiration': lure_expiration,
-                    'active_pokemon_id': active_pokemon_id
+                    'active_pokemon_id': active_pokemon_id,
+                    'encounter_id': encounter_id
                 }
 
             elif config['parse_gyms'] and f.get('type') is None:  # Currently, there are only stops and gyms
@@ -500,8 +503,17 @@ def database_migrate(db, old_ver):
     log.info("Detected database version %i, updating to %i", old_ver, db_schema_version)
 
     # Perform migrations here
+    migrator = None
+    if args.db_type == 'mysql':
+        migrator = MySQLMigrator(db)
+    else:
+        migrator = SqliteMigrator(db)
+
     if old_ver < 1:
         db.drop_tables([ScannedLocation])
+
+    if old_ver < 2:
+        migrate(migrator.add_column('pokestop', 'encounter_id', CharField(max_length=50, null=True)))
 
     # Update database schema version
     Versions.update(val=db_schema_version).where(Versions.key == 'schema_version').execute()
