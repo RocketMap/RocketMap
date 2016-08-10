@@ -387,7 +387,7 @@ def parse_map(map_dict, step_location):
         try:
             flaskDb.connect_db()
             break
-        except:
+        except Exception as e:
             log.warning('%s... Retrying', e)
 
     if pokemons and config['parse_pokemon']:
@@ -425,9 +425,9 @@ def clean_database():
 
     if args.purge_data > 0:
         query = (Pokemon
-                .delete()
-                .where((Pokemon.disappear_time <
-                    (datetime.utcnow() - timedelta(hours=args.purge_data)))))
+                 .delete()
+                 .where((Pokemon.disappear_time <
+                        (datetime.utcnow() - timedelta(hours=args.purge_data)))))
         query.execute()
 
 

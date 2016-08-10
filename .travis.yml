@@ -4,9 +4,12 @@ python:
   - 2.7
 install:
   - nvm install 4.4.7
+  - pip install flake8
   - pip install -r requirements.txt
   - npm install grunt-cli -g
   - npm install
+before_script:
+  - "flake8 ."
 script:
   - npm run build
   - npm run lint
