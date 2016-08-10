@@ -1152,7 +1152,6 @@ function setupPokemonMarker (item, skipNotification, isBounceDisabled) {
       lng: item['longitude']
     },
     zIndex: 9999,
-    optimized: false,
     map: map,
     icon: icon,
     animationDisabled: animationDisabled
@@ -1218,7 +1217,6 @@ function setupPokestopMarker (item) {
     },
     map: map,
     zIndex: 2,
-    optimized: false,
     icon: 'static/forts/' + imagename + '.png'
   })
 
