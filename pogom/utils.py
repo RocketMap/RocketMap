@@ -131,7 +131,7 @@ def get_args():
     else:
         errors = []
 
-        num_auths = 0
+        num_auths = 1
         num_usernames = 0
         num_passwords = 0
 
