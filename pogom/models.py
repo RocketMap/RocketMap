@@ -6,7 +6,7 @@ import calendar
 import sys
 from peewee import SqliteDatabase, InsertQuery, \
     IntegerField, CharField, DoubleField, BooleanField, \
-    DateTimeField, fn
+    DateTimeField, PrimaryKeyField, fn
 from playhouse.flask_utils import FlaskDB
 from playhouse.pool import PooledMySQLDatabase
 from playhouse.shortcuts import RetryOperationalError
@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 args = get_args()
 flaskDb = FlaskDB()
 
-db_schema_version = 0
+db_schema_version = 1
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -266,7 +266,7 @@ class Gym(BaseModel):
 
 
 class ScannedLocation(BaseModel):
-    scanned_id = CharField(primary_key=True, max_length=50)
+    scanned_id = PrimaryKeyField()
     latitude = DoubleField()
     longitude = DoubleField()
     last_modified = DateTimeField(index=True)
@@ -388,7 +388,6 @@ def parse_map(map_dict, step_location):
     gyms_upserted = 0
 
     scanned[0] = {
-        'scanned_id': str(step_location[0]) + ',' + str(step_location[1]),
         'latitude': step_location[0],
         'longitude': step_location[1],
         'last_modified': datetime.utcnow(),
@@ -501,6 +500,8 @@ def database_migrate(db, old_ver):
     log.info("Detected database version %i, updating to %i", old_ver, db_schema_version)
 
     # Perform migrations here
+    if old_ver < 1:
+        db.drop_tables([ScannedLocation])
 
     # Update database schema version
     Versions.update(val=db_schema_version).where(Versions.key == 'schema_version').execute()
