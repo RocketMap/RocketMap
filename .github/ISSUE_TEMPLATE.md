@@ -1,3 +1,18 @@
+<!--
+
+  ISSUES ARE NOT FOR SUPPORT!!!
+  ISSUES ARE NOT FOR SUPPORT!!!
+  ISSUES ARE NOT FOR SUPPORT!!!
+  ISSUES ARE NOT FOR SUPPORT!!!
+  ISSUES ARE NOT FOR SUPPORT!!!
+  ISSUES ARE NOT FOR SUPPORT!!!
+  ISSUES ARE NOT FOR SUPPORT!!!
+  ISSUES ARE NOT FOR SUPPORT!!!
+
+  Join discord (channel: #help) for support at this link: https://discord.gg/PWp2bAm
+
+-->
+
 <!--- Provide a general summary of the issue in the Title above -->
 
 ## Expected Behavior
