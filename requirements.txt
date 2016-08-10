@@ -22,4 +22,4 @@ sphinx-autobuild==0.6.0
 recommonmark==0.4.0
 sphinx_rtd_theme==0.1.9
 requests==2.10.0
-git+https://github.com/ChrisTM/Flask-CacheBust.git@aa09ad861f104f987928fe9f5107ccfe0e4473c3#egg=flask_cache_bust
+git+https://github.com/ChrisTM/Flask-CacheBust.git@aa09ad861f104f987928fe9f5107ccfe0e4473c3#egg=flask_cachebust
