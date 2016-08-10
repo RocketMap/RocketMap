@@ -869,7 +869,7 @@ function initMap () { // eslint-disable-line no-unused-vars
   map.setMapTypeId(Store.get('map_style'))
   google.maps.event.addListener(map, 'idle', updateMap)
 
-  createSearchMarker()
+  marker = createSearchMarker()
 
   addMyLocationButton()
   initSidebar()

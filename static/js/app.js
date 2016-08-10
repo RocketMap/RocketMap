@@ -113,7 +113,7 @@
     if (event.target.matches('a[href="#nav"]')) {
       return
     }
-    if ($stats && event.target.matches('a[href="#stats]')) {
+    if ($stats && event.target.matches('a[href="#stats"]')) {
       return
     }
     $nav.classList.remove('visible')
