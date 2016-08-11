@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 args = get_args()
 flaskDb = FlaskDB()
 
-db_schema_version = 2
+db_schema_version = 3
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -196,8 +196,7 @@ class Pokestop(BaseModel):
     longitude = DoubleField()
     last_modified = DateTimeField(index=True)
     lure_expiration = DateTimeField(null=True, index=True)
-    active_pokemon_id = IntegerField(null=True)
-    encounter_id = CharField(max_length=50, null=True)
+    active_fort_modifier = CharField(max_length=50, null=True)
 
     class Meta:
         indexes = ((('latitude', 'longitude'), False),)
@@ -343,23 +342,19 @@ def parse_map(map_dict, step_location):
 
         for f in cell.get('forts', []):
             if config['parse_pokestops'] and f.get('type') == 1:  # Pokestops
-                if 'lure_info' in f:
+                if 'active_fort_modifier' in f:
                     lure_expiration = datetime.utcfromtimestamp(
-                        f['lure_info']['lure_expires_timestamp_ms'] / 1000.0)
-                    active_pokemon_id = f['lure_info']['active_pokemon_id']
-                    encounter_id = f['lure_info']['encounter_id']
+                        f['last_modified_timestamp_ms'] / 1000.0) + timedelta(minutes=30)
                     webhook_data = {
-                        'encounter_id': b64encode(str(encounter_id)),
-                        'pokemon_id': active_pokemon_id,
                         'latitude': f['latitude'],
                         'longitude': f['longitude'],
-                        'disappear_time': calendar.timegm(lure_expiration.timetuple()),
                         'last_modified_time': f['last_modified_timestamp_ms'],
+                        'active_fort_modifier': f['active_fort_modifier'],
                         'is_lured': True
                     }
                     send_to_webhook('pokemon', webhook_data)
                 else:
-                    lure_expiration, active_pokemon_id, encounter_id = None, None, None
+                    lure_expiration, active_fort_modifier = None, None
 
                 pokestops[f['id']] = {
                     'pokestop_id': f['id'],
@@ -369,8 +364,7 @@ def parse_map(map_dict, step_location):
                     'last_modified': datetime.utcfromtimestamp(
                         f['last_modified_timestamp_ms'] / 1000.0),
                     'lure_expiration': lure_expiration,
-                    'active_pokemon_id': active_pokemon_id,
-                    'encounter_id': encounter_id
+                    'active_fort_modifier': active_fort_modifier,
                 }
 
             elif config['parse_gyms'] and f.get('type') is None:  # Currently, there are only stops and gyms
@@ -514,6 +508,13 @@ def database_migrate(db, old_ver):
 
     if old_ver < 2:
         migrate(migrator.add_column('pokestop', 'encounter_id', CharField(max_length=50, null=True)))
+
+    if old_ver < 3:
+        migrate(
+            migrator.add_column('pokestop', 'active_fort_modifier', CharField(max_length=50, null=True)),
+            migrator.drop_column('pokestop', 'encounter_id'),
+            migrator.drop_column('pokestop', 'active_pokemon_id')
+        )
 
     # Update database schema version
     Versions.update(val=db_schema_version).where(Versions.key == 'schema_version').execute()

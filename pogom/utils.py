@@ -219,8 +219,6 @@ def insert_mock_data(position):
                         last_modified=datetime.now(),
                         # Every other pokestop be lured
                         lure_expiration=disappear_time if (i % 2 == 0) else None,
-                        active_pokemon_id=i,
-                        encounter_id=uuid.uuid4()
                         )
 
     for i in range(1, num_gym):
