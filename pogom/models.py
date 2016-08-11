@@ -3,6 +3,7 @@
 
 import logging
 import calendar
+import sys
 from peewee import SqliteDatabase, InsertQuery, \
     IntegerField, CharField, DoubleField, BooleanField, \
     DateTimeField, fn
@@ -21,6 +22,8 @@ log = logging.getLogger(__name__)
 
 args = get_args()
 flaskDb = FlaskDB()
+
+db_schema_version = 0
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -290,6 +293,14 @@ class ScannedLocation(BaseModel):
         return scans
 
 
+class Versions(flaskDb.Model):
+    key = CharField()
+    val = IntegerField()
+
+    class Meta:
+        primary_key = False
+
+
 def parse_map(map_dict, step_location):
     pokemons = {}
     pokestops = {}
@@ -449,11 +460,47 @@ def bulk_upsert(cls, data):
 
 def create_tables(db):
     db.connect()
+    verify_database_schema(db)
     db.create_tables([Pokemon, Pokestop, Gym, ScannedLocation], safe=True)
     db.close()
 
 
 def drop_tables(db):
     db.connect()
-    db.drop_tables([Pokemon, Pokestop, Gym, ScannedLocation], safe=True)
+    db.drop_tables([Pokemon, Pokestop, Gym, ScannedLocation, Versions], safe=True)
     db.close()
+
+
+def verify_database_schema(db):
+    if not Versions.table_exists():
+        db.create_tables([Versions])
+
+        if ScannedLocation.table_exists():
+            # Versions table didn't exist, but there were tables. This must mean the user
+            # is coming from a database that existed before we started tracking the schema
+            # version. Perform a full upgrade.
+            InsertQuery(Versions, {Versions.key: 'schema_version', Versions.val: 0}).execute()
+            database_migrate(db, 0)
+        else:
+            InsertQuery(Versions, {Versions.key: 'schema_version', Versions.val: db_schema_version}).execute()
+
+    else:
+        db_ver = Versions.get(Versions.key == 'schema_version').val
+
+        if db_ver < db_schema_version:
+            database_migrate(db, db_ver)
+
+        elif db_ver > db_schema_version:
+            log.error("Your database version (%i) appears to be newer than the code supports (%i).",
+                      db_ver, db_schema_version)
+            log.error("Please upgrade your code base or drop all tables in your database.")
+            sys.exit(1)
+
+
+def database_migrate(db, old_ver):
+    log.info("Detected database version %i, updating to %i", old_ver, db_schema_version)
+
+    # Perform migrations here
+
+    # Update database schema version
+    Versions.update(val=db_schema_version).where(Versions.key == 'schema_version').execute()
