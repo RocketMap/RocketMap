@@ -197,7 +197,7 @@ class Pokestop(BaseModel):
     last_modified = DateTimeField(index=True)
     lure_expiration = DateTimeField(null=True, index=True)
     active_pokemon_id = IntegerField(null=True)
-    encounter_id = CharField(max_length=50)
+    encounter_id = CharField(max_length=50, null=True)
 
     class Meta:
         indexes = ((('latitude', 'longitude'), False),)
