@@ -1436,8 +1436,10 @@ function processScanned (i, item) {
     return false
   }
 
-  if (item['scanned_id'] in mapData.scanned) {
-    mapData.scanned[item['scanned_id']].marker.setOptions({
+  var scanId = item['latitude'] + '|' + item['longitude']
+
+  if (scanId in mapData.scanned) {
+    mapData.scanned[scanId].marker.setOptions({
       fillColor: getColorByDate(item['last_modified'])
     })
   } else { // add marker to map and item to dict
@@ -1445,7 +1447,7 @@ function processScanned (i, item) {
       item.marker.setMap(null)
     }
     item.marker = setupScannedMarker(item)
-    mapData.scanned[item['scanned_id']] = item
+    mapData.scanned[scanId] = item
   }
 }
 

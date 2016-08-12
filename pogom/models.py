@@ -6,7 +6,7 @@ import calendar
 import sys
 from peewee import SqliteDatabase, InsertQuery, \
     IntegerField, CharField, DoubleField, BooleanField, \
-    DateTimeField, PrimaryKeyField, fn
+    DateTimeField, CompositeKey, fn
 from playhouse.flask_utils import FlaskDB
 from playhouse.pool import PooledMySQLDatabase
 from playhouse.shortcuts import RetryOperationalError
@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 args = get_args()
 flaskDb = FlaskDB()
 
-db_schema_version = 3
+db_schema_version = 4
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -267,13 +267,12 @@ class Gym(BaseModel):
 
 
 class ScannedLocation(BaseModel):
-    scanned_id = PrimaryKeyField()
     latitude = DoubleField()
     longitude = DoubleField()
     last_modified = DateTimeField(index=True)
 
     class Meta:
-        indexes = ((('latitude', 'longitude'), False),)
+        primary_key = CompositeKey('latitude', 'longitude')
 
     @staticmethod
     def get_recent(swLat, swLng, neLat, neLng):
@@ -503,8 +502,9 @@ def database_migrate(db, old_ver):
     else:
         migrator = SqliteMigrator(db)
 
-    if old_ver < 1:
-        db.drop_tables([ScannedLocation])
+#   No longer necessary, we're doing this at schema 4 as well
+#    if old_ver < 1:
+#        db.drop_tables([ScannedLocation])
 
     if old_ver < 2:
         migrate(migrator.add_column('pokestop', 'encounter_id', CharField(max_length=50, null=True)))
@@ -515,6 +515,9 @@ def database_migrate(db, old_ver):
             migrator.drop_column('pokestop', 'encounter_id'),
             migrator.drop_column('pokestop', 'active_pokemon_id')
         )
+
+    if old_ver < 4:
+        db.drop_tables([ScannedLocation])
 
     # Update database schema version
     Versions.update(val=db_schema_version).where(Versions.key == 'schema_version').execute()
