@@ -62,7 +62,7 @@ Assuming the following:
    RewriteCond %{HTTP_HOST} !^yourdomain\.com/go/$ [NC]
    RewriteRule ^/go/$ http://%{HTTP_HOST}/go/ [L,R=301]
    ```
-4. Test your Apache2 config: `sudo service apachectl configtest`
+4. Test your Apache2 config: `sudo apachectl configtest`
 5. Enable your new config: `sudo a2ensite pokemongo-map`
 6. Reload your Apache2 service: `service apache2 reload`
 7. You can now access it by going to: `http(s)://yourdomain.com/go` or `http(s)://pokemongo.yourdomain.com`
