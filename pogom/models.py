@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 import logging
 import calendar
 import sys
@@ -328,9 +327,14 @@ def parse_map(map_dict, step_location):
     for cell in cells:
         if config['parse_pokemon']:
             for p in cell.get('wild_pokemons', []):
-                d_t = datetime.utcfromtimestamp(
-                    (p['last_modified_timestamp_ms'] +
-                     p['time_till_hidden_ms']) / 1000.0)
+                # time_till_hidden_ms was overflowing causing a negative integer. It was also returning a value above 3.6M ms.
+                if (0 < p['time_till_hidden_ms'] < 3600000):
+                    d_t = datetime.utcfromtimestamp(
+                        (p['last_modified_timestamp_ms'] +
+                         p['time_till_hidden_ms']) / 1000.0)
+                else:
+                    # Set a value of 15 minutes because currently its unknown but larger than 15.
+                    d_t = datetime.utcfromtimestamp((p['last_modified_timestamp_ms'] + 900000) / 1000.0)
                 printPokemon(p['pokemon_data']['pokemon_id'], p['latitude'],
                              p['longitude'], d_t)
                 pokemons[p['encounter_id']] = {
