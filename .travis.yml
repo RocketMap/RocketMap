@@ -2,15 +2,19 @@ sudo: false
 language: python
 python:
   - 2.7
+
+# install steps MUST succeed or will immediately halt the build
 install:
   - nvm install 4.4.7
   - pip install flake8
   - pip install -r requirements.txt
-  - npm install grunt-cli -g
   - npm install
-before_script:
-  - "flake8 ."
+
+# script steps, if erroring, will fail the build but not stop the build process
+# this is handy because we want to know that linting is broken, but it shouldn't
+# stop us from testing/linting/compiling other things as well
 script:
+  - flake8 --statistics --show-source --disable-noqa
   - npm run build
   - npm run lint
   - nosetests
