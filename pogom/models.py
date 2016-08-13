@@ -513,6 +513,9 @@ def verify_database_schema(db):
 
 
 def database_migrate(db, old_ver):
+    # Update database schema version
+    Versions.update(val=db_schema_version).where(Versions.key == 'schema_version').execute()
+
     log.info("Detected database version %i, updating to %i", old_ver, db_schema_version)
 
     # Perform migrations here
@@ -538,6 +541,3 @@ def database_migrate(db, old_ver):
 
     if old_ver < 4:
         db.drop_tables([ScannedLocation])
-
-    # Update database schema version
-    Versions.update(val=db_schema_version).where(Versions.key == 'schema_version').execute()
