@@ -29,8 +29,5 @@
     "darkStyleNoLabels": true,
     "light2StyleNoLabels": true,
     "pGoStyleNoLabels": true
-  },
-  "rules": {
-    "semi": 0
   }
 }

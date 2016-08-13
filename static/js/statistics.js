@@ -95,7 +95,7 @@ function addElement (pokemonId, name) {
 }
 
 function processSeen (seen) {
-  var i;
+  var i
   var total = seen.total
   var shown = []
 

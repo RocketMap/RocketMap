@@ -1400,7 +1400,7 @@ function loadRawData () {
 
 function processPokemons (i, item) {
   if (!Store.get('showPokemon')) {
-    return false; // in case the checkbox was unchecked in the meantime.
+    return false // in case the checkbox was unchecked in the meantime.
   }
 
   if (!(item['encounter_id'] in mapData.pokemons) &&
@@ -1448,7 +1448,7 @@ function processPokestops (i, item) {
 
 function processGyms (i, item) {
   if (!Store.get('showGyms')) {
-    return false; // in case the checkbox was unchecked in the meantime.
+    return false // in case the checkbox was unchecked in the meantime.
   }
 
   if (item['gym_id'] in mapData.gyms) {
@@ -1727,7 +1727,7 @@ function i8ln (word) {
 
 function isTouchDevice () {
   // Should cover most browsers
-  return 'ontouchstart' in window || navigator.maxTouchPoints;
+  return 'ontouchstart' in window || navigator.maxTouchPoints
 }
 
 //
