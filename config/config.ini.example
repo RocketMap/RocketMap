@@ -9,6 +9,7 @@
 #db-name:               # required for mysql
 #db-user:               # required for mysql
 #db-pass:               # required for mysql
+#db-port:               # default 3306
 
 # Search settings
 #location:
