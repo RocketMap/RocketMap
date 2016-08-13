@@ -616,7 +616,8 @@ var mapData = {
   gyms: {},
   pokestops: {},
   lurePokemons: {},
-  scanned: {}
+  scanned: {},
+  spawnpoints: {}
 }
 var gymTypes = ['Uncontested', 'Mystic', 'Valor', 'Instinct']
 var audio = new Audio('static/sounds/ding.mp3')
@@ -721,6 +722,10 @@ var StoreOptions = {
     type: StoreTypes.Number
   },
   'showScanned': {
+    default: false,
+    type: StoreTypes.Boolean
+  },
+  'showSpawnpoints': {
     default: false,
     type: StoreTypes.Boolean
   },
@@ -936,6 +941,7 @@ function initSidebar () {
   $('#lock-marker-switch').prop('checked', Store.get('lockMarker'))
   $('#start-at-user-location-switch').prop('checked', Store.get('startAtUserLocation'))
   $('#scanned-switch').prop('checked', Store.get('showScanned'))
+  $('#spawnpoints-switch').prop('checked', Store.get('showSpawnpoints'))
   $('#sound-switch').prop('checked', Store.get('playSound'))
   var searchBox = new google.maps.places.SearchBox(document.getElementById('next-location'))
   $('#next-location').css('background-color', $('#geoloc-switch').prop('checked') ? '#e0e0e0' : '#ffffff')
@@ -1240,6 +1246,21 @@ function setupScannedMarker (item) {
   return marker
 }
 
+function setupSpawnpointMarker (item) {
+  var circleCenter = new google.maps.LatLng(item['latitude'], item['longitude'])
+
+  var marker = new google.maps.Circle({
+    map: map,
+    clickable: false,
+    center: circleCenter,
+    radius: 5, // metres
+    fillColor: 'blue',
+    strokeWeight: 1
+  })
+
+  return marker
+}
+
 function clearSelection () {
   if (document.selection) {
     document.selection.empty()
@@ -1338,6 +1359,7 @@ function loadRawData () {
   var loadGyms = Store.get('showGyms')
   var loadPokestops = Store.get('showPokestops') || Store.get('showPokemon')
   var loadScanned = Store.get('showScanned')
+  var loadSpawnpoints = Store.get('showSpawnpoints')
 
   var bounds = map.getBounds()
   var swPoint = bounds.getSouthWest()
@@ -1355,6 +1377,7 @@ function loadRawData () {
       'pokestops': loadPokestops,
       'gyms': loadGyms,
       'scanned': loadScanned,
+      'spawnpoints': loadSpawnpoints,
       'swLat': swLat,
       'swLng': swLng,
       'neLat': neLat,
@@ -1456,17 +1479,37 @@ function processScanned (i, item) {
   }
 }
 
+function processSpawnpoints (i, item) {
+  if (!Store.get('showSpawnpoints')) {
+    return false
+  }
+
+  var id = item['spawnpoint_id']
+
+  if (id in mapData.spawnpoints) {
+    // In the future: maybe show how long till spawnpoint activates?
+  } else { // add marker to map and item to dict
+    if (item.marker) {
+      item.marker.setMap(null)
+    }
+    item.marker = setupSpawnpointMarker(item)
+    mapData.spawnpoints[id] = item
+  }
+}
+
 function updateMap () {
   loadRawData().done(function (result) {
     $.each(result.pokemons, processPokemons)
     $.each(result.pokestops, processPokestops)
     $.each(result.gyms, processGyms)
     $.each(result.scanned, processScanned)
+    $.each(result.spawnpoints, processSpawnpoints)
     showInBoundsMarkers(mapData.pokemons)
     showInBoundsMarkers(mapData.lurePokemons)
     showInBoundsMarkers(mapData.gyms)
     showInBoundsMarkers(mapData.pokestops)
     showInBoundsMarkers(mapData.scanned)
+    showInBoundsMarkers(mapData.spawnpoints)
     clearStaleMarkers()
     if ($('#stats').hasClass('visible')) {
       countMarkers()
@@ -1900,6 +1943,7 @@ $(function () {
   $('#gyms-switch').change(buildSwitchChangeListener(mapData, ['gyms'], 'showGyms'))
   $('#pokemon-switch').change(buildSwitchChangeListener(mapData, ['pokemons'], 'showPokemon'))
   $('#scanned-switch').change(buildSwitchChangeListener(mapData, ['scanned'], 'showScanned'))
+  $('#spawnpoints-switch').change(buildSwitchChangeListener(mapData, ['spawnpoints'], 'showSpawnpoints'))
 
   $('#pokestops-switch').change(function () {
     var options = {

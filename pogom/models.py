@@ -188,6 +188,23 @@ class Pokemon(BaseModel):
             appearances.append(a)
         return appearances
 
+    @classmethod
+    def get_spawnpoints(cls, swLat, swLng, neLat, neLng):
+        query = Pokemon.select(Pokemon.latitude, Pokemon.longitude, Pokemon.spawnpoint_id)
+
+        if None not in (swLat, swLng, neLat, neLng):
+            query = (query
+                     .where((Pokemon.latitude >= swLat) &
+                            (Pokemon.longitude >= swLng) &
+                            (Pokemon.latitude <= neLat) &
+                            (Pokemon.longitude <= neLng)
+                            )
+                     )
+
+        query = query.group_by(Pokemon.spawnpoint_id).dicts()
+
+        return list(query)
+
 
 class Pokestop(BaseModel):
     pokestop_id = CharField(primary_key=True, max_length=50)
