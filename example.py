@@ -3,7 +3,7 @@
 # thunderfox : can we put an example.py in 2.0 that just prints "you're a fucking retard"
 # invisiblek wuz here
 print("Please refer to documentation, there is no more example.py, only runserver.py")
-fuck = "Would you still like to massage the devs that example.py no work?"
+fuck = "Would yous till like to massage the devs that example.py no work?"
 if "needful" in fuck.lower():
     print("poon bang lure pls")
 elif fuck.lower() != "no":
