@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 args = get_args()
 flaskDb = FlaskDB()
 
-db_schema_version = 4
+db_schema_version = 5
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -541,3 +541,12 @@ def database_migrate(db, old_ver):
 
     if old_ver < 4:
         db.drop_tables([ScannedLocation])
+
+    if old_ver < 5:
+        # Some pokemon were added before the 595 bug was "fixed"
+        # Clean those up for a better UX
+        query = (Pokemon
+                 .delete()
+                 .where(Pokemon.disappear_time >
+                        (datetime.utcnow() - timedelta(hours=24))))
+        query.execute()
