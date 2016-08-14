@@ -20,7 +20,7 @@ Live visualization of all the pokemon (with option to show gyms and pokestops) i
 * Incredibly fast, efficient searching algorithm (compared to everything else available)
 
 ## Information
-
+* [Twitter](https://twitter.com/PokemapGG) for status updates
 * [Website](https://pokemongomap.github.io/PoGoMapWebsite/) for general introduction
 * [Discord](https://discord.gg/PWp2bAm) for general support
 * [Documentation](https://pgm.readthedocs.io/en/develop/) for installation and usage docs
