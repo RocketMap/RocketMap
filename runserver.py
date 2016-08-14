@@ -8,6 +8,7 @@ import logging
 import time
 import re
 import requests
+import ssl
 
 from distutils.version import StrictVersion
 
@@ -176,4 +177,11 @@ if __name__ == '__main__':
         while search_thread.is_alive():
             time.sleep(60)
     else:
-        app.run(threaded=True, use_reloader=False, debug=args.debug, host=args.host, port=args.port)
+        ssl_context = None
+        if args.ssl_certificate and args.ssl_privatekey \
+                and os.path.exists(args.ssl_certificate) and os.path.exists(args.ssl_privatekey):
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+            ssl_context.load_cert_chain(args.ssl_certificate, args.ssl_privatekey)
+            log.info('Web server in SSL mode.')
+
+        app.run(threaded=True, use_reloader=False, debug=args.debug, host=args.host, port=args.port, ssl_context=ssl_context)
