@@ -639,6 +639,15 @@ var pokemonSprites = {
     spriteHeight: 1430,
     filename: 'static/icons-large-sprite.png',
     name: 'High-Res'
+  },
+  shuffle: {
+    columns: 7,
+    iconWidth: 65,
+    iconHeight: 65,
+    spriteWidth: 455,
+    spriteHeight: 1430,
+    filename: 'static/icons-shuffle-sprite.png',
+    name: 'Shuffle'
   }
 }
 
