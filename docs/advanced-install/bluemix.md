@@ -8,7 +8,7 @@ to have 24 up time! Oh boy!
 
   1. Clone the git repo via `https://github.com/AHAAAAAAA/PokemonGo-Map.git`
   1. Create a [Bluemix](http://bluemix.net) account
-  1. Install the [Cloud Foundry CLI](https://console.ng.bluemix.net/docs/cli/reference/cfcommands/index.html)
+  1. Install the [Cloud Foundry CLI](https://console.ng.bluemix.net/docs/cli/reference/cfcommands/index.html) - [Download here](https://github.com/cloudfoundry/cli/releases).
 
 ## Create and Run the App on Bluemix
 
