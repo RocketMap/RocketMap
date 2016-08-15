@@ -30,5 +30,5 @@ If you have multiple accounts with the same password, you can specify one passwo
 Example: 
 ```
 username: [thunderfox01, thunderfox02]
-password: [password01, password02]
+password: password
 ```
