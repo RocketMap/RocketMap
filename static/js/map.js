@@ -906,6 +906,7 @@ function createSearchMarker () {
     map: map,
     animation: google.maps.Animation.DROP,
     draggable: !Store.get('lockMarker'),
+    icon: 'static/marker_icon.png',
     zIndex: google.maps.Marker.MAX_ZINDEX + 1
   })
 
