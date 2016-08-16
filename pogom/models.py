@@ -226,7 +226,7 @@ class Pokemon(BaseModel):
         query = (Pokemon
                  .select(Pokemon.latitude.alias('lat'),
                          Pokemon.longitude.alias('lng'),
-                         ((Pokemon.disappear_time.minute * 60) + (Pokemon.disappear_time.second + 2700) % 3600).alias('time'),
+                         ((Pokemon.disappear_time.minute * 60) + Pokemon.disappear_time.second).alias('time'),
                          Pokemon.spawnpoint_id
                          ))
         query = (query.where((Pokemon.latitude <= north) &
@@ -244,6 +244,7 @@ class Pokemon(BaseModel):
         # for each spawn work out if it is in the hex (clipping the diagonals)
         trueSpawns = []
         for spawn in s:
+            spawn['time'] = (spawn['time'] + 2700) % 3600
             # get the offset from the center of each spawn in km
             offset = [math.radians(spawn['lat'] - center[0]) * R, math.radians(spawn['lng'] - center[1]) * (R * math.cos(math.radians(center[0])))]
             # check agains the 4 lines that make up the diagonals

@@ -6,6 +6,8 @@ Spawnpoint Scanning consists of only scanning an area in which a spawn has recen
 
 Spawnpoint Scanning is particularly useful in areas where spawns are spread out
 
+## Spawnpoint Scanning can be run in one of three different modes:
+
 ### Scans based on database
 
 ```
@@ -21,14 +23,12 @@ Note: when using the mode when not in a beehive, it is recommended to use an -st
 ### Dump scans from database then use the created file
 
 ```
-python runserver.py -ss YOURFILE.json -l YOURLOCATION -st STEPS --dump-spawns
+python runserver.py -ss YOURFILE.json -l YOURLOCATION -st STEPS --dump-spawnpoints
 ```
 
 Where YOURFILE.json is the file containing all the spawns, YOURLOCATION is the location the map should be centered at and also the center of the hex to get spawn locations from and -st sets the size of the clipping hexagon (hexagon is the same size as the scan of the same -st value)
 
 This mode is mainly used for switching from database mode to spawnFile mode, and can also be used simply for dumping all spawns to file (use a very large -st and close the program once it has created the file)
-
-## Spawnpoint Scanning can be run in one of three different modes:
 
 ### Scans based on file
 
