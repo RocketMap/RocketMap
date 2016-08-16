@@ -436,7 +436,10 @@ def check_login(args, account, api, position):
     api.set_position(position[0], position[1], position[2])
     while i < args.login_retries:
         try:
-            api.set_authentication(provider=account['auth_service'], username=account['username'], password=account['password'])
+            if args.proxy:
+                api.set_authentication(provider=account['auth_service'], username=account['username'], password=account['password'], proxy_config={'http': args.proxy, 'https': args.proxy})
+            else:
+                api.set_authentication(provider=account['auth_service'], username=account['username'], password=account['password'])
             break
         except AuthException:
             if i >= args.login_retries:
