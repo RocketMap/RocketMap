@@ -9,6 +9,7 @@ import time
 import re
 import requests
 import ssl
+import json
 
 from distutils.version import StrictVersion
 
@@ -21,8 +22,8 @@ from pogom import config
 from pogom.app import Pogom
 from pogom.utils import get_args, insert_mock_data, get_encryption_lib_path
 
-from pogom.search import search_overseer_thread, fake_search_loop
-from pogom.models import init_database, create_tables, drop_tables
+from pogom.search import search_overseer_thread, search_overseer_thread_ss, fake_search_loop
+from pogom.models import init_database, create_tables, drop_tables, Pokemon
 
 # Currently supported pgoapi
 pgoapi_version = "1.1.7"
@@ -149,8 +150,21 @@ if __name__ == '__main__':
     if not args.only_server:
         # Gather the pokemons!
         if not args.mock:
-            log.debug('Starting a real search thread')
-            search_thread = Thread(target=search_overseer_thread, args=(args, new_location_queue, pause_bit, encryption_lib_path))
+            # check the sort of scan
+            if not args.spawnpoint_scanning:
+                log.debug('Starting a real search thread')
+                search_thread = Thread(target=search_overseer_thread, args=(args, new_location_queue, pause_bit, encryption_lib_path))
+            # using -ss
+            else:
+                if args.dump_spawnpoints:
+                    with open(args.spawnpoint_scanning, 'w+') as file:
+                        log.info('exporting spawns')
+                        spawns = Pokemon.get_spawnpoints_in_hex(position, args.step_limit)
+                        file.write(json.dumps(spawns))
+                        file.close()
+                        log.info('Finished exporting spawns')
+                # start the scan sceduler
+                search_thread = Thread(target=search_overseer_thread_ss, args=(args, new_location_queue, pause_bit, encryption_lib_path))
         else:
             log.debug('Starting a fake search thread')
             insert_mock_data(position)
