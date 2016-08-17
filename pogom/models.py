@@ -383,14 +383,16 @@ def parse_map(map_dict, step_location):
     for cell in cells:
         if config['parse_pokemon']:
             for p in cell.get('wild_pokemons', []):
-                # time_till_hidden_ms was overflowing causing a negative integer. It was also returning a value above 3.6M ms.
-                if (0 < p['time_till_hidden_ms'] < 3600000):
+                # time_till_hidden_ms was overflowing causing a negative integer.
+                # It was also returning a value above 3.6M ms.
+                if 0 < p['time_till_hidden_ms'] < 3600000:
                     d_t = datetime.utcfromtimestamp(
                         (p['last_modified_timestamp_ms'] +
                          p['time_till_hidden_ms']) / 1000.0)
                 else:
                     # Set a value of 15 minutes because currently its unknown but larger than 15.
                     d_t = datetime.utcfromtimestamp((p['last_modified_timestamp_ms'] + 900000) / 1000.0)
+
                 printPokemon(p['pokemon_data']['pokemon_id'], p['latitude'],
                              p['longitude'], d_t)
                 pokemons[p['encounter_id']] = {
@@ -421,13 +423,14 @@ def parse_map(map_dict, step_location):
                     lure_expiration = datetime.utcfromtimestamp(
                         f['last_modified_timestamp_ms'] / 1000.0) + timedelta(minutes=30)
                     active_fort_modifier = f['active_fort_modifier']
+
                     webhook_data = {
                         'pokestop_id': f['id'],
                         'enabled': f['enabled'],
                         'latitude': f['latitude'],
                         'longitude': f['longitude'],
                         'last_modified_time': f['last_modified_timestamp_ms'],
-                        'lure_expiration': lure_expiration,
+                        'lure_expiration': calendar.timegm(lure_expiration.timetuple()),
                         'active_fort_modifier': active_fort_modifier
                     }
 
@@ -452,7 +455,15 @@ def parse_map(map_dict, step_location):
                 if not args.webhook_updates_only:
                     # Explicitly set 'webhook_data', in case we want to change the information pushed to webhooks,
                     # similar to above and previous commits.
-                    webhook_data = pokestops[f['id']]
+                    webhook_data = {
+                        'pokestop_id': f['id'],
+                        'enabled': f['enabled'],
+                        'latitude': f['latitude'],
+                        'longitude': f['longitude'],
+                        'last_modified': calendar.timegm(pokestops[f['id']]['last_modified'].timetuple()),
+                        'lure_expiration': lure_expiration,
+                        'active_fort_modifier': active_fort_modifier,
+                    }
                     send_to_webhook('pokestop', webhook_data)
 
             elif config['parse_gyms'] and f.get('type') is None:  # Currently, there are only stops and gyms
@@ -472,7 +483,16 @@ def parse_map(map_dict, step_location):
                 if not args.webhook_updates_only:
                     # Explicitly set 'webhook_data', in case we want to change the information pushed to webhooks,
                     # similar to above and previous commits.
-                    webhook_data = gyms[f['id']]
+                    webhook_data = {
+                        'gym_id': f['id'],
+                        'team_id': f.get('owned_by_team', 0),
+                        'guard_pokemon_id': f.get('guard_pokemon_id', 0),
+                        'gym_points': f.get('gym_points', 0),
+                        'enabled': f['enabled'],
+                        'latitude': f['latitude'],
+                        'longitude': f['longitude'],
+                        'last_modified': calendar.timegm(gyms[f['id']]['last_modified'].timetuple()),
+                    }
                     send_to_webhook('gym', webhook_data)
 
     pokemons_upserted = 0
