@@ -9,7 +9,7 @@ import json
 from datetime import datetime, timedelta
 import logging
 import shutil
-import grequests
+import requests
 import platform
 
 from . import config
@@ -316,9 +316,10 @@ def send_to_webhook(message_type, message):
 
         for w in webhooks:
             try:
-                req = grequests.post(w, json=data, timeout=(None, 1))
-                grequests.send(req, grequests.Pool(1))
-            except Exception as e:
+                requests.post(w, json=data, timeout=(None, 1))
+            except requests.exceptions.ReadTimeout:
+                log.debug('Response timeout on webhook endpoint %s', w)
+            except requests.exceptions.RequestException as e:
                 log.debug(e)
 
 
