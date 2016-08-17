@@ -425,7 +425,7 @@ def parse_map(map_dict, step_location):
                     active_fort_modifier = f['active_fort_modifier']
 
                     webhook_data = {
-                        'pokestop_id': f['id'],
+                        'pokestop_id': b64encode(str(f['id'])),
                         'enabled': f['enabled'],
                         'latitude': f['latitude'],
                         'longitude': f['longitude'],
@@ -455,13 +455,18 @@ def parse_map(map_dict, step_location):
                 if not args.webhook_updates_only:
                     # Explicitly set 'webhook_data', in case we want to change the information pushed to webhooks,
                     # similar to above and previous commits.
+                    l_e = None
+
+                    if lure_expiration is not None:
+                        l_e = calendar.timegm(lure_expiration.timetuple())
+
                     webhook_data = {
-                        'pokestop_id': f['id'],
+                        'pokestop_id': b64encode(str(f['id'])),
                         'enabled': f['enabled'],
                         'latitude': f['latitude'],
                         'longitude': f['longitude'],
                         'last_modified': calendar.timegm(pokestops[f['id']]['last_modified'].timetuple()),
-                        'lure_expiration': lure_expiration,
+                        'lure_expiration': l_e,
                         'active_fort_modifier': active_fort_modifier,
                     }
                     send_to_webhook('pokestop', webhook_data)
@@ -484,7 +489,7 @@ def parse_map(map_dict, step_location):
                     # Explicitly set 'webhook_data', in case we want to change the information pushed to webhooks,
                     # similar to above and previous commits.
                     webhook_data = {
-                        'gym_id': f['id'],
+                        'gym_id': b64encode(str(f['id'])),
                         'team_id': f.get('owned_by_team', 0),
                         'guard_pokemon_id': f.get('guard_pokemon_id', 0),
                         'gym_points': f.get('gym_points', 0),
