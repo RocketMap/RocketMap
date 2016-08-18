@@ -33,6 +33,18 @@ var noLabelsStyle = [{
   }]
 }, {
   'featureType': 'all',
+  'elementType': 'labels.text.stroke',
+  'stylers': [{
+    'visibility': 'off'
+  }]
+}, {
+  'featureType': 'all',
+  'elementType': 'labels.text.fill',
+  'stylers': [{
+    'visibility': 'off'
+  }]
+}, {
+  'featureType': 'all',
   'elementType': 'labels.icon',
   'stylers': [{
     'visibility': 'off'
