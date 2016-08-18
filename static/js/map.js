@@ -9,12 +9,15 @@ var $selectStyle
 var $selectIconResolution
 var $selectIconSize
 var $selectLuredPokestopsOnly
+var $selectSearchIconMarker
 
 var language = document.documentElement.lang === '' ? 'en' : document.documentElement.lang
 var idToPokemon = {}
 var i8lnDictionary = {}
 var languageLookups = 0
 var languageLookupThreshold = 3
+
+var searchMarkerStyles
 
 var excludedPokemon = []
 var notifiedPokemon = []
@@ -23,7 +26,7 @@ var notifiedRarity = []
 var map
 var rawDataIsLoading = false
 var locationMarker
-var marker
+var searchMarker
 
 var noLabelsStyle = [{
   featureType: 'poi',
@@ -773,6 +776,10 @@ var StoreOptions = {
   'iconSizeModifier': {
     default: 0,
     type: StoreTypes.Number
+  },
+  'searchMarkerStyle': {
+    default: 'google',
+    type: StoreTypes.String
   }
 }
 
@@ -895,7 +902,7 @@ function initMap () { // eslint-disable-line no-unused-vars
   map.setMapTypeId(Store.get('map_style'))
   google.maps.event.addListener(map, 'idle', updateMap)
 
-  marker = createSearchMarker()
+  searchMarker = createSearchMarker()
 
   addMyLocationButton()
   initSidebar()
@@ -909,8 +916,16 @@ function initMap () { // eslint-disable-line no-unused-vars
   })
 }
 
+function updateSearchMarker (style) {
+  if (style in searchMarkerStyles) {
+    searchMarker.setIcon(searchMarkerStyles[style].icon)
+    Store.set('searchMarkerStyle', style)
+  }
+  return searchMarker
+}
+
 function createSearchMarker () {
-  var marker = new google.maps.Marker({ // need to keep reference.
+  var searchMarker = new google.maps.Marker({ // need to keep reference.
     position: {
       lat: centerLat,
       lng: centerLng
@@ -918,29 +933,30 @@ function createSearchMarker () {
     map: map,
     animation: google.maps.Animation.DROP,
     draggable: !Store.get('lockMarker'),
-    icon: 'static/marker_icon.png',
+    icon: null,
+    optimized: false,
     zIndex: google.maps.Marker.MAX_ZINDEX + 1
   })
 
   var oldLocation = null
-  google.maps.event.addListener(marker, 'dragstart', function () {
-    oldLocation = marker.getPosition()
+  google.maps.event.addListener(searchMarker, 'dragstart', function () {
+    oldLocation = searchMarker.getPosition()
   })
 
-  google.maps.event.addListener(marker, 'dragend', function () {
-    var newLocation = marker.getPosition()
+  google.maps.event.addListener(searchMarker, 'dragend', function () {
+    var newLocation = searchMarker.getPosition()
     changeSearchLocation(newLocation.lat(), newLocation.lng())
       .done(function () {
         oldLocation = null
       })
       .fail(function () {
         if (oldLocation) {
-          marker.setPosition(oldLocation)
+          searchMarker.setPosition(oldLocation)
         }
       })
   })
 
-  return marker
+  return searchMarker
 }
 
 var searchControlURI = 'search_control'
@@ -1700,7 +1716,7 @@ function changeLocation (lat, lng) {
   var loc = new google.maps.LatLng(lat, lng)
   changeSearchLocation(lat, lng).done(function () {
     map.setCenter(loc)
-    marker.setPosition(loc)
+    searchMarker.setPosition(loc)
   })
 }
 
@@ -1831,6 +1847,36 @@ $(function () {
     Store.set('showLuredPokestopsOnly', this.value)
     updateMap()
   })
+
+  $selectSearchIconMarker = $('#iconmarker-style')
+
+  $.getJSON('static/dist/data/searchmarkerstyle.min.json').done(function (data) {
+    searchMarkerStyles = data
+    var searchMarkerStyleList = []
+
+    $.each(data, function (key, value) {
+      searchMarkerStyleList.push({
+        id: key,
+        text: value.name
+      })
+    })
+
+    $selectSearchIconMarker.select2({
+      placeholder: 'Select Icon Marker',
+      data: searchMarkerStyleList,
+      minimumResultsForSearch: Infinity
+    })
+
+    $selectSearchIconMarker.on('change', function (e) {
+      var selectSearchIconMarker = $selectSearchIconMarker.val()
+      Store.set('searchMarkerStyle', selectSearchIconMarker)
+      updateSearchMarker(selectSearchIconMarker)
+    })
+
+    $selectSearchIconMarker.val(Store.get('searchMarkerStyle')).trigger('change')
+
+    updateSearchMarker(Store.get('lockMarker'))
+  })
 })
 
 $(function () {
@@ -1927,11 +1973,11 @@ $(function () {
         var lon = position.coords.longitude
 
         // the search function makes any small movements cause a loop. Need to increase resolution
-        if (getPointDistance(marker.getPosition(), (new google.maps.LatLng(lat, lon))) > 40) {
+        if (getPointDistance(searchMarker.getPosition(), (new google.maps.LatLng(lat, lon))) > 40) {
           $.post(baseURL + '/next_loc?lat=' + lat + '&lon=' + lon).done(function () {
             var center = new google.maps.LatLng(lat, lon)
             map.panTo(center)
-            marker.setPosition(center)
+            searchMarker.setPosition(center)
           })
         }
       })
@@ -1990,7 +2036,7 @@ $(function () {
 
   $('#lock-marker-switch').change(function () {
     Store.set('lockMarker', this.checked)
-    marker.setDraggable(!this.checked)
+    searchMarker.setDraggable(!this.checked)
   })
 
   $('#search-switch').change(function () {
