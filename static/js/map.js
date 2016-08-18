@@ -1989,9 +1989,11 @@ $(function () {
     Store.set('startAtUserLocation', this.checked)
   })
 
-  $('#nav-accordion').accordion({
-    active: 0,
-    collapsible: true,
-    heightStyle: 'content'
-  })
+  if ($('#nav-accordion').length) {
+    $('#nav-accordion').accordion({
+      active: 0,
+      collapsible: true,
+      heightStyle: 'content'
+    })
+  }
 })

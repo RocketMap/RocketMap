@@ -89,7 +89,8 @@ function addElement (pokemonId, name) {
   }).appendTo('#seen_' + pokemonId + '_details')
 
   jQuery('<a/>', {
-    href: 'javascript:showOverlay(' + pokemonId + ');',
+    href: 'javascript:void(0);',
+    onclick: 'javascript:showOverlay(' + pokemonId + ');',
     text: 'All Locations'
   }).appendTo('#seen_' + pokemonId + '_details')
 }
