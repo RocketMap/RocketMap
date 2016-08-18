@@ -4,7 +4,7 @@
 # invisiblek wuz here
 # balthemel wuz also 'ere
 
-# DO NOT MAKE PR'S TO FIX TYPOS!
+# dont make pr to fix pls
 
 print("Please refer to documentation, there is no more example.py, only runserver.py")
 fuck = raw_input("Would yous till like to massage the devs that example.py no work?")
