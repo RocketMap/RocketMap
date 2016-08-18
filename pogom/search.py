@@ -61,14 +61,14 @@ def get_new_coords(init_loc, distance, bearing):
     return [math.degrees(new_lat), math.degrees(new_lon)]
 
 
-def generate_location_steps(initial_loc, step_count):
+def generate_location_steps(initial_loc, step_count, step_distance):
     # Bearing (degrees)
     NORTH = 0
     EAST = 90
     SOUTH = 180
     WEST = 270
 
-    pulse_radius = 0.07                 # km - radius of players heartbeat is 70m
+    pulse_radius = step_distance            # km - radius of players heartbeat is 70m
     xdist = math.sqrt(3) * pulse_radius   # dist between column centers
     ydist = 3 * (pulse_radius / 2)          # dist between row centers
 
@@ -194,8 +194,16 @@ def search_overseer_thread(args, new_location_queue, pause_bit, encryption_lib_p
                 except Empty:
                     pass
 
+            # if we are only scanning for pokestops/gyms, then increase step radius to visibility range
+            if args.no_pokemon:
+                step_distance = 0.9
+            else:
+                step_distance = 0.07
+
+            log.info('Scan Distance is %.2f km', step_distance)
+
             # update our list of coords
-            locations = list(generate_location_steps(current_location, args.step_limit))
+            locations = list(generate_location_steps(current_location, args.step_limit, step_distance))
 
             # repopulate our spawn points
             if args.spawnpoints_only:

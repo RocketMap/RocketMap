@@ -222,7 +222,7 @@ def insert_mock_data(position):
 
     latitude, longitude = float(position[0]), float(position[1])
 
-    locations = [l for l in generate_location_steps((latitude, longitude), num_pokemon)]
+    locations = [l for l in generate_location_steps((latitude, longitude), num_pokemon, 0.07)]
     disappear_time = datetime.now() + timedelta(hours=1)
 
     detect_time = datetime.now()
