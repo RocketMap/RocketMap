@@ -11,6 +11,7 @@ import logging
 import shutil
 import requests
 import platform
+import threading
 
 from . import config
 
@@ -311,16 +312,20 @@ def send_to_webhook(message_type, message):
         'message': message
     }
 
+    def send_msg_to_webhook(msg, webhook):
+        try:
+            requests.post(w, json=msg, timeout=(None, 1))
+        except requests.exceptions.ReadTimeout:
+            log.debug('Response timeout on webhook endpoint %s', w)
+        except requests.exceptions.RequestException as e:
+            log.debug(e)
+
     if args.webhooks:
         webhooks = args.webhooks
 
         for w in webhooks:
-            try:
-                requests.post(w, json=data, timeout=(None, 1))
-            except requests.exceptions.ReadTimeout:
-                log.debug('Response timeout on webhook endpoint %s', w)
-            except requests.exceptions.RequestException as e:
-                log.debug(e)
+            wh_thread = threading.Thread(target=send_msg_to_webhook, args=(data, w))
+            wh_thread.start()
 
 
 def get_encryption_lib_path():
