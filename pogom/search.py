@@ -35,6 +35,7 @@ from pgoapi import utilities as util
 from pgoapi.exceptions import AuthException
 
 from .models import parse_map, Pokemon
+from .fakePogoApi import FakePogoApi
 
 log = logging.getLogger(__name__)
 
@@ -42,7 +43,8 @@ TIMESTAMP = '\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\00
 
 
 def get_new_coords(init_loc, distance, bearing):
-    """ Given an initial lat/lng, a distance(in kms), and a bearing (degrees),
+    """
+    Given an initial lat/lng, a distance(in kms), and a bearing (degrees),
     this will calculate the resulting lat/lng coordinates.
     """
     R = 6378.1  # km radius of the earth
@@ -100,15 +102,6 @@ def generate_location_steps(initial_loc, step_count, step_distance):
                     loc = get_new_coords(loc, xdist / 2, EAST)
                 yield (loc[0], loc[1], 0)
         ring += 1
-
-
-#
-# A fake search loop which does....nothing!
-#
-def fake_search_loop():
-    while True:
-        log.info('Fake search loop running')
-        time.sleep(10)
 
 
 # gets the current time past the hour
@@ -189,7 +182,7 @@ def status_printer(threadStatus, search_items_queue):
 
 
 # The main search loop that keeps an eye on the over all process
-def search_overseer_thread(args, new_location_queue, pause_bit, encryption_lib_path):
+def search_overseer_thread(args, new_location_queue, pause_bit, encryption_lib_path, db_updates_queue, wh_queue):
 
     log.info('Search overseer starting')
 
@@ -221,9 +214,10 @@ def search_overseer_thread(args, new_location_queue, pause_bit, encryption_lib_p
         threadStatus['Worker {:03}'.format(i)]['noitems'] = 0
 
         t = Thread(target=search_worker_thread,
-                   name='search_worker_{}'.format(i),
+                   name='search-worker-{}'.format(i),
                    args=(args, account, search_items_queue, parse_lock,
-                         encryption_lib_path, threadStatus['Worker {:03}'.format(i)]))
+                         encryption_lib_path, threadStatus['Worker {:03}'.format(i)],
+                         db_updates_queue, wh_queue))
         t.daemon = True
         t.start()
 
@@ -314,7 +308,7 @@ def search_overseer_thread(args, new_location_queue, pause_bit, encryption_lib_p
         time.sleep(1)
 
 
-def search_overseer_thread_ss(args, new_location_queue, pause_bit, encryption_lib_path):
+def search_overseer_thread_ss(args, new_location_queue, pause_bit, encryption_lib_path, db_updates_queue, wh_queue):
     log.info('Search ss overseer starting')
     search_items_queue = Queue()
     parse_lock = Lock()
@@ -333,7 +327,7 @@ def search_overseer_thread_ss(args, new_location_queue, pause_bit, encryption_li
         t.daemon = True
         t.start()
 
-    # Create a search_worker_thread per account
+    # Create a search_worker_thread_ss per account
     log.info('Starting search worker threads')
     for i, account in enumerate(args.accounts):
         log.debug('Starting search worker thread %d for user %s', i, account['username'])
@@ -345,8 +339,10 @@ def search_overseer_thread_ss(args, new_location_queue, pause_bit, encryption_li
         threadStatus['Worker {:03}'.format(i)]['skip'] = 0
         threadStatus['Worker {:03}'.format(i)]['noitems'] = 0
         t = Thread(target=search_worker_thread_ss,
-                   name='ss_search_worker_{}'.format(i),
-                   args=(args, account, search_items_queue, parse_lock, encryption_lib_path, threadStatus['Worker {:03}'.format(i)]))
+                   name='ss-worker-{}'.format(i),
+                   args=(args, account, search_items_queue, parse_lock,
+                         encryption_lib_path, threadStatus['Worker {:03}'.format(i)],
+                         db_updates_queue, wh_queue))
         t.daemon = True
         t.start()
 
@@ -383,7 +379,7 @@ def search_overseer_thread_ss(args, new_location_queue, pause_bit, encryption_li
         pos = (pos + 1) % len(spawns)
 
 
-def search_worker_thread(args, account, search_items_queue, parse_lock, encryption_lib_path, status):
+def search_worker_thread(args, account, search_items_queue, parse_lock, encryption_lib_path, status, dbq, whq):
 
     stagger_thread(args, account)
 
@@ -396,9 +392,15 @@ def search_worker_thread(args, account, search_items_queue, parse_lock, encrypti
             status['message'] = "Entering search loop"
 
             # Create the API instance this will use
-            api = PGoApi()
+            if args.mock != '':
+                api = FakePogoApi(args.mock)
+            else:
+                api = PGoApi()
+
             if args.proxy:
                 api.set_proxy({'http': args.proxy, 'https': args.proxy})
+
+            api.activate_signature(encryption_lib_path)
 
             # Get current time
             loop_start_time = int(round(time.time() * 1000))
@@ -449,8 +451,6 @@ def search_worker_thread(args, account, search_items_queue, parse_lock, encrypti
                     # Ok, let's get started -- check our login status
                     check_login(args, account, api, step_location)
 
-                    api.activate_signature(encryption_lib_path)
-
                     # Make the actual request (finally!)
                     response_dict = map_request(api, step_location)
 
@@ -463,23 +463,22 @@ def search_worker_thread(args, account, search_items_queue, parse_lock, encrypti
                         time.sleep(sleep_time)
                         continue
 
-                    # Got the response, lock for parsing and do so (or fail, whatever)
-                    with parse_lock:
-                        try:
-                            items = parse_map(response_dict, step_location)
-                            log.debug('Search step %s completed', step)
-                            search_items_queue.task_done()
-                            if (items[0] + items[1] + items[2]) > 0:
-                                status['success'] += 1
-                            else:
-                                status['noitems'] += 1
-                            break  # All done, get out of the request-retry loop
-                        except KeyError:
-                            log.exception('Search step %s map parsing failed, retrying request in %g seconds. Username: %s', step, sleep_time, account['username'])
-                            failed_total += 1
-                            status['fail'] += 1
-                            status['message'] = "Failed {} times to scan {},{} - map parsing failed - sleeping {} seconds. Username: {}".format(failed_total, step_location[0], step_location[1], sleep_time, account['username'])
-                    time.sleep(sleep_time)
+                    # Got the response, parse it out, send todo's to db/wh queues
+                    try:
+                        findCount = parse_map(args, response_dict, step_location, dbq, whq)
+                        log.debug('Search step %s completed', step)
+                        search_items_queue.task_done()
+                        if findCount > 0:
+                            status['success'] += 1
+                        else:
+                            status['noitems'] += 1
+                        break  # All done, get out of the request-retry loop
+                    except KeyError:
+                        log.exception('Search step %s map parsing failed, retrying request in %g seconds. Username: %s', step, sleep_time, account['username'])
+                        failed_total += 1
+                        status['fail'] += 1
+                        status['message'] = "Failed {} times to scan {},{} - map parsing failed - sleeping {} seconds. Username: {}".format(failed_total, step_location[0], step_location[1], sleep_time, account['username'])
+                        time.sleep(sleep_time)
 
                 # If there's any time left between the start time and the time when we should be kicking off the next
                 # loop, hang out until its up.
@@ -497,7 +496,7 @@ def search_worker_thread(args, account, search_items_queue, parse_lock, encrypti
             time.sleep(sleep_time)
 
 
-def search_worker_thread_ss(args, account, search_items_queue, parse_lock, encryption_lib_path, status):
+def search_worker_thread_ss(args, account, search_items_queue, parse_lock, encryption_lib_path, status, dbq, whq):
     stagger_thread(args, account)
     log.debug('Search worker ss thread starting')
     status['message'] = "Search worker ss thread starting"
@@ -507,7 +506,10 @@ def search_worker_thread_ss(args, account, search_items_queue, parse_lock, encry
             log.debug('Entering search loop')
             status['message'] = "Entering search loop"
             # create api instance
-            api = PGoApi()
+            if args.mock != '':
+                api = FakePogoApi(args.mock)
+            else:
+                api = PGoApi()
             if args.proxy:
                 api.set_proxy({'http': args.proxy, 'https': args.proxy})
             api.activate_signature(encryption_lib_path)
@@ -551,21 +553,21 @@ def search_worker_thread_ss(args, account, search_items_queue, parse_lock, encry
                             time.sleep(sleep_time)
                             continue
                         # got responce try and parse it
-                        with parse_lock:
-                            try:
-                                items = parse_map(response_dict, step_location)
-                                log.debug('Search step %s completed', step)
-                                search_items_queue.task_done()
-                                if (items[0] + items[1] + items[2]) > 0:
-                                    status['success'] += 1
-                                else:
-                                    status['noitems'] += 1
-                                break
-                            except KeyError:
-                                log.exception('Search step %s map parsing failed, retrying request in %g seconds. Username: %s', step, sleep_time, account['username'])
-                                failed_total += 1
-                                status['fail'] += 1
-                                status['message'] = "Failed {} times to scan {},{} - map parsing failed - sleeping {} seconds. Username: {}".format(failed_total, step_location[0], step_location[1], sleep_time, account['username'])
+                        try:
+                            findCount = parse_map(args, response_dict, step_location, dbq, whq)
+                            log.debug('Search step %s completed', step)
+                            search_items_queue.task_done()
+                            if findCount > 0:
+                                status['success'] += 1
+                            else:
+                                status['noitems'] += 1
+                            break  # All done, get out of the request-retry loop
+                        except KeyError:
+                            log.exception('Search step %s map parsing failed, retrying request in %g seconds. Username: %s', step, sleep_time, account['username'])
+                            failed_total += 1
+                            status['fail'] += 1
+                            status['message'] = "Failed {} times to scan {},{} - map parsing failed - sleeping {} seconds. Username: {}".format(failed_total, step_location[0], step_location[1], sleep_time, account['username'])
+                            time.sleep(sleep_time)
                         time.sleep(sleep_time)
                     status['message'] = "Waiting {} seconds for scan delay".format(sleep_time)
                     time.sleep(sleep_time)
@@ -630,7 +632,7 @@ def stagger_thread(args, account):
             delay = args.accounts.index(account) + ((random.random() - .5) / 2) if args.accounts.index(account) > 0 else 0
         else:
             delay = (args.scan_delay / len(args.accounts)) * args.accounts.index(account)
-            log.debug('Delaying thread startup for %.2f seconds', delay)
+        log.debug('Delaying thread startup for %.2f seconds', delay)
         time.sleep(delay)
 
 

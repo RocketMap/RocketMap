@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import os
@@ -20,10 +20,11 @@ from flask_cache_bust import init_cache_busting
 
 from pogom import config
 from pogom.app import Pogom
-from pogom.utils import get_args, insert_mock_data, get_encryption_lib_path
+from pogom.utils import get_args, get_encryption_lib_path
 
-from pogom.search import search_overseer_thread, search_overseer_thread_ss, fake_search_loop
-from pogom.models import init_database, create_tables, drop_tables, Pokemon
+from pogom.search import search_overseer_thread, search_overseer_thread_ss
+from pogom.models import init_database, create_tables, drop_tables, Pokemon, db_updater, clean_db_loop
+from pogom.webhook import wh_updater
 
 # Currently supported pgoapi
 pgoapi_version = "1.1.7"
@@ -148,31 +149,53 @@ def main():
     new_location_queue = Queue()
     new_location_queue.put(position)
 
+    # DB Updates
+    db_updates_queue = Queue()
+
+    # Thread(s) to process database updates
+    for i in range(args.db_threads):
+        log.debug('Starting db-updater worker thread %d', i)
+        t = Thread(target=db_updater, name='db-updater-{}'.format(i), args=(args, db_updates_queue))
+        t.daemon = True
+        t.start()
+
+    # db clearner; really only need one ever
+    t = Thread(target=clean_db_loop, name='db-cleaner')
+    t.daemon = True
+    t.start()
+
+    # WH Updates
+    wh_updates_queue = Queue()
+
+    # Thread to process webhook updates
+    for i in range(args.wh_threads):
+        log.debug('Starting wh-updater worker thread %d', i)
+        t = Thread(target=wh_updater, name='wh-updater-{}'.format(i), args=(args, wh_updates_queue))
+        t.daemon = True
+        t.start()
+
     if not args.only_server:
         # Gather the pokemons!
-        if not args.mock:
-            # check the sort of scan
-            if not args.spawnpoint_scanning:
-                log.debug('Starting a real search thread')
-                search_thread = Thread(target=search_overseer_thread, args=(args, new_location_queue, pause_bit, encryption_lib_path))
-            # using -ss
-            else:
-                if args.dump_spawnpoints:
-                    with open(args.spawnpoint_scanning, 'w+') as file:
-                        log.info('exporting spawns')
-                        spawns = Pokemon.get_spawnpoints_in_hex(position, args.step_limit)
-                        file.write(json.dumps(spawns))
-                        file.close()
-                        log.info('Finished exporting spawns')
-                # start the scan sceduler
-                search_thread = Thread(target=search_overseer_thread_ss, args=(args, new_location_queue, pause_bit, encryption_lib_path))
+        argset = (args, new_location_queue, pause_bit, encryption_lib_path, db_updates_queue, wh_updates_queue)
+        # check the sort of scan
+        if not args.spawnpoint_scanning:
+            log.debug('Starting a hex search thread')
+            search_thread = Thread(target=search_overseer_thread, args=argset)
+        # using -ss
         else:
-            log.debug('Starting a fake search thread')
-            insert_mock_data(position)
-            search_thread = Thread(target=fake_search_loop)
+            log.debug('Starting a sp search thread')
+            if args.dump_spawnpoints:
+                with open(args.spawnpoint_scanning, 'w+') as file:
+                    log.info('Exporting spawns')
+                    spawns = Pokemon.get_spawnpoints_in_hex(position, args.step_limit)
+                    file.write(json.dumps(spawns))
+                    file.close()
+                    log.info('Finished exporting spawns')
+            # start the scan sceduler
+            search_thread = Thread(target=search_overseer_thread_ss, args=argset)
 
         search_thread.daemon = True
-        search_thread.name = 'search_thread'
+        search_thread.name = 'search-overseer'
         search_thread.start()
 
     if args.cors:
