@@ -27,6 +27,7 @@ var map
 var rawDataIsLoading = false
 var locationMarker
 var searchMarker
+var storeZoom = true
 
 var noLabelsStyle = [{
   featureType: 'poi',
@@ -780,6 +781,10 @@ var StoreOptions = {
   'searchMarkerStyle': {
     default: 'google',
     type: StoreTypes.String
+  },
+  'zoomLevel': {
+    default: 16,
+    type: StoreTypes.Number
   }
 }
 
@@ -839,7 +844,7 @@ function initMap () { // eslint-disable-line no-unused-vars
       lat: centerLat,
       lng: centerLng
     },
-    zoom: 16,
+    zoom: Store.get('zoomLevel'),
     fullscreenControl: true,
     streetViewControl: false,
     mapTypeControl: false,
@@ -900,20 +905,23 @@ function initMap () { // eslint-disable-line no-unused-vars
   })
 
   map.setMapTypeId(Store.get('map_style'))
-  google.maps.event.addListener(map, 'idle', updateMap)
+  map.addListener('idle', updateMap)
+
+  map.addListener('zoom_changed', function () {
+    if (storeZoom === true) {
+      Store.set('zoomLevel', this.getZoom())
+    } else {
+      storeZoom = true
+    }
+
+    redrawPokemon(mapData.pokemons)
+    redrawPokemon(mapData.lurePokemons)
+  })
 
   searchMarker = createSearchMarker()
 
   addMyLocationButton()
   initSidebar()
-  google.maps.event.addListenerOnce(map, 'idle', function () {
-    updateMap()
-  })
-
-  google.maps.event.addListener(map, 'zoom_changed', function () {
-    redrawPokemon(mapData.pokemons)
-    redrawPokemon(mapData.lurePokemons)
-  })
 }
 
 function updateSearchMarker (style) {
@@ -1730,6 +1738,7 @@ function centerMap (lat, lng, zoom) {
   map.setCenter(loc)
 
   if (zoom) {
+    storeZoom = false
     map.setZoom(zoom)
   }
 }
