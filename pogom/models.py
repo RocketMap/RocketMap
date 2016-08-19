@@ -540,7 +540,7 @@ def parse_map(map_dict, step_location):
              pokestops_upserted,
              gyms_upserted)
 
-    return True
+    return [pokemons_upserted, pokestops_upserted, gyms_upserted]
 
 
 def clean_database():

@@ -181,9 +181,9 @@ def status_printer(threadStatus, search_items_queue):
             for item in sorted(threadStatus):
                 if(threadStatus[item]['type'] == "Worker"):
                     if 'skip' in threadStatus[item]:
-                        print '{} - Success: {}, Failed: {}, Skipped: {} - {}'.format(item, threadStatus[item]['success'], threadStatus[item]['fail'], threadStatus[item]['skip'], threadStatus[item]['message'])
+                        print '{} - Success: {}, Failed: {}, No Items: {}, Skipped: {} - {}'.format(item, threadStatus[item]['success'], threadStatus[item]['fail'], threadStatus[item]['noitems'], threadStatus[item]['skip'], threadStatus[item]['message'])
                     else:
-                        print '{} - Success: {}, Failed: {} - {}'.format(item, threadStatus[item]['success'], threadStatus[item]['fail'], threadStatus[item]['message'])
+                        print '{} - Success: {}, Failed: {}, No Items: {} - {}'.format(item, threadStatus[item]['success'], threadStatus[item]['fail'], threadStatus[item]['noitems'], threadStatus[item]['message'])
             print '\nPress <ENTER> to switch between status and log view'
         time.sleep(0.5)
 
@@ -218,6 +218,7 @@ def search_overseer_thread(args, new_location_queue, pause_bit, encryption_lib_p
         threadStatus['Worker {:03}'.format(i)]['message'] = "Creating thread..."
         threadStatus['Worker {:03}'.format(i)]['success'] = 0
         threadStatus['Worker {:03}'.format(i)]['fail'] = 0
+        threadStatus['Worker {:03}'.format(i)]['noitems'] = 0
 
         t = Thread(target=search_worker_thread,
                    name='search_worker_{}'.format(i),
@@ -342,6 +343,7 @@ def search_overseer_thread_ss(args, new_location_queue, pause_bit, encryption_li
         threadStatus['Worker {:03}'.format(i)]['success'] = 0
         threadStatus['Worker {:03}'.format(i)]['fail'] = 0
         threadStatus['Worker {:03}'.format(i)]['skip'] = 0
+        threadStatus['Worker {:03}'.format(i)]['noitems'] = 0
         t = Thread(target=search_worker_thread_ss,
                    name='ss_search_worker_{}'.format(i),
                    args=(args, account, search_items_queue, parse_lock, encryption_lib_path, threadStatus['Worker {:03}'.format(i)]))
@@ -452,10 +454,13 @@ def search_worker_thread(args, account, search_items_queue, parse_lock, encrypti
                     # Got the response, lock for parsing and do so (or fail, whatever)
                     with parse_lock:
                         try:
-                            parse_map(response_dict, step_location)
+                            items = parse_map(response_dict, step_location)
                             log.debug('Search step %s completed', step)
                             search_items_queue.task_done()
-                            status['success'] += 1
+                            if (items[0] + items[1] + items[2]) > 0:
+                                status['success'] += 1
+                            else:
+                                status['noitems'] += 1
                             break  # All done, get out of the request-retry loop
                         except KeyError:
                             log.exception('Search step %s map parsing failed, retrying request in %g seconds. Username: %s', step, sleep_time, account['username'])
@@ -525,10 +530,13 @@ def search_worker_thread_ss(args, account, search_items_queue, parse_lock, encry
                         # got responce try and parse it
                         with parse_lock:
                             try:
-                                parse_map(response_dict, step_location)
+                                items = parse_map(response_dict, step_location)
                                 log.debug('Search step %s completed', step)
                                 search_items_queue.task_done()
-                                status['success'] += 1
+                                if (items[0] + items[1] + items[2]) > 0:
+                                    status['success'] += 1
+                                else:
+                                    status['noitems'] += 1
                                 break
                             except KeyError:
                                 log.exception('Search step %s map parsing failed, retrying request in %g seconds. Username: %s', step, sleep_time, account['username'])
