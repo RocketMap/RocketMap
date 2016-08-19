@@ -21,7 +21,7 @@ Debian's sources lists are out of date and will not fetch the correct versions o
 
 	sudo apt-get install -y build-essential libbz2-dev libsqlite3-dev libreadline-dev zlib1g-dev libncurses5-dev libssl-dev libgdbm-dev python-dev
 	wget https://www.python.org/ftp/python/2.7.12/Python-2.7.12.tgz
-	tar xzf Python-2.7.12.tgz && cd Python-2.7.12.tgz
+	tar xzf Python-2.7.12.tgz && cd Python-2.7.12
 	./configure --prefix=/opt/python
 	make
 	make install
