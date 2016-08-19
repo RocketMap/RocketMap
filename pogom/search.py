@@ -427,6 +427,18 @@ def search_worker_thread(args, account, search_items_queue, parse_lock, encrypti
                         # than have the scanner, essentially, halt.
                         log.error('Search step %d went over max scan_retires; abandoning', step)
                         status['message'] = "Search step went over max scan_retries; abandoning"
+
+                        # Didn't succeed, but we are done with this queue item
+                        search_items_queue.task_done()
+
+                        # Sleep for 2 hours, print a log message every 5 minutes.
+                        long_sleep_time = 0
+                        long_sleep_started = time.strftime("%H:%M")
+                        while long_sleep_time < (2 * 60 * 20):
+                            log.error('Worker %s failed, possibly banned account. Started 2 hour sleep at %s', account['username'], long_sleep_started)
+                            status['message'] = 'Worker {} failed, possibly banned account. Started 2 hour sleep at {}'.format(account['username'], long_sleep_started)
+                            long_sleep_time += 300
+                            time.sleep(300)
                         break
 
                     # Increase sleep delay between each failed scan
@@ -514,6 +526,17 @@ def search_worker_thread_ss(args, account, search_items_queue, parse_lock, encry
                     while True:
                         if failed_total >= args.scan_retries:
                             log.error('Search step %d went over max scan_retires; abandoning', step)
+                            # Didn't succeed, but we are done with this queue item
+                            search_items_queue.task_done()
+
+                            # Sleep for 2 hours, print a log message every 5 minutes.
+                            long_sleep_time = 0
+                            long_sleep_started = time.strftime("%H:%M")
+                            while long_sleep_time < (2 * 60 * 20):
+                                log.error('Worker %s failed, possibly banned account. Started 2 hour sleep at %s', account['username'], long_sleep_started)
+                                status['message'] = 'Worker {} failed, possibly banned account. Started 2 hour sleep at {}'.format(account['username'], long_sleep_started)
+                                long_sleep_time += 300
+                                time.sleep(300)
                             break
                         sleep_time = args.scan_delay * (1 + failed_total)
                         check_login(args, account, api, step_location)
