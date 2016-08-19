@@ -34,7 +34,7 @@ Debian's sources lists are out of date and will not fetch the correct versions o
 	
 After install, check that you have the correct versions in your environment variables:
 
-..code-block:: bash
+.. code-block:: bash
 
 	~$ python --version
 		Python 2.7.12
