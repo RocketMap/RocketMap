@@ -29,6 +29,8 @@ Debian's sources lists are out of date and will not fetch the correct versions o
 	ln -s /opt/python/bin/python2.7 /usr/bin/python2.7
 	ln -s /usr/bin/python2.7 /usr/bin/python
 	ln -s /usr/local/bin/python2.7 /usr/local/bin/python
+	ln -s /opt/python/bin/pip /usr/bin/pip
+	ln -s /opt/python/bin/pip /usr/local/bin/pip
 	sed -e '$a\PATH="$PATH:/opt/python/bin"\' ~/.profile
 	source ~/.profile
 	wget https://bootstrap.pypa.io/get-pip.py
