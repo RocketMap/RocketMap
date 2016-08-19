@@ -19,7 +19,7 @@ Debian's sources lists are out of date and will not fetch the correct versions o
 
 .. code-block:: bash
 
-	sudo apt-get install -y build-essential libbz2-dev libsqlite3-dev libreadline-dev zlib1g-dev libncurses5-dev libssl-dev libgdbm-dev python-dev
+	sudo apt-get install -y build-essential libbz2-dev libsqlite3-dev libreadline-dev zlib1g-dev libncurses5-dev libssl-dev libgdbm-dev python-dev nodejs npm
 	wget https://www.python.org/ftp/python/2.7.12/Python-2.7.12.tgz
 	tar xzf Python-2.7.12.tgz && cd Python-2.7.12
 	./configure --prefix=/opt/python
@@ -31,6 +31,7 @@ Debian's sources lists are out of date and will not fetch the correct versions o
 	ln -s /usr/local/bin/python2.7 /usr/local/bin/python
 	ln -s /opt/python/bin/pip /usr/bin/pip
 	ln -s /opt/python/bin/pip /usr/local/bin/pip
+	ln -s /usr/bin/nodejs /usr/bin/node
 	sed -e '$a\PATH="$PATH:/opt/python/bin"\' ~/.profile
 	source ~/.profile
 	wget https://bootstrap.pypa.io/get-pip.py
@@ -45,8 +46,23 @@ After install, check that you have the correct versions in your environment vari
 	~$ pip --version
 		pip 8.1.2 from /home/user/.local/lib/python2.7/site-packages (python 2.7)
 		
-If your output looks as above, you can proceed with installation normally
+If your output looks as above, you can proceed with installation:
 
+.. code-block:: bash
+
+	pip install -r requirements.txt
+	npm install
+	npm install -g grunt-cli
+	grunt build
+
+troubleshooting:
+	
+	If you have preciously installed pip packages before following this guide, you may need to remove them before installing:
+	
+.. code-block:: bash
+
+	pip freeze | xargs pip uninstall -y
+	
 
 Red Hat or CentOs or Fedora
 ***************************
