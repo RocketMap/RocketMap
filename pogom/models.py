@@ -515,21 +515,6 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue):
     return len(pokemons) + len(pokestops) + len(gyms)
 
 
-def clean_database():
-    query = (ScannedLocation
-             .delete()
-             .where((ScannedLocation.last_modified <
-                    (datetime.utcnow() - timedelta(minutes=30)))))
-    query.execute()
-
-    if args.purge_data > 0:
-        query = (Pokemon
-                 .delete()
-                 .where((Pokemon.disappear_time <
-                        (datetime.utcnow() - timedelta(hours=args.purge_data)))))
-        query.execute()
-
-
 def db_updater(args, q):
     # The forever loop
     while True:
@@ -558,10 +543,24 @@ def db_updater(args, q):
             log.exception('Exception in db_updater: %s', e)
 
 
-def clean_db_loop():
+def clean_db_loop(args):
     while True:
         try:
-            clean_database()
+
+            # Clean out old scanned locations
+            query = (ScannedLocation
+                     .delete()
+                     .where((ScannedLocation.last_modified <
+                            (datetime.utcnow() - timedelta(minutes=30)))))
+            query.execute()
+
+            # If desired, clear old pokemon spawns
+            if args.purge_data > 0:
+                query = (Pokemon
+                         .delete()
+                         .where((Pokemon.disappear_time <
+                                (datetime.utcnow() - timedelta(hours=args.purge_data)))))
+
             log.info('Regular database cleaning complete')
             time.sleep(60)
         except Exception as e:
