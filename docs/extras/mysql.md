@@ -33,6 +33,9 @@
 
    ```
    CREATE DATABASE pokemongomapdb;
+   CREATE USER 'pogomapuser'@'localhost' IDENTIFIED BY 'password';
+   GRANT ALL PRIVILEGES ON pokemongomapdb . * TO 'pogomapuser'@'localhost;
+   exit
    ```
    You can change `pokemongomapdb` to whatever you want the name of the database to be.
 5. If the database creation was successful it will tell you "Query OK, 1 row affected". If it doesn't echo that back at you then you either received an error message, or it just created a blank line. I've detailed how to fix common errors, and the blank line below.
@@ -59,8 +62,8 @@
         - Change the "db-type" to "mysql"
         - Change "db-host" to "127.0.0.1"
         - Change "db-name:" to "pokemongomapdb"
-        - Change "db-user:" to "root"
-        - Change "db-pass" to the password you chose in step 5a of section II, or leave it blank if you chose to roll with no password.
+        - Change "db-user:" to "pogomapuser"
+        - Change "db-pass" to the password you chose in section III step 4, or leave it blank if you chose to roll with no password.
     - **Search Settings:** You only need to change this if you want to only run one location, or wish to disable gyms/pokemon/pokestops for all locations, or to have a universal thread count, scan delay, or step limit. I chose to not edit anything in the new config.ini.
     - **Misc:** This only has one setting and that's the google maps api key. If you don't have one, or don't know what that is please see [this](GoogleMaps.md) wiki page for the PokemonGo-Map project.
         - Change "gmaps-key:" to contain your google maps API key.
