@@ -114,7 +114,12 @@ I'd also like to specifically credit Znuff2471 on discord for their great assist
 2. Login to your MySQL DB
    - mysql -p
    - Enter your password if you set one
-3. Create the DB `CREATE DATABASE pokemongomapdb;`
+3. Create the DB
+
+ - CREATE DATABASE pokemongomapdb;
+ - CREATE USER 'pogomapuser'@'localhost' IDENTIFIED BY 'password';
+ - GRANT ALL PRIVILEGES ON pokemongomapdb . * TO 'pogomapuser'@'localhost;
+
 4. Quit the MySQL command line tool `quit`
 5. Edit the `config/config.ini` file
 
