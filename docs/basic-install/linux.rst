@@ -63,6 +63,18 @@ troubleshooting:
 
 	pip freeze | xargs pip uninstall -y
 	
+	If you're getting the following error:
+
+.. code-block:: bash
+
+	root:~/PokemonGo-Map# ./runserver.py
+	Traceback (most recent call last):
+  		File "./runserver.py", line 10, in <module>
+  		import requests
+	ImportError: No module named requests
+	
+	You will need to completely uninstall all of your pip packages, pip, and python, then re-install from source again. Something from your previous installation is still hanging around.
+	
 
 Red Hat or CentOs or Fedora
 ***************************
