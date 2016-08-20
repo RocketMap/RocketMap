@@ -532,10 +532,10 @@ def db_updater(args, q):
                 model, data = q.get()
                 bulk_upsert(model, data)
                 q.task_done()
-                log.info('Upserted to %s, %d records (upsert queue remaining: %d)',
-                         model.__name__,
-                         len(data),
-                         q.qsize())
+                log.debug('Upserted to %s, %d records (upsert queue remaining: %d)',
+                          model.__name__,
+                          len(data),
+                          q.qsize())
                 if q.qsize() > 50:
                     log.warning("DB queue is > 50 (@%d); try increasing --db-threads", q.qsize())
 
