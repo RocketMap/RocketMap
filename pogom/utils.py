@@ -57,6 +57,8 @@ def get_args():
                         help='Passwords, either single one for all accounts or one per account.')
     parser.add_argument('-l', '--location', type=parse_unicode,
                         help='Location, can be an address or coordinates')
+    parser.add_argument('-j', '--jitter', help='Apply random -9m to +9m jitter to location',
+                        action='store_true', default=False)
     parser.add_argument('-st', '--step-limit', help='Steps', type=int,
                         default=12)
     parser.add_argument('-sd', '--scan-delay',
