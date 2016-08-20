@@ -123,7 +123,7 @@ I'd also like to specifically credit Znuff2471 on discord for their great assist
    db-type: mysql          # sqlite (default) or mysql
    db-host: 127.0.0.1      # required for mysql
    db-name: pokemongomapdb # required for mysql
-   db-user: YourUser       # required for mysql
+   db-user: pogomapuser    # required for mysql
    db-pass: YourPW         # required for mysql
    ```
 
