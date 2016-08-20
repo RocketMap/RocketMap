@@ -53,7 +53,7 @@ If your output looks as above, you can proceed with installation:
 	sudo -H pip install -r requirements.txt
 	sudo npm install
 	sudo npm install -g grunt-cli
-	grunt build
+	sudo grunt build
 
 troubleshooting:
 	
