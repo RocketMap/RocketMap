@@ -57,12 +57,12 @@ if not hasattr(pgoapi, "__version__") or StrictVersion(pgoapi.__version__) < Str
 
 
 def main():
+    args = get_args()
+
     # Check if we have the proper encryption library file and get its path
-    encryption_lib_path = get_encryption_lib_path()
+    encryption_lib_path = get_encryption_lib_path(args)
     if encryption_lib_path is "":
         sys.exit(1)
-
-    args = get_args()
 
     if args.debug:
         log.setLevel(logging.DEBUG)
