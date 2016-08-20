@@ -36,6 +36,7 @@ from pgoapi.exceptions import AuthException
 
 from .models import parse_map, Pokemon
 from .fakePogoApi import FakePogoApi
+import terminalsize
 
 log = logging.getLogger(__name__)
 
@@ -133,52 +134,91 @@ def SbSearch(Slist, T):
 
 
 # Thread to handle user input
-def switch_status_printer(display_enabled):
+def switch_status_printer(display_enabled, current_page):
     while True:
-        # Wait for the user to press enter.
-        raw_input()
+        # Wait for the user to press a key
+        command = raw_input()
 
-        # Switch between logging and display.
-        if display_enabled[0]:
-            logging.disable(logging.NOTSET)
-            display_enabled[0] = False
-        else:
-            logging.disable(logging.ERROR)
-            display_enabled[0] = True
+        if command == '':
+            # Switch between logging and display.
+            if display_enabled[0]:
+                logging.disable(logging.NOTSET)
+                display_enabled[0] = False
+            else:
+                logging.disable(logging.ERROR)
+                display_enabled[0] = True
+        elif command.isdigit():
+                current_page[0] = int(command)
 
 
 # Thread to print out the status of each worker
-def status_printer(threadStatus, search_items_queue):
+def status_printer(threadStatus, search_items_queue, db_updates_queue, wh_queue):
     display_enabled = [True]
+    current_page = [1]
     logging.disable(logging.ERROR)
 
     # Start another thread to get user input
     t = Thread(target=switch_status_printer,
                name='switch_status_printer',
-               args=(display_enabled,))
+               args=(display_enabled, current_page))
     t.daemon = True
     t.start()
 
     while True:
         if display_enabled[0]:
-            # Clear the screen
-            os.system('cls' if os.name == 'nt' else 'clear')
+
+            # Get the terminal size
+            width, height = terminalsize.get_terminal_size()
+            # Queue and overseer take 2 lines.  Switch message takes up 2 lines.  Remove an extra 2 for things like screen status lines.
+            usable_height = height - 6
+            # Prevent people running terminals only 6 lines high from getting a divide by zero
+            if usable_height < 1:
+                usable_height = 1
+
+            # Create a list to hold all the status lines, so they can be printed all at once to reduce flicker
+            status_text = []
 
             # Print the queue length
-            print 'Queue: {} items'.format(search_items_queue.qsize())
+            status_text.append('Queues: {} items, {} db updates, {} webhook'.format(search_items_queue.qsize(), db_updates_queue.qsize(), wh_queue.qsize()))
 
             # Print status of overseer
-            print 'Overseer: {}'.format(threadStatus['Overseer']['message'])
+            status_text.append('{} Overseer: {}'.format(threadStatus['Overseer']['method'], threadStatus['Overseer']['message']))
 
-            # Print the status of each worker, sorted by worker number
+            # Calculate the total number of pages.  Subtracting 1 for the overseer.
+            total_pages = math.ceil((len(threadStatus) - 1) / float(usable_height))
+
+            # Prevent moving outside the valid range of pages
+            if current_page[0] > total_pages:
+                current_page[0] = total_pages
+            if current_page[0] < 1:
+                current_page[0] = 1
+
+            # Calculate which lines to print
+            start_line = usable_height * (current_page[0] - 1)
+            end_line = start_line + usable_height
+            current_line = 1
+
+            # Print the worker status
             for item in sorted(threadStatus):
                 if(threadStatus[item]['type'] == "Worker"):
+                    current_line += 1
+
+                    # Skip over items that don't belong on this page
+                    if current_line < start_line:
+                        continue
+                    if current_line > end_line:
+                        break
+
                     if 'skip' in threadStatus[item]:
-                        print '{} - Success: {}, Failed: {}, No Items: {}, Skipped: {} - {}'.format(item, threadStatus[item]['success'], threadStatus[item]['fail'], threadStatus[item]['noitems'], threadStatus[item]['skip'], threadStatus[item]['message'])
+                        status_text.append('{} - Success: {}, Failed: {}, No Items: {}, Skipped: {} - {}'.format(item, threadStatus[item]['success'], threadStatus[item]['fail'], threadStatus[item]['noitems'], threadStatus[item]['skip'], threadStatus[item]['message']))
                     else:
-                        print '{} - Success: {}, Failed: {}, No Items: {} - {}'.format(item, threadStatus[item]['success'], threadStatus[item]['fail'], threadStatus[item]['noitems'], threadStatus[item]['message'])
-            print '\nPress <ENTER> to switch between status and log view'
-        time.sleep(0.5)
+                        status_text.append('{} - Success: {}, Failed: {}, No Items: {} - {}'.format(item, threadStatus[item]['success'], threadStatus[item]['fail'], threadStatus[item]['noitems'], threadStatus[item]['message']))
+            status_text.append('Page {}/{}.  Type page number and <ENTER> to switch pages.  Press <ENTER> alone to switch between status and log view'.format(current_page[0], total_pages))
+            # Clear the screen
+            os.system('cls' if os.name == 'nt' else 'clear')
+            # Print status
+            print "\n".join(status_text)
+        time.sleep(1)
 
 
 # The main search loop that keeps an eye on the over all process
@@ -193,12 +233,13 @@ def search_overseer_thread(args, new_location_queue, pause_bit, encryption_lib_p
     threadStatus['Overseer'] = {}
     threadStatus['Overseer']['message'] = "Initializing"
     threadStatus['Overseer']['type'] = "Overseer"
+    threadStatus['Overseer']['method'] = "Hex Grid"
 
     if(args.print_status):
         log.info('Starting status printer thread')
         t = Thread(target=status_printer,
                    name='status_printer',
-                   args=(threadStatus, search_items_queue))
+                   args=(threadStatus, search_items_queue, db_updates_queue, wh_queue))
         t.daemon = True
         t.start()
 
@@ -318,12 +359,13 @@ def search_overseer_thread_ss(args, new_location_queue, pause_bit, encryption_li
     threadStatus['Overseer'] = {}
     threadStatus['Overseer']['message'] = "Initializing"
     threadStatus['Overseer']['type'] = "Overseer"
+    threadStatus['Overseer']['method'] = "Spawn Scan"
 
     if(args.print_status):
         log.info('Starting status printer thread')
         t = Thread(target=status_printer,
                    name='status_printer',
-                   args=(threadStatus, search_items_queue))
+                   args=(threadStatus, search_items_queue, db_updates_queue, wh_queue))
         t.daemon = True
         t.start()
 
