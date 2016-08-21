@@ -22,8 +22,8 @@ Assuming the following:
 
        ServerName pokemongo.yourdomain.com
 
-       ProxyPass / http://127.0.0.1:7777/
-       ProxyPassReverse / http://127.0.0.1:7777/
+       ProxyPass / http://127.0.0.1:5000/
+       ProxyPassReverse / http://127.0.0.1:5000/
 
        RewriteCond %{HTTP_HOST} !^pokemongo\.yourdomain\.com$ [NC]
        RewriteRule ^/$ http://%{HTTP_HOST}/ [L,R=301]
@@ -37,8 +37,8 @@ Assuming the following:
 
        ServerName pokemongo.yourdomain.com
 
-       ProxyPass / http://127.0.0.1:7777/
-       ProxyPassReverse / http://127.0.0.1:7777/
+       ProxyPass / http://127.0.0.1:5000/
+       ProxyPassReverse / http://127.0.0.1:5000/
 
        RewriteCond %{HTTP_HOST} !^pokemongo\.yourdomain\.com$ [NC]
        RewriteRule ^/$ http://%{HTTP_HOST}/ [L,R=301]
@@ -56,8 +56,8 @@ Assuming the following:
    If you want your maps at `yourdomain.com/go/` (note the trailing slash!)
    ```
    (take out ServerName)
-   ProxyPass /go/ http://127.0.0.1:7777/
-   ProxyPassReverse /go/ http://127.0.0.1:7777/
+   ProxyPass /go/ http://127.0.0.1:5000/
+   ProxyPassReverse /go/ http://127.0.0.1:5000/
 
    RewriteCond %{HTTP_HOST} !^yourdomain\.com/go/$ [NC]
    RewriteRule ^/go/$ http://%{HTTP_HOST}/go/ [L,R=301]
