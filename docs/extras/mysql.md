@@ -34,7 +34,7 @@
    ```
    CREATE DATABASE pokemongomapdb;
    CREATE USER 'pogomapuser'@'localhost' IDENTIFIED BY 'password';
-   GRANT ALL PRIVILEGES ON pokemongomapdb . * TO 'pogomapuser'@'localhost;
+   GRANT ALL PRIVILEGES ON pokemongomapdb . * TO 'pogomapuser'@'localhost';
    exit
    ```
    You can change `pokemongomapdb` to whatever you want the name of the database to be.
@@ -118,7 +118,7 @@ I'd also like to specifically credit Znuff2471 on discord for their great assist
 
  - CREATE DATABASE pokemongomapdb;
  - CREATE USER 'pogomapuser'@'localhost' IDENTIFIED BY 'password';
- - GRANT ALL PRIVILEGES ON pokemongomapdb . * TO 'pogomapuser'@'localhost;
+ - GRANT ALL PRIVILEGES ON pokemongomapdb . * TO 'pogomapuser'@'localhost';
 
 4. Quit the MySQL command line tool `quit`
 5. Edit the `config/config.ini` file
