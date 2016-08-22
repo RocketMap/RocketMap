@@ -22,7 +22,7 @@ from pogom import config
 from pogom.app import Pogom
 from pogom.utils import get_args, get_encryption_lib_path
 
-from pogom.search import search_overseer_thread, search_overseer_thread_ss
+from pogom.search import search_overseer_thread
 from pogom.models import init_database, create_tables, drop_tables, Pokemon, db_updater, clean_db_loop
 from pogom.webhook import wh_updater
 
@@ -176,26 +176,26 @@ def main():
 
     if not args.only_server:
         # Gather the pokemons!
-        argset = (args, new_location_queue, pause_bit, encryption_lib_path, db_updates_queue, wh_updates_queue)
-        # check the sort of scan
-        if not args.spawnpoint_scanning:
-            log.debug('Starting a hex search thread')
-            search_thread = Thread(target=search_overseer_thread, args=argset)
-        # using -ss
-        else:
-            log.debug('Starting a sp search thread')
-            if args.dump_spawnpoints:
-                with open(args.spawnpoint_scanning, 'w+') as file:
-                    log.info('Exporting spawns')
-                    spawns = Pokemon.get_spawnpoints_in_hex(position, args.step_limit)
-                    file.write(json.dumps(spawns))
-                    file.close()
-                    log.info('Finished exporting spawns')
-            # start the scan sceduler
-            search_thread = Thread(target=search_overseer_thread_ss, args=argset)
 
+        # check the sort of scan
+        if args.spawnpoint_scanning:
+            mode = 'sps'
+        else:
+            mode = 'hex'
+
+        # attempt to dump the spawn points (do this before starting threads of endure the woe)
+        if args.spawnpoint_scanning and args.spawnpoint_scanning != 'nofile' and args.dump_spawnpoints:
+            with open(args.spawnpoint_scanning, 'w+') as file:
+                log.info('Sawing spawn points to %s', args.spawnpoint_scanning)
+                spawns = Pokemon.get_spawnpoints_in_hex(position, args.step_limit)
+                file.write(json.dumps(spawns))
+                log.info('Finished exporting spawn points')
+
+        argset = (args, mode, new_location_queue, pause_bit, encryption_lib_path, db_updates_queue, wh_updates_queue)
+
+        log.debug('Starting a %s search thread', mode)
+        search_thread = Thread(target=search_overseer_thread, name='search-overseer', args=argset)
         search_thread.daemon = True
-        search_thread.name = 'search-overseer'
         search_thread.start()
 
     if args.cors:
