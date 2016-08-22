@@ -12,11 +12,11 @@ For your first install, there's only a few steps. Let's get to it!
 
 ### Start the Map 
 
-You'll need to change the command line params. If you don't know what they are, you can run `docker run --rm chuyskywalker/pokemongo-map -h` and you'll get the full help text. The command below examples out a very basic setup.
+You'll need to change the command line params. If you don't know what they are, you can run `docker run --rm pokemap/pokemongo-map -h` and you'll get the full help text. The command below examples out a very basic setup.
 
 ```
 docker run -d --name pogomap \
-  chuyskywalker/pokemongo-map \
+  pokemap/pokemongo-map \
     -a ptc -u your -p login \
     -k 'google-maps-key' \
     -l 'coords' \
@@ -64,7 +64,7 @@ Run:
 
 ```
 docker rm -f pogomap ngrok
-docker pull chuyskywalker/pokemongo-map
+docker pull pokemap/pokemongo-map
 ```
 
 Then redo the steps from "First Install" and you'll be on the latest version!

@@ -12,7 +12,6 @@ Amazon ECS is essentially managed docker allowed you to run multi-container envi
 
 ## Process
 
-
 In the AWS ECS console create a Task Definition with the JSON below. You will need to set the following values:
 
 * `POKEMON_USERNAME` - username for pokemongo
