@@ -12,18 +12,18 @@ EXPOSE 5000
 WORKDIR /usr/src/app
 
 # Set Entrypoint with hard-coded options
-ENTRYPOINT ["python", "./runserver.py", "--host", "0.0.0.0"]
+ENTRYPOINT ["dumb-init", "-r", "15:2", "python", "./runserver.py", "--host", "0.0.0.0"]
 
 # Set default options when container is run without any command line arguments
 CMD ["-h"]
 
 # Install required system packages
-RUN apk add --no-cache ca-certificates
-RUN apk add --no-cache bash git openssh
+RUN apk add --no-cache ca-certificates git
 
 COPY requirements.txt /usr/src/app/
 
 RUN apk add --no-cache build-base \
+ && pip install --no-cache-dir dumb-init \
  && pip install --no-cache-dir -r requirements.txt \
  && apk del build-base
 
