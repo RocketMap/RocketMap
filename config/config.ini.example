@@ -18,6 +18,7 @@
 #no-pokestops:          # disables pokestop scanning (default false)
 #scan-delay:            # default 10
 #step-limit:            # default 12
+#min-seconds-left:      # time that must be left on a spawn before considering it too late and skipping it (default 0)
 
 # Misc
 #gmaps-key:             # your Google Maps API key
