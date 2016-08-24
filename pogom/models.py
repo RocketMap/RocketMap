@@ -3,6 +3,7 @@
 import logging
 import calendar
 import sys
+import gc
 import time
 import geopy
 from peewee import SqliteDatabase, InsertQuery, \
@@ -93,11 +94,14 @@ class Pokemon(BaseModel):
             query = (Pokemon
                      .select()
                      .where((Pokemon.disappear_time > datetime.utcnow()) &
-                            (Pokemon.latitude >= swLat) &
-                            (Pokemon.longitude >= swLng) &
-                            (Pokemon.latitude <= neLat) &
-                            (Pokemon.longitude <= neLng))
+                            (((Pokemon.latitude >= swLat) &
+                              (Pokemon.longitude >= swLng) &
+                              (Pokemon.latitude <= neLat) &
+                              (Pokemon.longitude <= neLng))))
                      .dicts())
+
+        # Performance: Disable the garbage collector prior to creating a (potentially) large dict with append()
+        gc.disable()
 
         pokemons = []
         for p in query:
@@ -108,6 +112,9 @@ class Pokemon(BaseModel):
                 p['latitude'], p['longitude'] = \
                     transform_from_wgs_to_gcj(p['latitude'], p['longitude'])
             pokemons.append(p)
+
+        # Re-enable the GC.
+        gc.enable()
 
         return pokemons
 
@@ -130,6 +137,9 @@ class Pokemon(BaseModel):
                             (Pokemon.longitude <= neLng))
                      .dicts())
 
+        # Performance: Disable the garbage collector prior to creating a (potentially) large dict with append()
+        gc.disable()
+
         pokemons = []
         for p in query:
             p['pokemon_name'] = get_pokemon_name(p['pokemon_id'])
@@ -139,6 +149,9 @@ class Pokemon(BaseModel):
                 p['latitude'], p['longitude'] = \
                     transform_from_wgs_to_gcj(p['latitude'], p['longitude'])
             pokemons.append(p)
+
+        # Re-enable the GC.
+        gc.enable()
 
         return pokemons
 
@@ -165,12 +178,19 @@ class Pokemon(BaseModel):
                  .where(Pokemon.disappear_time == pokemon_count_query.c.lastappeared)
                  .dicts()
                  )
+
+        # Performance: Disable the garbage collector prior to creating a (potentially) large dict with append()
+        gc.disable()
+
         pokemons = []
         total = 0
         for p in query:
             p['pokemon_name'] = get_pokemon_name(p['pokemon_id'])
             pokemons.append(p)
             total += p['count']
+
+        # Re-enable the GC.
+        gc.enable()
 
         return {'pokemon': pokemons, 'total': total}
 
@@ -184,10 +204,8 @@ class Pokemon(BaseModel):
                  .order_by(Pokemon.disappear_time.asc())
                  .dicts()
                  )
-        appearances = []
-        for a in query:
-            appearances.append(a)
-        return appearances
+
+        return list(query)
 
     @classmethod
     def get_spawnpoints(cls, southBoundary, westBoundary, northBoundary, eastBoundary):
@@ -282,12 +300,18 @@ class Pokestop(BaseModel):
                             (Pokestop.longitude <= neLng))
                      .dicts())
 
+        # Performance: Disable the garbage collector prior to creating a (potentially) large dict with append()
+        gc.disable()
+
         pokestops = []
         for p in query:
             if args.china:
                 p['latitude'], p['longitude'] = \
                     transform_from_wgs_to_gcj(p['latitude'], p['longitude'])
             pokestops.append(p)
+
+        # Re-enable the GC.
+        gc.enable()
 
         return pokestops
 
@@ -325,11 +349,7 @@ class Gym(BaseModel):
                             (Gym.longitude <= neLng))
                      .dicts())
 
-        gyms = []
-        for g in query:
-            gyms.append(g)
-
-        return gyms
+        return list(query)
 
 
 class ScannedLocation(BaseModel):
@@ -352,11 +372,7 @@ class ScannedLocation(BaseModel):
                         (ScannedLocation.longitude <= neLng))
                  .dicts())
 
-        scans = []
-        for s in query:
-            scans.append(s)
-
-        return scans
+        return list(query)
 
 
 class Versions(flaskDb.Model):
