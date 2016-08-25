@@ -175,6 +175,7 @@ class Pokemon(BaseModel):
                          Pokemon.longitude,
                          pokemon_count_query.c.count)
                  .join(pokemon_count_query, on=(Pokemon.pokemon_id == pokemon_count_query.c.pokemon_id))
+                 .distinct()
                  .where(Pokemon.disappear_time == pokemon_count_query.c.lastappeared)
                  .dicts()
                  )
