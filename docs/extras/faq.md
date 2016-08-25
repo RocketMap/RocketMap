@@ -19,6 +19,10 @@ The -dp, -dg -dl, -i, -o and -ar parameters are no longer needed. Remove them fr
 
 `-l`, never forget.
 
+## example.py isn't working right
+
+10/10 would run again
+
 ## I'm getting this error...
 
 ```
@@ -42,3 +46,4 @@ error: command 'gcc' failed with exit status 1
 ```
 
 Your OS is missing the `gcc` compiler library. For Debian, run `apt-get install build-essentials`. For Red Hat, run `yum groupinstall 'Development Tools'`
+

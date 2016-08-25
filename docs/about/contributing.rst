@@ -16,7 +16,7 @@ Always begin your new page with a title:
 
 .. code-block:: rst
 
-  Awsome Wiki Page
+  Awesome Wiki Page
   ################
 
 Titles will be shown at the top of a page and in the site nagivation. A title should describe a page in a glance. The rest of the file is written in ReST structured text. Here is a `cheatsheet`_ for RST formatting.
