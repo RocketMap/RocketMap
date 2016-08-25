@@ -59,12 +59,27 @@ if not hasattr(pgoapi, "__version__") or StrictVersion(pgoapi.__version__) < Str
 def main():
     args = get_args()
 
+    # Check for depreciated argumented
+    if args.debug:
+        log.warning('--debug is depreciated. Please use --verbose instead.  Enabling --verbose')
+        args.verbose = 'nofile'
+
+    # Add file logging if enabled
+    if args.verbose and args.verbose != 'nofile':
+        filelog = logging.FileHandler(args.verbose)
+        filelog.setFormatter(logging.Formatter('%(asctime)s [%(threadName)16s][%(module)14s][%(levelname)8s] %(message)s'))
+        logging.getLogger('').addHandler(filelog)
+    if args.very_verbose and args.very_verbose != 'nofile':
+        filelog = logging.FileHandler(args.very_verbose)
+        filelog.setFormatter(logging.Formatter('%(asctime)s [%(threadName)16s][%(module)14s][%(levelname)8s] %(message)s'))
+        logging.getLogger('').addHandler(filelog)
+
     # Check if we have the proper encryption library file and get its path
     encryption_lib_path = get_encryption_lib_path(args)
     if encryption_lib_path is "":
         sys.exit(1)
 
-    if args.debug:
+    if args.verbose or args.very_verbose:
         log.setLevel(logging.DEBUG)
     else:
         log.setLevel(logging.INFO)
@@ -87,10 +102,15 @@ def main():
     config['parse_gyms'] = not args.no_gyms
 
     # Turn these back up if debugging
-    if args.debug:
-        logging.getLogger('requests').setLevel(logging.DEBUG)
+    if args.verbose or args.very_verbose:
         logging.getLogger('pgoapi').setLevel(logging.DEBUG)
+    if args.very_verbose:
+        logging.getLogger('peewee').setLevel(logging.DEBUG)
+        logging.getLogger('requests').setLevel(logging.DEBUG)
+        logging.getLogger('pgoapi.pgoapi').setLevel(logging.DEBUG)
+        logging.getLogger('pgoapi.rpc_api').setLevel(logging.DEBUG)
         logging.getLogger('rpc_api').setLevel(logging.DEBUG)
+        logging.getLogger('werkzeug').setLevel(logging.DEBUG)
 
     # use lat/lng directly if matches such a pattern
     prog = re.compile("^(\-?\d+\.\d+),?\s?(\-?\d+\.\d+)$")
@@ -221,8 +241,10 @@ def main():
             ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
             ssl_context.load_cert_chain(args.ssl_certificate, args.ssl_privatekey)
             log.info('Web server in SSL mode.')
-
-        app.run(threaded=True, use_reloader=False, debug=args.debug, host=args.host, port=args.port, ssl_context=ssl_context)
+        if args.verbose or args.very_verbose:
+            app.run(threaded=True, use_reloader=False, debug=True, host=args.host, port=args.port, ssl_context=ssl_context)
+        else:
+            app.run(threaded=True, use_reloader=False, debug=False, host=args.host, port=args.port, ssl_context=ssl_context)
 
 if __name__ == '__main__':
     main()

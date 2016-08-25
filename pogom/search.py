@@ -360,7 +360,7 @@ def get_sps_location_list(args, current_location, sps_scan_current):
 
     locations.sort(key=itemgetter('time'))
 
-    if args.debug:
+    if args.verbose or args.very_verbose:
         for i in locations:
             sec = i['time'] % 60
             minute = (i['time'] / 60) % 60
