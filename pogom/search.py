@@ -63,6 +63,11 @@ def cur_sec():
 
 # Thread to handle user input
 def switch_status_printer(display_enabled, current_page):
+    # Get a reference to the root logger
+    mainlog = logging.getLogger()
+    # Disable logging of the first handler - the stream handler, and disable it's output
+    mainlog.handlers[0].setLevel(logging.CRITICAL)
+
     while True:
         # Wait for the user to press a key
         command = raw_input()
@@ -70,10 +75,12 @@ def switch_status_printer(display_enabled, current_page):
         if command == '':
             # Switch between logging and display.
             if display_enabled[0]:
-                logging.disable(logging.NOTSET)
+                # Disable display, enable on screen logging
+                mainlog.handlers[0].setLevel(logging.DEBUG)
                 display_enabled[0] = False
             else:
-                logging.disable(logging.ERROR)
+                # Enable display, disable on screen logging (except for critical messages)
+                mainlog.handlers[0].setLevel(logging.CRITICAL)
                 display_enabled[0] = True
         elif command.isdigit():
                 current_page[0] = int(command)
@@ -83,7 +90,6 @@ def switch_status_printer(display_enabled, current_page):
 def status_printer(threadStatus, search_items_queue, db_updates_queue, wh_queue):
     display_enabled = [True]
     current_page = [1]
-    logging.disable(logging.ERROR)
 
     # Start another thread to get user input
     t = Thread(target=switch_status_printer,
