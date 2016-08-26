@@ -196,11 +196,20 @@ class Pokemon(BaseModel):
         return {'pokemon': pokemons, 'total': total}
 
     @classmethod
-    def get_appearances(cls, pokemon_id, last_appearance):
+    def get_appearances(cls, pokemon_id, last_appearance, timediff):
+        '''
+        :param pokemon_id: id of pokemon that we need appearances for
+        :param last_appearance: time of last appearance of pokemon after which we are getting appearances
+        :param timediff: limiting period of the selection
+        :return: list of  pokemon  appearances over a selected period
+        '''
+        if timediff:
+            timediff = datetime.utcnow() - timediff
         query = (Pokemon
                  .select()
                  .where((Pokemon.pokemon_id == pokemon_id) &
-                        (Pokemon.disappear_time > datetime.utcfromtimestamp(last_appearance / 1000.0))
+                        (Pokemon.disappear_time > datetime.utcfromtimestamp(last_appearance / 1000.0)) &
+                        (Pokemon.disappear_time > timediff)
                         )
                  .order_by(Pokemon.disappear_time.asc())
                  .dicts()

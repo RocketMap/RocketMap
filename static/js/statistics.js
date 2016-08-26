@@ -15,7 +15,7 @@ function loadRawData () {
       'gyms': false,
       'scanned': false,
       'seen': true,
-      'duration': document.getElementById('duration').options[document.getElementById('duration').selectedIndex].value
+      'duration': $('#duration').val()
     },
     dataType: 'json',
     beforeSend: function () {
@@ -208,7 +208,8 @@ function loadDetails () {
       'scanned': false,
       'appearances': true,
       'pokemonid': pokemonid,
-      'last': lastappearance
+      'last': lastappearance,
+      'duration': $('#duration').val()
     },
     dataType: 'json',
     beforeSend: function () {
