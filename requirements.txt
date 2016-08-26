@@ -22,5 +22,5 @@ recommonmark==0.4.0
 sphinx_rtd_theme==0.1.9
 requests==2.10.0
 PySocks==1.5.6
-git+https://github.com/ChrisTM/Flask-CacheBust.git@aa09ad861f104f987928fe9f5107ccfe0e4473c3#egg=flask_cachebust
+git+https://github.com/maddhatter/Flask-CacheBust.git@38d940cc4f18b5fcb5687746294e0360640a107e#egg=flask_cachebust
 protobuf_to_dict==0.1.0
