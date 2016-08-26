@@ -8,6 +8,13 @@ Gym info parsing adds the gym's name and a list of all the Pokemon currently in 
 ## MySQL Recommended
 Because of the increased data being sent to the database, it is recommended to use MySQL when using this feature.
 
+### Note on Non-Latin Characters in MySQL
+Using out of the box settings, MySQL uses a collation/encoding that does not support non-Latin characters. If gyms in your area are displaying with `????` instead of the correct characters, you need to update your database server's collation and encoding to use UTF8. To correct just the gym names, run:
+```sql
+ALTER TABLE `gymdetails` COLLATE='utf8_general_ci', CONVERT TO CHARSET utf8;
+```
+As gym details are refreshed, the correct characters will appear (to force this, you can empty `gymdetails`). More information regarding MySQL encoding is available [here](http://dev.mysql.com/doc/refman/5.7/en/charset-unicode.html).
+
 ## Enabling Gym Information Parsing
 
 To enable gym parsing, run with the `-gi` argument:
