@@ -448,7 +448,7 @@ class GymMember(BaseModel):
 
 
 class GymPokemon(BaseModel):
-    pokemon_uid = CharField(primary_key=True)
+    pokemon_uid = CharField(primary_key=True, max_length=50)
     pokemon_id = IntegerField()
     cp = IntegerField()
     trainer_name = CharField()
@@ -468,14 +468,14 @@ class GymPokemon(BaseModel):
 
 
 class Trainer(BaseModel):
-    name = CharField(primary_key=True)
+    name = CharField(primary_key=True, max_length=50)
     team = IntegerField()
     level = IntegerField()
     last_seen = DateTimeField(default=datetime.utcnow)
 
 
 class GymDetails(BaseModel):
-    gym_id = CharField(primary_key=True)
+    gym_id = CharField(primary_key=True, max_length=50)
     name = CharField()
     description = CharField(null=True)
     url = CharField()
