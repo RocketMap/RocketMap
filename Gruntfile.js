@@ -9,10 +9,7 @@ module.exports = function(grunt) {
     sass: {
       dist: {
         files: {
-          'static/dist/css/app.built.css': [
-            'static/sass/main.scss',
-            'static/sass/pokemon-sprite.scss'
-          ],
+          'static/dist/css/app.built.css': 'static/sass/main.scss',
           'static/dist/css/mobile.built.css': 'static/sass/mobile.scss',
           'static/dist/css/statistics.built.css': 'static/css/statistics.css'
         }
