@@ -2,22 +2,22 @@
 /// @param {string} $content Optional content value to use.
 @mixin icon($content: false) {
 
-	text-decoration: none;
+  text-decoration: none;
 
-	&:before {
+  &:before {
 
-		@if $content {
-			content: $content;
-		}
+    @if $content {
+      content: $content;
+    }
 
-		-moz-osx-font-smoothing: grayscale;
-		-webkit-font-smoothing: antialiased;
-		font-family: FontAwesome;
-		font-style: normal;
-		font-weight: normal;
-		text-transform: none !important;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+    font-family: FontAwesome;
+    font-style: normal;
+    font-weight: normal;
+    text-transform: none !important;
 
-	}
+  }
 
 }
 
@@ -26,15 +26,15 @@
 /// @param {mixed} $lr Left/right padding.
 /// @param {list} $pad Optional extra padding (in the following order top, right, bottom, left)
 @mixin padding($tb, $lr, $pad: (0,0,0,0)) {
-	padding: ($tb + nth($pad,1)) ($lr + nth($pad,2)) max(0.1em, $tb - _size(element-margin) + nth($pad,3)) ($lr + nth($pad,4));
+  padding: ($tb + nth($pad,1)) ($lr + nth($pad,2)) max(0.1em, $tb - _size(element-margin) + nth($pad,3)) ($lr + nth($pad,4));
 }
 
 /// Disable's the ability for the user to select an element.
 @mixin noSelect() {
-	-khtml-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	-webkit-touch-callout: none;
-	-webkit-user-select: none;
-	user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }

@@ -6,25 +6,25 @@
 @import url(https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css);
 
 @include skel-breakpoints((
-	xlarge: '(max-width: 1680px)',
-	large: '(max-width: 1280px)',
-	medium: '(max-width: 980px)',
-	small: '(max-width: 736px)',
-	xsmall: '(max-width: 480px)'
+  xlarge: '(max-width: 1680px)',
+  large: '(max-width: 1280px)',
+  medium: '(max-width: 980px)',
+  small: '(max-width: 736px)',
+  xsmall: '(max-width: 480px)'
 ));
 
 @include skel-layout((
-	reset: 'full',
-	boxModel: 'border',
-	grid: ( gutters: 2em ),
-	breakpoints: (
-		large: (
-			grid: ( gutters: 1.5em )
-		),
-		small: (
-			grid: ( gutters: 1.25em )
-		)
-	)
+  reset: 'full',
+  boxModel: 'border',
+  grid: ( gutters: 2em ),
+  breakpoints: (
+    large: (
+      grid: ( gutters: 1.5em )
+    ),
+    small: (
+      grid: ( gutters: 1.25em )
+    )
+  )
 ));
 
 // Base.
