@@ -1,5 +1,5 @@
 function countMarkers () { // eslint-disable-line no-unused-vars
-  document.getElementById('stats-pkmn-label').innerHTML = 'Pokémons'
+  document.getElementById('stats-pkmn-label').innerHTML = 'Pokémon'
   document.getElementById('stats-gym-label').innerHTML = 'Gyms'
   document.getElementById('stats-pkstop-label').innerHTML = 'PokéStops'
 
