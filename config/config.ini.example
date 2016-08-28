@@ -1,3 +1,4 @@
+# DO NOT USE NOTEPAD TO EDIT CONFIG FILES!! USE NOTEPAD ++ INSTEAD.
 # Authentication settings
 #auth-service:          # ptc (default) or google
 #username:
