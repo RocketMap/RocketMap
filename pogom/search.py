@@ -311,7 +311,7 @@ def get_hex_location_list(args, current_location):
         step_distance = 0.070
 
     # update our list of coords
-    locations = list(generate_location_steps(current_location, args.step_limit, step_distance))
+    locations = generate_location_steps(current_location, args.step_limit, step_distance)
 
     # In hex "spawns only" mode, filter out scan locations with no history of pokemons
     if args.spawnpoints_only and not args.no_pokemon:

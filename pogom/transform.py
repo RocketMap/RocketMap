@@ -63,35 +63,80 @@ def generate_location_steps(initial_loc, step_count, step_distance):
     SOUTH = 180
     WEST = 270
 
-    pulse_radius = step_distance            # km - radius of players heartbeat is 70m
-    xdist = math.sqrt(3) * pulse_radius   # dist between column centers
-    ydist = 3 * (pulse_radius / 2)          # dist between row centers
+    pulse_radius = step_distance         # km - radius of players heartbeat is 70m
+    xdist = math.sqrt(3) * pulse_radius  # dist between column centers
+    ydist = 3 * (pulse_radius / 2)       # dist between row centers
 
-    yield (initial_loc[0], initial_loc[1], 0)  # insert initial location
+    results = []
 
-    ring = 1
-    loc = initial_loc
-    while ring < step_count:
-        # Set loc to start at top left
-        loc = get_new_coords(loc, ydist, NORTH)
-        loc = get_new_coords(loc, xdist / 2, WEST)
-        for direction in range(6):
+    results.append((initial_loc[0], initial_loc[1], 0))
+
+    if step_count > 1:
+        loc = initial_loc
+
+        # upper part
+        ring = 1
+        while ring < step_count:
+
+            loc = get_new_coords(loc, xdist, WEST if ring % 2 == 1 else EAST)
+            results.append((loc[0], loc[1], 0))
+
             for i in range(ring):
-                if direction == 0:  # RIGHT
-                    loc = get_new_coords(loc, xdist, EAST)
-                if direction == 1:  # DOWN + RIGHT
+                loc = get_new_coords(loc, ydist, NORTH)
+                loc = get_new_coords(loc, xdist / 2, EAST if ring % 2 == 1 else WEST)
+                results.append((loc[0], loc[1], 0))
+
+            for i in range(ring):
+                loc = get_new_coords(loc, xdist, EAST if ring % 2 == 1 else WEST)
+                results.append((loc[0], loc[1], 0))
+
+            for i in range(ring):
+                loc = get_new_coords(loc, ydist, SOUTH)
+                loc = get_new_coords(loc, xdist / 2, EAST if ring % 2 == 1 else WEST)
+                results.append((loc[0], loc[1], 0))
+
+            ring += 1
+
+        # lower part
+        ring = step_count - 1
+
+        loc = get_new_coords(loc, ydist, SOUTH)
+        loc = get_new_coords(loc, xdist / 2, WEST if ring % 2 == 1 else EAST)
+        results.append((loc[0], loc[1], 0))
+
+        while ring > 0:
+
+            if ring == 1:
+                loc = get_new_coords(loc, xdist, WEST)
+                results.append((loc[0], loc[1], 0))
+
+            else:
+                for i in range(ring - 1):
                     loc = get_new_coords(loc, ydist, SOUTH)
-                    loc = get_new_coords(loc, xdist / 2, EAST)
-                if direction == 2:  # DOWN + LEFT
-                    loc = get_new_coords(loc, ydist, SOUTH)
-                    loc = get_new_coords(loc, xdist / 2, WEST)
-                if direction == 3:  # LEFT
-                    loc = get_new_coords(loc, xdist, WEST)
-                if direction == 4:  # UP + LEFT
+                    loc = get_new_coords(loc, xdist / 2, WEST if ring % 2 == 1 else EAST)
+                    results.append((loc[0], loc[1], 0))
+
+                for i in range(ring):
+                    loc = get_new_coords(loc, xdist, WEST if ring % 2 == 1 else EAST)
+                    results.append((loc[0], loc[1], 0))
+
+                for i in range(ring - 1):
                     loc = get_new_coords(loc, ydist, NORTH)
-                    loc = get_new_coords(loc, xdist / 2, WEST)
-                if direction == 5:  # UP + RIGHT
-                    loc = get_new_coords(loc, ydist, NORTH)
-                    loc = get_new_coords(loc, xdist / 2, EAST)
-                yield (loc[0], loc[1], 0)
-        ring += 1
+                    loc = get_new_coords(loc, xdist / 2, WEST if ring % 2 == 1 else EAST)
+                    results.append((loc[0], loc[1], 0))
+
+                loc = get_new_coords(loc, xdist, EAST if ring % 2 == 1 else WEST)
+                results.append((loc[0], loc[1], 0))
+
+            ring -= 1
+
+    # This will pull the last few steps back to the front of the list
+    # so you get a "center nugget" at the beginning of the scan, instead
+    # of the entire nothern area before the scan spots 70m to the south.
+    if step_count >= 3:
+        if step_count == 3:
+            results = results[-2:] + results[:-2]
+        else:
+            results = results[-7:] + results[:-7]
+
+    return results
