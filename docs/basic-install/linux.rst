@@ -10,7 +10,8 @@ You can install the required packages on Ubuntu by running the following command
 
 .. code-block:: bash
 
-  sudo apt-get install python python-pip python-dev
+  curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+  sudo apt-get install -y python python-pip python-dev nodejs nodejs-legacy npm build-essential
   
 Debian 7/8
 **********
