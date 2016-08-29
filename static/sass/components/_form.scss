@@ -67,8 +67,6 @@
   }
 
 .switch-container {
-  float: left;
-  width: 100%;
   h3 {
     margin-bottom: 0 !important;
     float: left;
@@ -78,6 +76,8 @@
 .form-control {
   display: block;
   margin-bottom: 15px;
+  float: left;
+  width: 100%;
   h3 {
     margin-bottom: 15px;
   }
