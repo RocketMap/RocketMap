@@ -1192,6 +1192,29 @@ function pokestopLabel (expireTime, latitude, longitude) {
   return str
 }
 
+function formatSpawnTime (seconds) {
+  // the addition and modulo are required here because the db stores when a spawn disappears
+  // the subtraction to get the appearance time will knock seconds under 0 if the spawn happens in the previous hour
+  return ('0' + Math.floor(((seconds + 3600) % 3600) / 60)).substr(-2) + ':' + ('0' + seconds % 60).substr(-2)
+}
+function spawnpointLabel (item) {
+  var str = `
+    <div>
+      <b>Spawn Point</b>
+    </div>
+    <div>
+      Every hour from ${formatSpawnTime(item.time)} to ${formatSpawnTime(item.time + 900)}
+    </div>`
+
+  if (item.special) {
+    str += `
+      <div>
+        May appear as early as ${formatSpawnTime(item.time - 1800)}
+      </div>`
+  }
+  return str
+}
+
 function getGoogleSprite (index, sprite, displayHeight) {
   displayHeight = Math.max(displayHeight, 3)
   var scale = displayHeight / sprite.iconHeight
@@ -1383,17 +1406,47 @@ function setupScannedMarker (item) {
   return marker
 }
 
+function getColorBySpawnTime (value) {
+  var now = new Date()
+  var seconds = now.getMinutes() * 60 + now.getSeconds()
+
+  // account for hour roll-over
+  if (seconds < 900 && value > 2700) {
+    seconds += 3600
+  } else if (seconds > 2700 && value < 900) {
+    value += 3600
+  }
+
+  var diff = (seconds - value)
+  var hue = 275 // purple when spawn is neither about to spawn nor active
+
+  if (diff >= 0 && diff <= 900) { // green to red over 15 minutes of active spawn
+    hue = (1 - (diff / 60 / 15)) * 120
+  } else if (diff < 0 && diff > -300) { // light blue to dark blue over 5 minutes til spawn
+    hue = ((1 - (-diff / 60 / 5)) * 50) + 200
+  }
+
+  return ['hsl(', hue, ',100%,50%)'].join('')
+}
+
 function setupSpawnpointMarker (item) {
   var circleCenter = new google.maps.LatLng(item['latitude'], item['longitude'])
 
   var marker = new google.maps.Circle({
     map: map,
-    clickable: false,
     center: circleCenter,
     radius: 5, // metres
-    fillColor: 'blue',
+    fillColor: getColorBySpawnTime(item.time),
     strokeWeight: 1
   })
+
+  marker.infoWindow = new google.maps.InfoWindow({
+    content: spawnpointLabel(item),
+    disableAutoPan: true,
+    position: circleCenter
+  })
+
+  addListeners(marker)
 
   return marker
 }
@@ -1655,7 +1708,9 @@ function processSpawnpoints (i, item) {
   var id = item['spawnpoint_id']
 
   if (id in mapData.spawnpoints) {
-    // In the future: maybe show how long till spawnpoint activates?
+    mapData.spawnpoints[id].marker.setOptions({
+      fillColor: getColorBySpawnTime(item['time'])
+    })
   } else { // add marker to map and item to dict
     if (item.marker) {
       item.marker.setMap(null)
