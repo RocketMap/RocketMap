@@ -11,7 +11,7 @@ You can install the required packages on Ubuntu by running the following command
 .. code-block:: bash
 
   curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
-  sudo apt-get install -y python python-pip python-dev nodejs nodejs-legacy npm build-essential
+  sudo apt-get install -y python python-pip python-dev nodejs nodejs-legacy build-essential
   
 Debian 7/8
 **********
