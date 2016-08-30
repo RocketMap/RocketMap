@@ -8,7 +8,7 @@ import time
 import geopy
 from peewee import SqliteDatabase, InsertQuery, \
     IntegerField, CharField, DoubleField, BooleanField, \
-    DateTimeField, fn, DeleteQuery, CompositeKey, FloatField, SQL
+    DateTimeField, fn, DeleteQuery, CompositeKey, FloatField, SQL, TextField
 from playhouse.flask_utils import FlaskDB
 from playhouse.pool import PooledMySQLDatabase
 from playhouse.shortcuts import RetryOperationalError
@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 args = get_args()
 flaskDb = FlaskDB()
 
-db_schema_version = 6
+db_schema_version = 7
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -499,7 +499,7 @@ class Trainer(BaseModel):
 class GymDetails(BaseModel):
     gym_id = CharField(primary_key=True, max_length=50)
     name = CharField()
-    description = CharField(null=True)
+    description = TextField(null=True, default="")
     url = CharField()
     last_scanned = DateTimeField(default=datetime.utcnow)
 
@@ -927,4 +927,10 @@ def database_migrate(db, old_ver):
     if old_ver < 6:
         migrate(
             migrator.add_column('gym', 'last_scanned', DateTimeField(null=True)),
+        )
+
+    if old_ver < 7:
+        migrate(
+            migrator.drop_column('gymdetails', 'description'),
+            migrator.add_column('gymdetails', 'description', TextField(null=True, default=""))
         )
