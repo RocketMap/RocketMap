@@ -267,6 +267,7 @@ function initMap () {
     fullscreenControl: false,
     streetViewControl: false,
     mapTypeControl: true,
+    clickableIcons: false,
     mapTypeControlOptions: {
       style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
       position: google.maps.ControlPosition.RIGHT_TOP,

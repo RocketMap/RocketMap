@@ -858,6 +858,7 @@ function initMap () { // eslint-disable-line no-unused-vars
     fullscreenControl: true,
     streetViewControl: false,
     mapTypeControl: false,
+    clickableIcons: false,
     mapTypeControlOptions: {
       style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
       position: google.maps.ControlPosition.RIGHT_TOP,
