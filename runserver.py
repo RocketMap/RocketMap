@@ -239,20 +239,24 @@ def main():
         # run gevent server
         gevent_log = None
         if args.verbose or args.very_verbose:
-            gevent_log = sys.stderr  # gevent default
+            gevent_log = log
         if args.ssl_certificate and args.ssl_privatekey \
                 and os.path.exists(args.ssl_certificate) and os.path.exists(args.ssl_privatekey):
                 http_server = pywsgi.WSGIServer((args.host, args.port), app,
                                                 log=gevent_log,
+                                                error_log=log,
                                                 keyfile=args.ssl_privatekey,
                                                 certfile=args.ssl_certificate,
                                                 ssl_version=ssl.PROTOCOL_TLSv1_2)
                 log.info('Web server in SSL mode, listening at https://%s:%d', args.host, args.port)
         else:
-            http_server = pywsgi.WSGIServer((args.host, args.port), app, log=gevent_log)
+            http_server = pywsgi.WSGIServer((args.host, args.port), app, log=gevent_log, error_log=log)
             log.info('Web server listening at http://%s:%d', args.host, args.port)
         # run it
-        http_server.serve_forever()
+        try:
+            http_server.serve_forever()
+        except KeyboardInterrupt:
+            pass
 
 if __name__ == '__main__':
     main()
