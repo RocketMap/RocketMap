@@ -18,7 +18,7 @@ from base64 import b64encode
 
 from . import config
 from .utils import get_pokemon_name, get_pokemon_rarity, get_pokemon_types, get_args
-from .transform import transform_from_wgs_to_gcj, get_new_coords, generate_location_steps
+from .transform import transform_from_wgs_to_gcj, get_new_coords
 from .customLog import printPokemon
 
 log = logging.getLogger(__name__)
@@ -282,15 +282,16 @@ class Pokemon(BaseModel):
 
         s = list(query.dicts())
 
-        # Filter to spawns which actually fall in the hex locations
-        # This loop is about as non-pythonic as you can get, I bet.
-        # Oh well.
+        # The distance between scan circles of radius 70 in a hex is 121.2436
+        # steps - 1 to account for the center circle then add 70 for the edge
+        step_distance = ((steps - 1) * 121.2436) + 70
+        # Compare spawnpoint list to a circle with radius steps * 120
+        # Uses the direct geopy distance between the center and the spawnpoint.
         filtered = []
-        hex_locations = generate_location_steps(center, steps, 0.07)
-        for hl in hex_locations:
-            for idx, sp in enumerate(s):
-                if geopy.distance.distance(hl, (sp['lat'], sp['lng'])).meters <= 70:
-                    filtered.append(s.pop(idx))
+
+        for idx, sp in enumerate(s):
+            if geopy.distance.distance(center, (sp['lat'], sp['lng'])).meters <= step_distance:
+                filtered.append(s[idx])
 
         # at this point, 'time' is DISAPPEARANCE time, we're going to morph it to APPEARANCE time
         for location in filtered:
