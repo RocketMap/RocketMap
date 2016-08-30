@@ -56,7 +56,8 @@ If your output looks as above, you can proceed with installation:
 	sudo npm install -g grunt-cli
 	sudo grunt build
 
-troubleshooting:
+Troubleshooting:
+****************
 	
 	If you have preciously installed pip packages before following this guide, you may need to remove them before installing:
 	
@@ -64,7 +65,7 @@ troubleshooting:
 
 	pip freeze | xargs pip uninstall -y
 	
-	If you're getting the following error:
+If you're getting the following error:
 
 .. code-block:: bash
 
@@ -79,15 +80,15 @@ troubleshooting:
 Debian 7
 ********
 
-Additional steps are required to get Debian 7 (wheezy) working. You'll need to update from glibc to eglibc
+Additional steps are required to get Debian 7 (wheezy) working. You'll need to update from ``glibc`` to ``eglibc``
 
-edit your `/etc/apt/sources.list` file and add the following line:
+Edit your ``/etc/apt/sources.list`` file and add the following line:
 
 .. code-block:: bash
 
 	deb http://ftp.debian.org/debian sid main
 	
-Then install the packages for eglibc:
+Then install the packages for ``eglibc``:
 
 .. code-block:: bash
 
@@ -100,7 +101,7 @@ Red Hat or CentOs or Fedora
 
 You can install required packages on Red Hat by running the following command:
 
-You may also need to install the EPEL repository to install python-pip and python-devel.
+You may also need to install the EPEL repository to install ``python-pip`` and ``python-devel``.
 
 .. code-block:: bash
 
