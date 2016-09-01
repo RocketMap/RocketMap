@@ -957,9 +957,6 @@ function createSearchMarker () {
     zIndex: google.maps.Marker.MAX_ZINDEX + 1
   })
 
-  if (!searchMarker.rangeCircle && isRangeActive(map)) {
-    searchMarker.rangeCircle = addRangeCircle(searchMarker, map, 'search')
-  }
   var oldLocation = null
   google.maps.event.addListener(searchMarker, 'dragstart', function () {
     oldLocation = searchMarker.getPosition()
@@ -970,9 +967,6 @@ function createSearchMarker () {
     changeSearchLocation(newLocation.lat(), newLocation.lng())
       .done(function () {
         oldLocation = null
-        if (searchMarker.rangeCircle && Store.get('showRanges')) {
-          searchMarker.rangeCircle.setCenter(newLocation)
-        }
       })
       .fail(function () {
         if (oldLocation) {
@@ -1240,20 +1234,33 @@ function addRangeCircle (marker, map, type, teamId) {
   var targetmap = null
   var circleCenter = new google.maps.LatLng(marker.position.lat(), marker.position.lng())
   var gymColors = ['#999999', '#0051CF', '#FF260E', '#FECC23'] // 'Uncontested', 'Mystic', 'Valor', 'Instinct']
-  var circleColor = '#cccccc'
   var teamColor = gymColors[0]
   if (teamId) teamColor = gymColors[teamId]
 
-  if (type === 'search') circleColor = '#333333'
-  if (type === 'pokemon') circleColor = '#C233F2'
-  if (type === 'pokestop') circleColor = '#3EB0FF'
-  if (type === 'gym') circleColor = teamColor
+  var range
+  var circleColor
+
+  // handle each type of marker and be explicit about the range circle attributes
+  switch (type) {
+    case 'pokemon':
+      circleColor = '#C233F2'
+      range = 40 // pokemon appear at 40m and then you can move away. still have to be 40m close to see it though, so ignore the further disappear distance
+      break
+    case 'pokestop':
+      circleColor = '#3EB0FF'
+      range = 40
+      break
+    case 'gym':
+      circleColor = teamColor
+      range = 40
+      break
+  }
 
   if (map) targetmap = map
 
   var rangeCircleOpts = {
     map: targetmap,
-    radius: 40,    // 40 meters
+    radius: range, // meters
     strokeWeight: 1,
     strokeColor: circleColor,
     strokeOpacity: 0.9,
@@ -1929,7 +1936,6 @@ function changeLocation (lat, lng) {
   changeSearchLocation(lat, lng).done(function () {
     map.setCenter(loc)
     searchMarker.setPosition(loc)
-    if (searchMarker.rangeCircle) searchMarker.rangeCircle.setCenter(loc)
   })
 }
 
