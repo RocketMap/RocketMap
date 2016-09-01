@@ -458,3 +458,9 @@ function updateDetails () {
 if (location.href.match(/overlay_[0-9]+/g)) {
   showOverlay(location.href.replace(/^.*overlay_([0-9]+).*$/, '$1'))
 }
+
+$('#nav select')
+  .select2({
+    minimumResultsForSearch: Infinity
+  })
+  .on('change', updateMap)

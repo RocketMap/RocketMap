@@ -44,18 +44,18 @@
             <h1><a href="..">Pokémon Go Map</a></h1>
         </header>
         <nav id="nav">
+          <div class="ui-accordion-content">
             {% for name, item in valid_input.items() %}
-                <div class="form-control">
-                  <label for="{{name}}">
-                    <h3>{{item.display}}</h3>
-                    <select id="{{name}}" name="{{name}}" class="input" onChange="updateMap();">
-                        {% for value, entry in item["items"].items() %}
-                            <option value="{{value}}" {{entry.selected}}>{{entry.display}}</option>
-                        {% endfor %}
-                    </select>
-                  </label>
+                <div class="form-control switch-container">
+                  <h3>{{item.display}}</h3>
+                  <select id="{{name}}" name="{{name}}" class="input">
+                      {% for value, entry in item["items"].items() %}
+                          <option value="{{value}}" {{entry.selected}}>{{entry.display}}</option>
+                      {% endfor %}
+                  </select>
                 </div>
             {% endfor %}
+          </div>
         </nav>
         <div class="totals">
             <h3 id="seen_header"></h3>
