@@ -24,6 +24,7 @@ Live visualization of all the pokemon (with option to show gyms and pokestops) i
 * [Website](https://pokemongomap.github.io/PoGoMapWebsite/) for general introduction
 * [Forum](http://pokemongo-map.me) for most issues and support
 * [Discord](https://discord.gg/PWp2bAm) for general support
+* [IRC](https://vulpix.thunderfox.nl) if you prefer it old school
 * [Documentation](https://pgm.readthedocs.io/en/develop/) for installation and usage docs
 * [feathub](http://feathub.com/PokemonGoMap/PokemonGo-Map) to request new features
 * [Github Issues](https://github.com/PokemonGoMap/PokemonGo-Map/issues) for reporting bugs (not for support!)
