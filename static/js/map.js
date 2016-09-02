@@ -1082,7 +1082,7 @@ function gymLabel (teamName, teamId, gymPoints, latitude, longitude, lastScanned
   var lastScannedStr
   if (lastScanned) {
     var lastScannedDate = new Date(lastScanned)
-    lastScannedStr = `${lastScannedDate.getFullYear()}-${pad(lastScannedDate.getMonth() + 1)}-${lastScannedDate.getDate()} ${pad(lastScannedDate.getHours())}:${pad(lastScannedDate.getMinutes())}:${pad(lastScannedDate.getSeconds())}`
+    lastScannedStr = `${lastScannedDate.getFullYear()}-${pad(lastScannedDate.getMonth() + 1)}-${pad(lastScannedDate.getDate())} ${pad(lastScannedDate.getHours())}:${pad(lastScannedDate.getMinutes())}:${pad(lastScannedDate.getSeconds())}`
   } else {
     lastScannedStr = 'Unknown'
   }
