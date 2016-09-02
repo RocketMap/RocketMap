@@ -1426,26 +1426,65 @@ function getColorBySpawnTime (value) {
   }
 
   var diff = (seconds - value)
-  var hue = 275 // purple when spawn is neither about to spawn nor active
-
+  var hue = 275 // light purple when spawn is neither about to spawn nor active
   if (diff >= 0 && diff <= 900) { // green to red over 15 minutes of active spawn
     hue = (1 - (diff / 60 / 15)) * 120
   } else if (diff < 0 && diff > -300) { // light blue to dark blue over 5 minutes til spawn
     hue = ((1 - (-diff / 60 / 5)) * 50) + 200
   }
 
-  return ['hsl(', hue, ',100%,50%)'].join('')
+  hue = Math.round(hue / 5) * 5
+
+  return hue
+}
+
+function changeSpawnIcon (color, zoom) {
+  var urlColor = ''
+  if (color === 275) {
+    urlColor = './static/icons/hsl-275-light.png'
+  } else {
+    urlColor = './static/icons/hsl-' + color + '.png'
+  }
+  var zoomScale = 1.6 // adjust this value to change the size of the spawnpoint icons
+  var minimumSize = 1
+  var newSize = Math.round(zoomScale * (zoom - 10)) // this scales the icon based on zoom
+  if (newSize < minimumSize) {
+    newSize = minimumSize
+  }
+
+  var newIcon = {
+    url: urlColor,
+    scaledSize: new google.maps.Size(newSize, newSize),
+    anchor: new google.maps.Point(newSize / 2, newSize / 2)
+  }
+
+  return newIcon
+}
+
+function spawnPointIndex (color) {
+  var newIndex = 1
+  var scale = 0
+  if (color >= 0 && color <= 120) { // high to low over 15 minutes of active spawn
+    scale = color / 120
+    newIndex = 100 + scale * 100
+  } else if (color >= 200 && color <= 250) { // low to high over 5 minutes til spawn
+    scale = (color - 200) / 50
+    newIndex = scale * 100
+  }
+
+  return newIndex
 }
 
 function setupSpawnpointMarker (item) {
   var circleCenter = new google.maps.LatLng(item['latitude'], item['longitude'])
+  var hue = getColorBySpawnTime(item.time)
+  var zoom = map.getZoom()
 
-  var marker = new google.maps.Circle({
+  var marker = new google.maps.Marker({
     map: map,
-    center: circleCenter,
-    radius: 5, // metres
-    fillColor: getColorBySpawnTime(item.time),
-    strokeWeight: 1
+    position: circleCenter,
+    icon: changeSpawnIcon(hue, zoom),
+    zIndex: spawnPointIndex(hue)
   })
 
   marker.infoWindow = new google.maps.InfoWindow({
@@ -1714,11 +1753,12 @@ function processSpawnpoints (i, item) {
   }
 
   var id = item['spawnpoint_id']
+  var zoom = map.getZoom()
 
   if (id in mapData.spawnpoints) {
-    mapData.spawnpoints[id].marker.setOptions({
-      fillColor: getColorBySpawnTime(item['time'])
-    })
+    var hue = getColorBySpawnTime(item['time'])
+    mapData.spawnpoints[id].marker.setIcon(changeSpawnIcon(hue, zoom))
+    mapData.spawnpoints[id].marker.setZIndex(spawnPointIndex(hue))
   } else { // add marker to map and item to dict
     if (item.marker) {
       item.marker.setMap(null)
