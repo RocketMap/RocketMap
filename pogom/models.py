@@ -452,6 +452,39 @@ class ScannedLocation(BaseModel):
         return list(query)
 
 
+class MainWorker(BaseModel):
+    worker_name = CharField(primary_key=True, max_length=50)
+    message = CharField()
+    method = CharField(max_length=50)
+    last_modified = DateTimeField(index=True)
+
+
+class WorkerStatus(BaseModel):
+    username = CharField(primary_key=True, max_length=50)
+    worker_name = CharField()
+    success = IntegerField()
+    fail = IntegerField()
+    no_items = IntegerField()
+    skip = IntegerField()
+    last_modified = DateTimeField(index=True)
+    message = CharField(max_length=255)
+
+    @staticmethod
+    def get_recent():
+        query = (WorkerStatus
+                 .select()
+                 .where((WorkerStatus.last_modified >=
+                        (datetime.utcnow() - timedelta(minutes=5))))
+                 .order_by(WorkerStatus.username)
+                 .dicts())
+
+        status = []
+        for s in query:
+            status.append(s)
+
+        return status
+
+
 class Versions(flaskDb.Model):
     key = CharField()
     val = IntegerField()
@@ -809,12 +842,23 @@ def db_updater(args, q):
 def clean_db_loop(args):
     while True:
         try:
-
             # Clean out old scanned locations
             query = (ScannedLocation
                      .delete()
                      .where((ScannedLocation.last_modified <
-                            (datetime.utcnow() - timedelta(minutes=30)))))
+                             (datetime.utcnow() - timedelta(minutes=30)))))
+            query.execute()
+
+            query = (MainWorker
+                     .delete()
+                     .where((ScannedLocation.last_modified <
+                             (datetime.utcnow() - timedelta(minutes=30)))))
+            query.execute()
+
+            query = (WorkerStatus
+                     .delete()
+                     .where((ScannedLocation.last_modified <
+                             (datetime.utcnow() - timedelta(minutes=30)))))
             query.execute()
 
             # Remove active modifier from expired lured pokestops
@@ -855,13 +899,13 @@ def bulk_upsert(cls, data):
 def create_tables(db):
     db.connect()
     verify_database_schema(db)
-    db.create_tables([Pokemon, Pokestop, Gym, ScannedLocation, GymDetails, GymMember, GymPokemon, Trainer], safe=True)
+    db.create_tables([Pokemon, Pokestop, Gym, ScannedLocation, GymDetails, GymMember, GymPokemon, Trainer, MainWorker, WorkerStatus], safe=True)
     db.close()
 
 
 def drop_tables(db):
     db.connect()
-    db.drop_tables([Pokemon, Pokestop, Gym, ScannedLocation, Versions, GymDetails, GymMember, GymPokemon, Trainer], safe=True)
+    db.drop_tables([Pokemon, Pokestop, Gym, ScannedLocation, Versions, GymDetails, GymMember, GymPokemon, Trainer, MainWorker, WorkerStatus, Versions], safe=True)
     db.close()
 
 

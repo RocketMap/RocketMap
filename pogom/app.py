@@ -4,7 +4,7 @@
 import calendar
 import logging
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, abort, jsonify, render_template, request
 from flask.json import JSONEncoder
 from flask_compress import Compress
 from datetime import datetime
@@ -14,7 +14,7 @@ from datetime import timedelta
 from collections import OrderedDict
 
 from . import config
-from .models import Pokemon, Gym, Pokestop, ScannedLocation
+from .models import Pokemon, Gym, Pokestop, ScannedLocation, MainWorker, WorkerStatus
 
 log = logging.getLogger(__name__)
 compress = Compress()
@@ -33,6 +33,8 @@ class Pogom(Flask):
         self.route("/search_control", methods=['GET'])(self.get_search_control)
         self.route("/search_control", methods=['POST'])(self.post_search_control)
         self.route("/stats", methods=['GET'])(self.get_stats)
+        self.route("/status", methods=['GET'])(self.get_status)
+        self.route("/status", methods=['POST'])(self.post_status)
 
     def set_search_control(self, control):
         self.search_control = control
@@ -116,6 +118,15 @@ class Pogom(Flask):
 
         if request.args.get('spawnpoints', 'false') == 'true':
             d['spawnpoints'] = Pokemon.get_spawnpoints(swLat, swLng, neLat, neLng)
+
+        if request.args.get('status', 'false') == 'true':
+            args = get_args()
+            d = {}
+            if args.status_page_password is None:
+                d['error'] = 'Access denied'
+            elif request.args.get('password', None) == args.status_page_password:
+                d['main_workers'] = MainWorker.get_all()
+                d['workers'] = WorkerStatus.get_all()
 
         return jsonify(d)
 
@@ -231,6 +242,27 @@ class Pogom(Flask):
                                gmaps_key=config['GMAPS_KEY'],
                                valid_input=self.get_valid_stat_input()
                                )
+
+    def get_status(self):
+        args = get_args()
+        if args.status_page_password is None:
+            abort(404)
+
+        return render_template('status.html')
+
+    def post_status(self):
+        args = get_args()
+        d = {}
+        if args.status_page_password is None:
+            abort(404)
+
+        if request.form.get('password', None) == args.status_page_password:
+            d['login'] = 'ok'
+            d['main_workers'] = MainWorker.get_all()
+            d['workers'] = WorkerStatus.get_all()
+        else:
+            d['login'] = 'failed'
+        return jsonify(d)
 
 
 class CustomJSONEncoder(JSONEncoder):
