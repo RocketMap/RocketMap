@@ -141,15 +141,18 @@ def status_printer(threadStatus, search_items_queue, db_updates_queue, wh_queue)
 
             # longest username
             userlen = 4
+            proxylen = 5
             for item in threadStatus:
                 if threadStatus[item]['type'] == 'Worker':
                     userlen = max(userlen, len(threadStatus[item]['user']))
+                    if threadStatus[item]['proxy']:
+                        proxylen = max(proxylen, len(str(threadStatus[item]['proxy'])))
 
             # How pretty
-            status = '{:10} | {:' + str(userlen) + '} | {:7} | {:6} | {:5} | {:7} | {:10}'
+            status = '{:10} | {:' + str(userlen) + '} | {:' + str(proxylen) + '} | {:7} | {:6} | {:5} | {:7} | {:10}'
 
             # Print the worker status
-            status_text.append(status.format('Worker ID', 'User', 'Success', 'Failed', 'Empty', 'Skipped', 'Message'))
+            status_text.append(status.format('Worker ID', 'User', 'Proxy', 'Success', 'Failed', 'Empty', 'Skipped', 'Message'))
             for item in sorted(threadStatus):
                 if(threadStatus[item]['type'] == 'Worker'):
                     current_line += 1
@@ -159,8 +162,12 @@ def status_printer(threadStatus, search_items_queue, db_updates_queue, wh_queue)
                         continue
                     if current_line > end_line:
                         break
+                    if threadStatus[item]['proxy'] or isinstance(threadStatus[item]['proxy'], int):
+                        used_proxy = threadStatus[item]['proxy']
+                    else:
+                        used_proxy = 'No'
 
-                    status_text.append(status.format(item, threadStatus[item]['user'], threadStatus[item]['success'], threadStatus[item]['fail'], threadStatus[item]['noitems'], threadStatus[item]['skip'], threadStatus[item]['message']))
+                    status_text.append(status.format(item, threadStatus[item]['user'], used_proxy, threadStatus[item]['success'], threadStatus[item]['fail'], threadStatus[item]['noitems'], threadStatus[item]['skip'], threadStatus[item]['message']))
 
             status_text.append('Page {}/{}.  Type page number and <ENTER> to switch pages.  Press <ENTER> alone to switch between status and log view'.format(current_page[0], total_pages))
             # Clear the screen
@@ -235,8 +242,18 @@ def search_overseer_thread(args, method, new_location_queue, pause_bit, encrypti
     # Create a search_worker_thread per account
     log.info('Starting search worker threads')
     for i, account in enumerate(args.accounts):
+
+        # Set proxy to account, using round rubin
+        using_proxy = ''
+        account['proxy'] = False
+        if args.proxy:
+            using_proxy = account['proxy'] = args.proxy[i % len(args.proxy)]
+            if args.proxy_display.upper() != 'FULL':
+                using_proxy = i % len(args.proxy)
+
         log.debug('Starting search worker thread %d for user %s', i, account['username'])
         workerId = 'Worker {:03}'.format(i)
+
         threadStatus[workerId] = {
             'type': 'Worker',
             'message': 'Creating thread...',
@@ -244,7 +261,8 @@ def search_overseer_thread(args, method, new_location_queue, pause_bit, encrypti
             'fail': 0,
             'noitems': 0,
             'skip': 0,
-            'user': account['username']
+            'user': account['username'],
+            'proxy': using_proxy
         }
 
         t = Thread(target=search_worker_thread,
@@ -478,8 +496,9 @@ def search_worker_thread(args, account, search_items_queue, pause_bit, encryptio
             else:
                 api = PGoApi()
 
-            if args.proxy:
-                api.set_proxy({'http': args.proxy, 'https': args.proxy})
+            if account['proxy']:
+                log.debug("Using proxy %s for account %s", account['proxy'], account['username'])
+                api.set_proxy({'http': account['proxy'], 'https': account['proxy']})
 
             api.activate_signature(encryption_lib_path)
 
@@ -641,8 +660,8 @@ def check_login(args, account, api, position):
     api.set_position(position[0], position[1], position[2])
     while i < args.login_retries:
         try:
-            if args.proxy:
-                api.set_authentication(provider=account['auth_service'], username=account['username'], password=account['password'], proxy_config={'http': args.proxy, 'https': args.proxy})
+            if account['proxy']:
+                api.set_authentication(provider=account['auth_service'], username=account['username'], password=account['password'], proxy_config={'http': account['proxy'], 'https': account['proxy']})
             else:
                 api.set_authentication(provider=account['auth_service'], username=account['username'], password=account['password'])
             break
