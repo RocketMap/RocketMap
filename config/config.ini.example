@@ -21,7 +21,7 @@
 #step-limit:            # default 12
 #gym-info:              # enables detailed gym info collection (default false)
 #min-seconds-left:      # time that must be left on a spawn before considering it too late and skipping it (default 0)
-#status-name            # enables writing status updates to the database - if you use multiple processes, each needs a unique value
+#status-name:           # enables writing status updates to the database - if you use multiple processes, each needs a unique value
 
 # Misc
 #gmaps-key:             # your Google Maps API key
@@ -38,7 +38,7 @@
 #ssl-certificate:       # path to ssl certificate
 #ssl-privatekey:        # path to ssl private key
 #encrypt-lib:           # path to encrypt lib to be used instead of the shipped ones
-#status-page-password   # enables and protects the /status page to view status of all workers
+#status-page-password:  # enables and protects the /status page to view status of all workers
 
 #Uncomment a line when you want to change its default value (Remove # at the beginning)
 #username, password, location and gmaps-key are required
