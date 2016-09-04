@@ -46,3 +46,15 @@ auth-service: [ptc, ptc, google]
 username: [thunderfox01, thunderfox02, thunderfox03@gmail.com]
 password: [password01, password02, password03]
 ```
+
+## Using CSV file:
+
+To use multiple accounts from a CSV file, you create a CSV file with the auth method, username and password on each line. Additional fields after the password are ignored.
+
+CSV File Example:
+```
+ptc,thunderfox01,password01
+ptc,thunderfox02,password02,other,information
+```
+
+Example: `python runserver.py -ac accounts.csv`
