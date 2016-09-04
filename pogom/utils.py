@@ -52,6 +52,12 @@ def get_args():
                         help='Usernames, one per account.')
     parser.add_argument('-p', '--password', action='append', default=[],
                         help='Passwords, either single one for all accounts or one per account.')
+    parser.add_argument('-w', '--workers', type=int,
+                        help='Number of search worker threads to start. Defaults to the number of accounts specified.')
+    parser.add_argument('-asi', '--account-search-interval', type=int, default=0,
+                        help='Seconds for accounts to search before switching to a new account. 0 to disable.')
+    parser.add_argument('-ari', '--account-rest-interval', type=int, default=7200,
+                        help='Seconds for accounts to rest when they fail or are switched out')
     parser.add_argument('-ac', '--accountcsv',
                         help='Load accounts from CSV file containing "auth_service,username,passwd" lines')
     parser.add_argument('-l', '--location', type=parse_unicode,
@@ -255,6 +261,15 @@ def get_args():
         # Make the accounts list
         for i, username in enumerate(args.username):
             args.accounts.append({'username': username, 'password': args.password[i], 'auth_service': args.auth_service[i]})
+
+        # Make max workers equal number of accounts if unspecified, and disable account switching
+        if (args.workers is None):
+            args.workers = len(args.accounts)
+            args.account_search_interval = None
+
+        # Disable search interval if 0 specified
+        if args.account_search_interval == 0:
+            args.account_search_interval = None
 
         # Make sure we don't have an empty account list after adding command line and CSV accounts
         if len(args.accounts) == 0:
