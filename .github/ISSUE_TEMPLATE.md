@@ -1,9 +1,5 @@
 <!--
   
-  FOR FEATURE REQUESTS GO TO:
-  
-  http://feathub.com/PokemonGoMap/PokemonGo-Map/
-  
   ISSUES ARE NOT FOR SUPPORT!!!
   ISSUES ARE NOT FOR SUPPORT!!!
   ISSUES ARE NOT FOR SUPPORT!!!
