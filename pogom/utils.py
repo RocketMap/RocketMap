@@ -185,7 +185,7 @@ def get_args():
     else:
         # If using a CSV file, add the data into the username,password and auth_service arguments.
         # CSV file should have lines like "ptc,username,password".  Additional fields after that are ignored.
-        if(args.accountcsv is not None):
+        if args.accountcsv is not None:
             with open(args.accountcsv, 'r') as f:
                 for num, line in enumerate(f, 1):
 
@@ -197,12 +197,12 @@ def get_args():
                     fields = line.split(",")
 
                     # Make sure it has at least 3 fields
-                    if(len(fields) < 3):
+                    if len(fields) < 3:
                         print(sys.argv[0] + ": Error parsing CSV file on line " + str(num) + ". Lines must be in the format '<method>,<username>,<password>'. Additional fields after those are ignored.")
                         sys.exit(1)
 
                     # Make sure none of the fields are blank
-                    if(len(fields[0]) == 0 or len(fields[1]) == 0 or len(fields[2]) == 0):
+                    if len(fields[0]) == 0 or len(fields[1]) == 0 or len(fields[2]) == 0:
                         print(sys.argv[0] + ": Error parsing CSV file on line " + str(num) + ". Lines must be in the format '<method>,<username>,<password>'. Additional fields after those are ignored.")
                         sys.exit(1)
 
@@ -213,30 +213,28 @@ def get_args():
 
         errors = []
 
-        num_auths = 1
+        num_auths = len(args.auth_service)
         num_usernames = 0
         num_passwords = 0
 
-        if (len(args.username) == 0):
+        if len(args.username) == 0:
             errors.append('Missing `username` either as -u/--username, csv file using -ac, or in config')
         else:
             num_usernames = len(args.username)
 
-        if (args.location is None):
+        if args.location is None:
             errors.append('Missing `location` either as -l/--location or in config')
 
-        if (len(args.password) == 0):
+        if len(args.password) == 0:
             errors.append('Missing `password` either as -p/--password, csv file, or in config')
         else:
             num_passwords = len(args.password)
 
-        if (args.step_limit is None):
+        if args.step_limit is None:
             errors.append('Missing `step_limit` either as -st/--step-limit or in config')
 
-        if len(args.auth_service) is None:
+        if num_auths == 0:
             args.auth_service = ['ptc']
-        else:
-            num_auths = len(args.auth_service)
 
         if num_usernames > 1:
             if num_passwords > 1 and num_usernames != num_passwords:
@@ -263,7 +261,7 @@ def get_args():
             args.accounts.append({'username': username, 'password': args.password[i], 'auth_service': args.auth_service[i]})
 
         # Make max workers equal number of accounts if unspecified, and disable account switching
-        if (args.workers is None):
+        if args.workers is None:
             args.workers = len(args.accounts)
             args.account_search_interval = None
 
