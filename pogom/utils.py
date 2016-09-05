@@ -236,6 +236,8 @@ def get_args():
         if num_auths == 0:
             args.auth_service = ['ptc']
 
+        num_auths = len(args.auth_service)
+
         if num_usernames > 1:
             if num_passwords > 1 and num_usernames != num_passwords:
                 errors.append('The number of provided passwords ({}) must match the username count ({})'.format(num_passwords, num_usernames))
