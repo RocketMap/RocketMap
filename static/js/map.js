@@ -865,6 +865,7 @@ function initMap () { // eslint-disable-line no-unused-vars
       mapTypeIds: [
         google.maps.MapTypeId.ROADMAP,
         google.maps.MapTypeId.SATELLITE,
+        google.maps.MapTypeId.HYBRID,
         'nolabels_style',
         'dark_style',
         'style_light2',
