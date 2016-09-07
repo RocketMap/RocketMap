@@ -121,16 +121,16 @@
             </div>
           </div>
 
-          <h3>Location Settings</h3>
+          <h3>Location & Search Settings</h3>
           <div>
             <div class="form-control switch-container" style="display:{{is_fixed}}" >
               <label for="next-location">
-              <h3>Change scan location</h3>
-              <input id="next-location" type="text" name="next-location" placeholder="Change your location">
+              <h3>Change search location</h3>
+              <input id="next-location" type="text" name="next-location" placeholder="Change search location">
               </label>
             </div>
             <div class="form-control switch-container" style="display:{{is_fixed}}" >
-              <h3>Lock marker</h3>
+              <h3>Lock search marker</h3>
               <div class="onoffswitch">
                 <input id="lock-marker-switch" type="checkbox" name="lock-marker-switch" class="onoffswitch-checkbox" checked/>
                 <label class="onoffswitch-label" for="lock-marker-switch">
@@ -140,7 +140,7 @@
               </div>
             </div>
             <div class="form-control switch-container" style="display:{{is_fixed}}" >
-              <h3>Scan follows location</h3>
+              <h3>Search follows me</h3>
               <div class="onoffswitch">
                 <input id="geoloc-switch" type="checkbox" name="geoloc-switch" class="onoffswitch-checkbox" checked/>
                 <label class="onoffswitch-label" for="geoloc-switch">
@@ -150,7 +150,7 @@
               </div>
             </div>
             <div class="form-control switch-container" >
-              <h3>Start at user's location</h3>
+              <h3>Start map at me</h3>
               <div class="onoffswitch">
                 <input id="start-at-user-location-switch" type="checkbox" name="start-at-user-location-switch" class="onoffswitch-checkbox" checked/>
                 <label class="onoffswitch-label" for="start-at-user-location-switch">
@@ -164,6 +164,16 @@
               <div class="onoffswitch">
                 <input id="search-switch" type="checkbox" name="search-switch" class="onoffswitch-checkbox" checked/>
                 <label class="onoffswitch-label" for="search-switch">
+                <span class="switch-label" data-on="On" data-off="Off"></span>
+                <span class="switch-handle"></span>
+                </label>
+              </div>
+            </div>
+            <div class="form-control switch-container">
+              <h3>Follow me</h3>
+              <div class="onoffswitch">
+                <input id="follow-my-location-switch" type="checkbox" name="follow-my-location-switch" class="onoffswitch-checkbox" checked/>
+                <label class="onoffswitch-label" for="follow-my-location-switch">
                 <span class="switch-label" data-on="On" data-off="Off"></span>
                 <span class="switch-handle"></span>
                 </label>
@@ -223,6 +233,10 @@
             <div class="form-control switch-container">
               <h3>Search Icon Marker</h3>
               <select name="iconmarker-style" id="iconmarker-style"></select>
+            </div>
+            <div class="form-control switch-container">
+              <h3>Location Icon Marker</h3>
+              <select name="locationmarker-style" id="locationmarker-style"></select>
             </div>
           </div>
         </div>
