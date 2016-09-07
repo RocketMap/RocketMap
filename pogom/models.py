@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import logging
+import itertools
 import calendar
 import sys
 import gc
@@ -206,16 +207,39 @@ class Pokemon(BaseModel):
         if timediff:
             timediff = datetime.utcnow() - timediff
         query = (Pokemon
-                 .select()
+                 .select(Pokemon.latitude, Pokemon.longitude, Pokemon.pokemon_id, fn.Count(Pokemon.spawnpoint_id).alias('count'), Pokemon.spawnpoint_id, Pokemon.disappear_time)
                  .where((Pokemon.pokemon_id == pokemon_id) &
                         (Pokemon.disappear_time > datetime.utcfromtimestamp(last_appearance / 1000.0)) &
                         (Pokemon.disappear_time > timediff)
                         )
                  .order_by(Pokemon.disappear_time.asc())
+                 .group_by(Pokemon.spawnpoint_id)
                  .dicts()
                  )
 
         return list(query)
+
+    @classmethod
+    def get_appearances_times_by_spawnpoint(cls, pokemon_id, spawnpoint_id, timediff):
+        '''
+        :param pokemon_id: id of pokemon that we need appearances times for
+        :param spawnpoint_id: spawnpoing id we need appearances times for
+        :param timediff: limiting period of the selection
+        :return: list of time appearances over a selected period
+        '''
+        if timediff:
+            timediff = datetime.utcnow() - timediff
+        query = (Pokemon
+                 .select(Pokemon.disappear_time)
+                 .where((Pokemon.pokemon_id == pokemon_id) &
+                        (Pokemon.spawnpoint_id == spawnpoint_id) &
+                        (Pokemon.disappear_time > timediff)
+                        )
+                 .order_by(Pokemon.disappear_time.asc())
+                 .tuples()
+                 )
+
+        return list(itertools.chain(*query))
 
     @classmethod
     def get_spawn_time(cls, disappear_time):
