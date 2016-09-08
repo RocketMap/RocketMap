@@ -11,7 +11,12 @@ def distance(pos1, pos2):
     lat2 = radians(pos2[0])
     lon2 = radians(pos2[1])
     
-    return acos(sin(lat1)*sin(lat2) + cos(lat1)*cos(lat2) * cos(lon2-lon1)) * R
+    a = sin(lat1)*sin(lat2) + cos(lat1)*cos(lat2) * cos(lon2-lon1)
+    
+    if a > 1:
+        return 0.0
+    
+    return acos(a) * R
     
 def intermediate_point(pos1, pos2, f):
     if pos1 == pos2:
@@ -22,7 +27,12 @@ def intermediate_point(pos1, pos2, f):
     lat2 = radians(pos2[0])
     lon2 = radians(pos2[1])
     
-    delta = acos(sin(lat1)*sin(lat2) + cos(lat1)*cos(lat2) * cos(lon2-lon1))
+    a = sin(lat1)*sin(lat2) + cos(lat1)*cos(lat2) * cos(lon2-lon1)
+    
+    if a > 1: # too close
+        return pos1 if f < 0.5 else pos2
+    
+    delta = acos(a)
     
     if delta == 0: # too close
         return pos1 if f < 0.5 else pos2
