@@ -113,8 +113,7 @@ class Pogom(Flask):
             d['seen'] = Pokemon.get_seen(selected_duration)
 
         if request.args.get('appearances', 'false') == 'true':
-            d['appearances'] = Pokemon.get_appearances(request.args.get('pokemonid'),
-                                                       request.args.get('last', type=float), selected_duration)
+            d['appearances'] = Pokemon.get_appearances(request.args.get('pokemonid'), selected_duration)
 
         if request.args.get('appearancesDetails', 'false') == 'true':
             d['appearancesTimes'] = Pokemon.get_appearances_times_by_spawnpoint(request.args.get('pokemonid'),

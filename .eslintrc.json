@@ -22,6 +22,8 @@
     "skel": true,
     "setupPokemonMarker": true,
 
+    "isTouchDevice": true,
+    "pokemonSprites": true,
     "noLabelsStyle": true,
     "darkStyle": true,
     "light2Style": true,

@@ -49,9 +49,8 @@ function addElement (pokemonId, name) {
     class: 'image'
   }).appendTo('#seen_' + pokemonId + '_base')
 
-  jQuery('<img/>', {
-    src: 'static/icons/' + pokemonId + '.png',
-    alt: 'Image for Pokemon #' + pokemonId
+  jQuery('<i/>', {
+    class: 'pokemon-sprite n' + pokemonId
   }).appendTo(imageContainer)
 
   var baseDetailContainer = jQuery('<div/>', {
@@ -165,8 +164,7 @@ function processSeen (seen) {
   document.getElementById('seen_total').innerHTML = 'Total: ' + total.toLocaleString()
 }
 
-// Override UpdateMap in map.js to take advantage of a pre-existing interval.
-function updateMap (firstRun) {
+function updateStatMap (firstRun) {
   var duration = document.getElementById('duration')
   var header = 'Pokemon Seen in ' + duration.options[duration.selectedIndex].text
   if ($('#seen_header').html() !== header) {
@@ -185,19 +183,16 @@ function updateMap (firstRun) {
   })
 }
 
-updateMap()
+updateStatMap()
 
 /* Overlay */
 var detailsLoading = false
 var appearancesTimesLoading = false
-var detailInterval = null
-var lastappearance = 1
 var pokemonid = 0
 var mapLoaded = false
 var detailsPersist = false
 var map = null
 var heatmap = null
-var heatmapNumPoints = -1
 var heatmapPoints = []
 mapData.appearances = {}
 
@@ -212,7 +207,6 @@ function loadDetails () {
       'scanned': false,
       'appearances': true,
       'pokemonid': pokemonid,
-      'last': lastappearance,
       'duration': $('#duration').val()
     },
     dataType: 'json',
@@ -270,7 +264,6 @@ function closeTimes () {
   detailsPersist = false
 }
 
-// Overrides addListeners in map.js
 function addListeners (marker) { // eslint-disable-line no-unused-vars
   marker.addListener('click', function () {
     showTimes(marker)
@@ -360,7 +353,7 @@ function initMap () {
   })
 
   map.setMapTypeId(Store.get('map_style'))
-  google.maps.event.addListener(map, 'idle', updateMap)
+  google.maps.event.addListener(map, 'idle', updateStatMap)
 
   mapLoaded = true
 
@@ -376,12 +369,9 @@ function resetMap () {
   })
 
   heatmapPoints = []
-  heatmapNumPoints = 0
   if (heatmap) {
     heatmap.setMap(null)
   }
-
-  lastappearance = 0
 }
 
 function showOverlay (id) {
@@ -394,14 +384,12 @@ function showOverlay (id) {
   $('#location_details').show()
   location.hash = 'overlay_' + pokemonid
   updateDetails()
-  detailInterval = window.setInterval(updateDetails, 5000)
 
   return false
 }
 
 function closeOverlay () { // eslint-disable-line no-unused-vars
   $('#location_details').hide()
-  window.clearInterval(detailInterval)
   closeTimes()
   location.hash = ''
   return false
@@ -413,23 +401,21 @@ function processAppearance (i, item) {
     if (item['marker']) {
       item['marker'].setMap(null)
     }
-    item['marker'] = setupPokemonMarker(item, true)
+    item['marker'] = setupPokemonMarker(item, map, true)
+    addListeners(item['marker'])
     item['marker'].spawnpointId = spawnpointId
     mapData.appearances[spawnpointId] = item
-  } else {
-    mapData.appearances[spawnpointId].count += item['count']
   }
-
-  heatmapPoints.push(new google.maps.LatLng(item['latitude'], item['longitude']))
-  lastappearance = Math.max(lastappearance, item['disappear_time'])
+  heatmapPoints.push({location: new google.maps.LatLng(item['latitude'], item['longitude']), weight: parseFloat(item['count'])})
 }
 
 function redrawAppearances (appearances) {
   $.each(appearances, function (key, value) {
     var item = appearances[key]
     if (!item['hidden']) {
-      var newMarker = setupPokemonMarker(item, true)
+      var newMarker = setupPokemonMarker(item, map, true)
       item['marker'].setMap(null)
+      addListeners(newMarker)
       newMarker.spawnpointId = item['spawnpoint_id']
       appearances[key].marker = newMarker
     }
@@ -471,19 +457,14 @@ function appearanceTab (item) {
 function updateDetails () {
   loadDetails().done(function (result) {
     $.each(result.appearances, processAppearance)
-
-    // Redraw the heatmap with all the new appearances
-    if (heatmapNumPoints !== heatmapPoints.length) {
-      if (heatmap) {
-        heatmap.setMap(null)
-      }
-      heatmap = new google.maps.visualization.HeatmapLayer({
-        data: heatmapPoints,
-        map: map,
-        radius: 50
-      })
-      heatmapNumPoints = heatmapPoints.length
+    if (heatmap) {
+      heatmap.setMap(null)
     }
+    heatmap = new google.maps.visualization.HeatmapLayer({
+      data: heatmapPoints,
+      map: map,
+      radius: 50
+    })
   })
 }
 
@@ -495,4 +476,4 @@ $('#nav select')
   .select2({
     minimumResultsForSearch: Infinity
   })
-  .on('change', updateMap)
+  .on('change', updateStatMap)
