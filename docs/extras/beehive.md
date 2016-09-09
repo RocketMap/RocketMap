@@ -26,7 +26,7 @@ cd PokemonGo-Map/Tools/Hex-Beehive-Generator/
 
 Now generate coordinates with `location_generator.py`:
 
-***NOTE:*** Carefully read [these instructions](https://github.com/PokemonGoMap/PokemonGo-Map/blob/develop/docs/extras/beehive.md) for the proper arguments.
+***NOTE:*** Carefully read [these instructions](https://github.com/PokemonGoMap/PokemonGo-Map/blob/develop/Tools/Hex-Beehive-Generator/Instructions_for_location_generator.txt) for the proper arguments.
 
 ```
 python location_generator.py -st stepsize -lp ringsize -lat yourstartinglathere -lon yourstartinglonghere
