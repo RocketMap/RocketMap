@@ -276,12 +276,25 @@ def get_args():
             print(sys.argv[0] + ": Error: no accounts specified. Use -a, -u, and -p or --accountcsv to add accounts")
             sys.exit(1)
 
+        # Decide which scanning mode to use
+        if args.spawnpoint_scanning:
+            args.scheduler = 'SpawnScan'
+        elif args.spawnpoints_only:
+            args.scheduler = 'HexSearchSpawnpoint'
+        else:
+            args.scheduler = 'HexSearch'
+
     return args
 
 
 def now():
     # The fact that you need this helper...
     return int(time.time())
+
+
+# gets the current time past the hour
+def cur_sec():
+    return (60 * time.gmtime().tm_min) + time.gmtime().tm_sec
 
 
 def i8ln(word):
