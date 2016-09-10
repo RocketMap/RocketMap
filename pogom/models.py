@@ -214,7 +214,6 @@ class Pokemon(BaseModel):
                  .where((Pokemon.pokemon_id == pokemon_id) &
                         (Pokemon.disappear_time > timediff)
                         )
-                 .order_by(Pokemon.disappear_time.asc())
                  .group_by(Pokemon.latitude, Pokemon.longitude, Pokemon.pokemon_id, Pokemon.spawnpoint_id)
                  .dicts()
                  )
