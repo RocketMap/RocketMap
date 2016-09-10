@@ -2,7 +2,7 @@
 # for those that messaged me with "i'm on dev, example.py dont work"
 # thunderfox : can we put an example.py in 2.0 that just prints "you're a fucking retard"
 
-#1000th commit, celebrate example.py!
+# 1000th commit, celebrate example.py!
 
 # dont make pr to fix pls
 
