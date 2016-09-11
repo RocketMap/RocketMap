@@ -219,9 +219,10 @@ def main():
         t.start()
 
     # db clearner; really only need one ever
-    t = Thread(target=clean_db_loop, name='db-cleaner', args=(args,))
-    t.daemon = True
-    t.start()
+    if not args.disable_clean:
+        t = Thread(target=clean_db_loop, name='db-cleaner', args=(args,))
+        t.daemon = True
+        t.start()
 
     # WH Updates
     wh_updates_queue = Queue()

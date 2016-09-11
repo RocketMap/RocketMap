@@ -156,6 +156,8 @@ def get_args():
                         nargs='*', default=False, dest='webhooks')
     parser.add_argument('-gi', '--gym-info', help='Get all details about gyms (causes an additional API hit for every gym)',
                         action='store_true', default=False)
+    parser.add_argument('--disable-clean', help='Disable clean db loop',
+                        action='store_true', default=False)
     parser.add_argument('--webhook-updates-only', help='Only send updates (pokémon & lured pokéstops)',
                         action='store_true', default=False)
     parser.add_argument('--wh-threads', help='Number of webhook threads; increase if the webhook queue falls behind',
