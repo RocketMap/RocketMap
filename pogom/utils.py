@@ -185,33 +185,89 @@ def get_args():
             print(sys.argv[0] + ": error: arguments -l/--location is required")
             sys.exit(1)
     else:
-        # If using a CSV file, add the data into the username,password and auth_service arguments.
-        # CSV file should have lines like "ptc,username,password".  Additional fields after that are ignored.
+        # If using a CSV file, add the data where needed into the username,password and auth_service arguments.
+        # CSV file should have lines like "ptc,username,password", "username,password" or "username".
         if args.accountcsv is not None:
+            # Giving num_fields something it would usually not get
+            num_fields = -1
             with open(args.accountcsv, 'r') as f:
                 for num, line in enumerate(f, 1):
 
+                    fields = []
+
+                    # First time around populate num_fields with current field count.
+                    if num_fields < 0:
+                        num_fields = line.count(',') + 1
+
+                    csv_input = []
+                    csv_input.append('')
+                    csv_input.append('<username>')
+                    csv_input.append('<username>,<password>')
+                    csv_input.append('<ptc/gmail>,<username>,<password>')
+
+                    # If the number of fields is differend this is not a CSV
+                    if num_fields != line.count(',') + 1:
+                        print(sys.argv[0] + ": Error parsing CSV file on line " + str(num) + ". Your file started with the following input, '" + csv_input[num_fields] + "' but now you gave us '" + csv_input[line.count(',') + 1] + "'.")
+                        sys.exit(1)
+
+                    field_error = ''
+                    line = line.strip()
+
                     # Ignore blank lines and comment lines
-                    if len(line.strip()) == 0 or line.startswith('#'):
+                    if len(line) == 0 or line.startswith('#'):
                         continue
 
-                    # Split into fields
-                    fields = line.split(",")
+                    # If number of fields is more than 1 split the line into fields and strip them
+                    if num_fields > 1:
+                        fields = line.split(",")
+                        fields = map(str.strip, fields)
 
-                    # Make sure it has at least 3 fields
-                    if len(fields) < 3:
-                        print(sys.argv[0] + ": Error parsing CSV file on line " + str(num) + ". Lines must be in the format '<method>,<username>,<password>'. Additional fields after those are ignored.")
+                    # If the number of fields is one then assume this is "username". As requested..
+                    if num_fields == 1:
+                        # Empty lines are already ignored.
+                        args.username.append(line)
+
+                    # If the number of fields is two then assume this is "username,password". As requested..
+                    if num_fields == 2:
+                        # If field length is not longer then 0 something is wrong!
+                        if len(fields[0]) > 0:
+                            args.username.append(fields[0])
+                        else:
+                            field_error = 'username'
+
+                        # If field length is not longer then 0 something is wrong!
+                        if len(fields[1]) > 0:
+                            args.password.append(fields[1])
+                        else:
+                            field_error = 'password'
+
+                    # If the number of fields is three then assume this is "ptc,username,password". As requested..
+                    if num_fields == 3:
+                        # If field 0 is not ptc or gmail something is wrong!
+                        if fields[0].lower() == 'ptc' or fields[0].lower() == 'gmail':
+                            args.auth_service.append(fields[0])
+                        else:
+                            field_error = 'method'
+
+                        # If field length is not longer then 0 something is wrong!
+                        if len(fields[1]) > 0:
+                            args.username.append(fields[1])
+                        else:
+                            field_error = 'username'
+
+                        # If field length is not longer then 0 something is wrong!
+                        if len(fields[2]) > 0:
+                            args.password.append(fields[2])
+                        else:
+                            field_error = 'password'
+
+                    # If something is wrong display error.
+                    if field_error != '':
+                        type_error = 'empty!'
+                        if field_error == 'method':
+                            type_error = 'not ptc or gmail instead we got \'' + fields[0] + '\'!'
+                        print(sys.argv[0] + ": Error parsing CSV file on line " + str(num) + ". We found " + str(num_fields) + " fields, so your input should have looked like '" + csv_input[num_fields] + "'\nBut you gave us '" + line + "', your " + field_error + " was " + type_error)
                         sys.exit(1)
-
-                    # Make sure none of the fields are blank
-                    if len(fields[0]) == 0 or len(fields[1]) == 0 or len(fields[2]) == 0:
-                        print(sys.argv[0] + ": Error parsing CSV file on line " + str(num) + ". Lines must be in the format '<method>,<username>,<password>'. Additional fields after those are ignored.")
-                        sys.exit(1)
-
-                    # Add the account to the list
-                    args.auth_service.append(fields[0].strip())
-                    args.username.append(fields[1].strip())
-                    args.password.append(fields[2].strip())
 
         errors = []
 
