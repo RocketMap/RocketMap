@@ -1,7 +1,7 @@
 /* Nav */
 
   #nav {
-    @include vendor('transform', 'translateX(-18em)');
+    @include vendor('transform', 'translateX(-20.50em)');
     @include vendor('transition', ('transform #{_duration(nav)} ease', 'box-shadow #{_duration(nav)} ease', 'visibility #{_duration(nav)}'));
     -webkit-overflow-scrolling: touch;
     background: #F8F8F8;
@@ -16,7 +16,7 @@
     top: 3.50em;
     left: 0;
     visibility: hidden;
-    width: 18em;
+    width: 20.50em;
     z-index: 500;
     h3 {
       font-size: 18px;
