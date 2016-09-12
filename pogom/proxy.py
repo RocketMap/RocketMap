@@ -14,7 +14,8 @@ log = logging.getLogger(__name__)
 # Simple function to do a call to Niantic's system for testing proxy connectivity
 def check_proxy(proxy_queue, timeout, proxies):
 
-    proxy_test_url = 'https://sso.pokemon.com/'
+    # Update check url - Thanks ChipWolf #1282 and #1281
+    proxy_test_url = 'https://pgorelease.nianticlabs.com/plfe/rpc'
     proxy = proxy_queue.get()
 
     if proxy and proxy[1]:
@@ -22,13 +23,17 @@ def check_proxy(proxy_queue, timeout, proxies):
         log.debug('Checking proxy: %s', proxy[1])
 
         try:
-            proxy_response = requests.get(proxy_test_url, proxies={'http': proxy[1], 'https': proxy[1]}, timeout=timeout)
+            proxy_response = requests.post(proxy_test_url, '', proxies={'http': proxy[1], 'https': proxy[1]}, timeout=timeout)
 
             if proxy_response.status_code == 200:
-                log.debug('Proxy %s is ok', proxy[1])
+                log.info('Proxy %s is ok', proxy[1])
                 proxy_queue.task_done()
                 proxies.append(proxy[1])
                 return True
+
+            elif proxy_response.status_code == 403:
+                log.error("Proxy %s is banned - got status code: %s", proxy[1], str(proxy_response.status_code))
+                return False
 
             else:
                 proxy_error = "Wrong status code - " + str(proxy_response.status_code)
