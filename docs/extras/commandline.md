@@ -1,3 +1,5 @@
+# Command Line
+
     usage: runserver.py
                         [-h] [-a AUTH_SERVICE] [-u USERNAME] [-p PASSWORD]
                         [-w WORKERS] [-asi ACCOUNT_SEARCH_INTERVAL]
@@ -132,7 +134,7 @@
       -gi, --gym-info       Get all details about gyms (causes an additional API
                             hit for every gym).
       --webhook-updates-only
-                            Only send updates (pokâ”œÂ®mon & lured pokâ”œÂ®stops).
+                            Only send updates (pokemon & lured pokestops).
       --wh-threads WH_THREADS
                             Number of webhook threads; increase if the webhook
                             queue falls behind.
