@@ -1498,7 +1498,7 @@ $(function () {
     $selectPokemonNotify.val(Store.get('remember_select_notify')).trigger('change')
     $selectRarityNotify.val(Store.get('remember_select_rarity_notify')).trigger('change')
 
-    if (isTouchDevice()) {
+    if (isTouchDevice() && isMobileDevice()) {
       $('.select2-search input').prop('readonly', true)
     }
   })
