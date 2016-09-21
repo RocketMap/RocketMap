@@ -262,6 +262,10 @@ def get_args():
                         else:
                             field_error = 'password'
 
+                    if num_fields > 3:
+                        print 'Too many fields in accounts file: max supported are 3 fields. Found {} fields'.format(num_fields)
+                        sys.exit(1)
+
                     # If something is wrong display error.
                     if field_error != '':
                         type_error = 'empty!'
