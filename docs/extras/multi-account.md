@@ -49,12 +49,12 @@ password: [password01, password02, password03]
 
 ## Using CSV file:
 
-To use multiple accounts from a CSV file, you create a CSV file with the auth method, username and password on each line. Additional fields after the password are ignored.
+To use multiple accounts from a CSV file, you create a CSV file with the auth method, username and password on each line. Shorten to 3 fields only, more than 3 fields will error out.
 
 CSV File Example:
 ```
 ptc,thunderfox01,password01
-ptc,thunderfox02,password02,other,information
+google,thunderfox02@gmail.com,password02
 ```
 
 Example: `python runserver.py -ac accounts.csv`
