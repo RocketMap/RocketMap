@@ -739,10 +739,17 @@ function clearSelection () {
 
 function addListeners (marker) {
   marker.addListener('click', function () {
-    marker.infoWindow.open(map, marker)
-    clearSelection()
-    updateLabelDiffTime()
-    marker.persist = true
+    if (!marker.infoWindowIsOpen) {
+      marker.infoWindow.open(map, marker)
+      clearSelection()
+      updateLabelDiffTime()
+      marker.persist = true
+      marker.infoWindowIsOpen = true
+    } else {
+      marker.persist = null
+      marker.infoWindow.close()
+      marker.infoWindowIsOpen = false
+    }
   })
 
   google.maps.event.addListener(marker.infoWindow, 'closeclick', function () {
