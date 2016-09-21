@@ -1,4 +1,5 @@
 @echo off
+echo Requesting Administrator Access...
 pushd %~dp0
     :: Running prompt elevated
 :-------------------------------------
@@ -22,22 +23,54 @@ if '%errorlevel%' NEQ '0' (
     pushd "%CD%"
     CD /D "%~dp0"
 :--------------------------------------
+echo.
+echo Setting PATHs...
+echo.
 
 IF EXIST C:\Python27 (
 set PATH2=C:\Python27
 ) ELSE (
 echo Python path not found, please specify or install.
+echo.
 set /p PATH2= Specify Python path: 
 )
 
+
+for /f "tokens=*" %%i in ('echo "%PATH%" ^| find /c /i "%PATH2%"') do set output=%%i
+if %output% equ 1 (
+goto found
+) else (
+goto notfound
+)
+
+:found
+cls
+echo Path is already set, skipping...
+goto Continue
+
+:notfound
+cls
 setx PATH "%PATH%;%PATH2%;%PATH2%\Scripts;"
+echo.
+echo Path set, continuing..
+goto Continue
+
+
+:Continue
 
 popd
+
+echo.
+echo Installing requirements...
+echo. 
 
 "%PATH2%\python" get-pip.py
 cd ..\..
 "%PATH2%\Scripts\pip" install -r requirements.txt
 "%PATH2%\Scripts\pip" install -r requirements.txt --upgrade
+
+call npm install
+call npm run build
 
 cd config
 set /p API= Enter your Google API key here:
