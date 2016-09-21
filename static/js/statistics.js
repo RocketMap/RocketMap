@@ -116,10 +116,10 @@ function processSeen (seen) {
       return a['pokemon_id'] - b['pokemon_id']
     } else if (sort.options[sort.selectedIndex].value === 'name') {
       if (a['pokemon_name'].toLowerCase() < b['pokemon_name'].toLowerCase()) {
-        return 1
+        return -1
       }
       if (a['pokemon_name'].toLowerCase() > b['pokemon_name'].toLowerCase()) {
-        return -1
+        return 1
       }
       return 0
     } else {
