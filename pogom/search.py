@@ -481,14 +481,17 @@ def search_worker_thread(args, account_queue, account_failures, search_items_que
                     # No sleep here; we've not done anything worth sleeping for. Plus we clearly need to catch up!
                     continue
 
-                status['message'] = 'Searching at {:6f},{:6f}'.format(step_location[0], step_location[1])
-                log.info(status['message'])
-
                 # Let the api know where we intend to be for this loop
+                # doing this before check_login so it does not also have to be done there
+                # when the auth token is refreshed
                 api.set_position(*step_location)
 
                 # Ok, let's get started -- check our login status
                 check_login(args, account, api, step_location, status['proxy_url'])
+
+                # putting this message after the check_login so the messages aren't out of order
+                status['message'] = 'Searching at {:6f},{:6f}'.format(step_location[0], step_location[1])
+                log.info(status['message'])
 
                 # Make the actual request (finally!)
                 response_dict = map_request(api, step_location, args.jitter)
@@ -595,7 +598,6 @@ def check_login(args, account, api, position, proxy_url):
 
     # Try to login (a few times, but don't get stuck here)
     i = 0
-    api.set_position(position[0], position[1], position[2])
     while i < args.login_retries:
         try:
             if proxy_url:
@@ -612,7 +614,7 @@ def check_login(args, account, api, position, proxy_url):
                 time.sleep(args.login_delay)
 
     log.debug('Login for account %s successful', account['username'])
-    time.sleep(args.scan_delay)
+    time.sleep(20)
 
 
 def map_request(api, position, jitter=False):
