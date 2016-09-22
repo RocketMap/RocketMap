@@ -23,6 +23,9 @@
 ## Checklist:
 <!--- Go over all the following points, and put an `x` in all the boxes that apply. -->
 <!--- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
+<!--  NOTE: In order to check code style locally and avoid having your build rejected by Travis, -->
+<!--  run the following commands before you commit: `flake8 .` and `npm run lint`. Fix any -->
+<!--  issues they point out. Note also that flake's NOQA is disabled on Travis. -->
 - [ ] My code follows the code style of this project.
 - [ ] My change requires a change to the documentation.
 - [ ] I have updated the documentation accordingly.
