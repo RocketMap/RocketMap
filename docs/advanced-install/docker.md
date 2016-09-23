@@ -22,14 +22,14 @@ If that doesn't bother you, and you just want to give PokemonGo-Map a go, keep o
 In order to start the map, you've got to run your docker container with a few arguments, such as authentication type, account, password, desired location and steps. If you don't know which arguments are necessary, you can use the following command to get help:
 
 ```
-docker run --rm pokemap/pokemongo-map -h
+docker run --rm frostthefox/pokemongo-map -h
 ```
 
 To be able to access the map in your machine via browser, you've got to bind a port on your host machine to the one wich will be exposed by the container (default is 5000). The following docker run command is an example of to launch a container with a very basic setup of the map, following the instructions above:
 
 ```
 docker run -d --name pogomap -p 5000:5000 \
-  pokemap/pokemongo-map \
+  frostthefox/pokemongo-map \
     -a ptc -u username -p password \
     -k 'your-google-maps-key' \
     -l 'lat, lon' \
@@ -94,24 +94,23 @@ Open that URL in your browser and you're ready to rock!
 In order to update your PokemonGo-Map docker image, you should stop/remove all the containers running with the current (outdated) version (refer to "Stopping the server"), pull the latest docker image version, and restart everything. To pull the latest image, use the following command:
 
 ```
-docker pull pokemap/pokemongo-map
+docker pull frostthefox/pokemongo-map
 ```
 
 If you are running a ngrok container, you've got to stop it as well. To start the server after updating your image, simply use the same commands that were used before, and the containers will be launched with the latest version.
 
 ## Running on docker cloud 
 
-If you want to run pokemongo-map on a service that doesn't support arguments like docker cloud or ECS, you'll need to use one of the more specialised images out there that supports variables. The image `ashex/pokemongo-map` handles variables, below is an example:
+If you want to run pokemongo-map on a service that doesn't support arguments like docker cloud or ECS, you'll need to pass settings via variables below is an example:
 
 ```bash
   docker run -d -P \
-    -e "AUTH_SERVICE=ptc" \
-    -e "USERNAME=UserName" \
-    -e "PASSWORD=Password" \
-    -e "LOCATION=Seattle, WA" \
-    -e "STEP_LIMIT=5" \
-    -e "GMAPS_KEY=SUPERSECRET" \
-    ashex/pokemongo-map
+    -e "POGOM_AUTH_SERVICE=ptc" \
+    -e "POGOM_USERNAME=UserName" \
+    -e "POGOM_PASSWORD=Password" \
+    -e "POGOM_LOCATION=Seattle, WA" \
+    -e "POGOM_GMAPS_KEY=SUPERSECRET" \
+    frostthefox/pokemongo-map
 ```
 
 ## Advanced Docker Setup
@@ -162,7 +161,7 @@ Now that we have a persistent database up and running, we need to launch our Pok
 
 ```
 docker run -d --name pogomap --net=pogonw -p 5000:5000 \
-  pokemap/pokemongo-map \
+  frostthefox/pokemongo-map \
     -a ptc -u username -p password \
     -k 'your-google-maps-key' \
     -l 'lat, lon' \
@@ -191,7 +190,7 @@ If you would like to launch a different worker sharing the same db, to scan a di
 
 ```
 docker run -d --name pogomap2 --net=pogonw \
-  pokemap/pokemongo-map \
+  frostthefox/pokemongo-map \
     -a ptc -u username2 -p password2 \
     -k 'your-google-maps-key' \
     -l 'newlat, newlon' \
@@ -247,7 +246,7 @@ If you have a docker image for a notification webhook that you want to be called
 
 ```
 docker run -d --name pogomap --net=pogonw -p 5000:5000 \
-  pokemap/pokemongo-map \
+  frostthefox/pokemongo-map \
     -a ptc -u username -p password \
     -k 'your-google-maps-key' \
     -l 'lat, lon' \
