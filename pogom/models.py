@@ -898,6 +898,7 @@ def clean_db_loop(args):
                          .delete()
                          .where((Pokemon.disappear_time <
                                 (datetime.utcnow() - timedelta(hours=args.purge_data)))))
+                query.execute()
 
             log.info('Regular database cleaning complete')
             time.sleep(60)
