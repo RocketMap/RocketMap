@@ -108,4 +108,36 @@
     @include breakpoint(small) {
       padding: 2.5em 1.75em;
     }
+
+    .stats-label-container {
+      font-weight: bold;
+      border-width: 1px 0px;
+      border-style: solid;
+      border-color: black;
+      background-color: white;
+      margin: .75em 0 .25em 0;
+    }
+
+    .stats-label-container h1 {
+      margin: 0.25em;
+      font-size: 1.2em;
+      font-family: 'Muli', sans-serif;
+    }
+
+    // Styling for statistics dataTable
+
+    table.dataTable.display {
+      margin-bottom: 2em;
+    }
+    table.dataTable.display tbody tr td,
+    table.dataTable.display tbody tr td img
+    {
+      vertical-align: middle;
+      padding: 0px 10px;
+    }
+    table.dataTable.display tbody tr td:nth-child(3)
+    {
+      text-align: center;
+    }
+
   }

@@ -1023,7 +1023,7 @@ function updateMap () {
 //    drawScanPath(result.scanned);
     clearStaleMarkers()
     if ($('#stats').hasClass('visible')) {
-      countMarkers()
+      countMarkers(map)
     }
     lastUpdateTime = Date.now()
   })
@@ -1598,4 +1598,24 @@ $(function () {
       heightStyle: 'content'
     })
   }
+
+  // Initialize dataTable in statistics sidebar
+  //   - turn off sorting for the 'icon' column
+  //   - initially sort 'name' column alphabetically
+
+  $('#pokemonList_table').DataTable({
+    paging: false,
+    searching: false,
+    info: false,
+    errMode: 'throw',
+    'language': {
+      'emptyTable': ''
+    },
+    'columns': [
+      { 'orderable': false },
+      null,
+      null,
+      null
+    ]
+  }).order([1, 'asc'])
 })

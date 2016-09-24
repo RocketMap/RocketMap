@@ -30,6 +30,7 @@
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='appicons/180x180.png').lstrip('/') }}" sizes="180x180">
     <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/app.min.css').lstrip('/') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.0/jquery-ui.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.css">
     <script src="{{ url_for('static', filename='js/vendor/modernizr.custom.js').lstrip('/') }}"></script>
   </head>
   <body id="top">
@@ -245,14 +246,29 @@
         <div class="switch-container">
           <div class="switch-container">
             <div><center><a href="stats">Full Stats</a></center></div>
-            <center><h1 id="stats-pkmn-label">Loading...</h1></center>
           </div>
-          <div id="pokemonList" style="color: black;"></div>
           <div class="switch-container">
+            <center><h1 id="stats-ldg-label">Loading...</h1></center>
+          </div>
+          <div class="stats-label-container">
+            <center><h1 id="stats-pkmn-label"></h1></center>
+          </div>
+          <div id="pokemonList" style="color: black;">
+            <table id="pokemonList_table" class="display" cellspacing="0" width="100%">
+              <thead>
+                <tr>
+                  <th>Icon</th> <th>Name</th> <th>Count</th> <th>%</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+            <div id="pokeStatStatus" style="color: black;"></div>
+          </div>
+          <div class="stats-label-container">
             <center><h1 id="stats-gym-label"></h1></center>
           </div>
           <div id="arenaList" style="color: black;"></div>
-          <div class="switch-container">
+          <div class="stats-label-container">
             <center><h1 id="stats-pkstop-label"></h1></center>
           </div>
           <div id="pokestopList" style="color: black;"></div>
@@ -266,6 +282,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.0/jquery-ui.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/skel/3.0.1/skel.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
     <script src="{{ url_for('static', filename='dist/js/app.min.js').lstrip('/') }}"></script>
     <script src="{{ url_for('static', filename='js/vendor/classie.js').lstrip('/') }}"></script>
     <script>
