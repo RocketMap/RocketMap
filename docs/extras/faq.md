@@ -15,7 +15,7 @@ The -dp, -dg -dl, -i, -o and -ar parameters are no longer needed. Remove them fr
 
 [See this helpful guide](external.md)
 
-## "It's acting like the location flag is missing.
+## "It's acting like the location flag is missing."
 
 `-l`, never forget.
 
@@ -46,4 +46,16 @@ error: command 'gcc' failed with exit status 1
 ```
 
 Your OS is missing the `gcc` compiler library. For Debian, run `apt-get install build-essentials`. For Red Hat, run `yum groupinstall 'Development Tools'`
+
+## Formulas?
+Worker Count Formula: `W= 10/T * (R/5)^2`
+
+Another:
+```
+A = 10 / T * (R/5)^2
+
+A = Accounts
+R = Radius (in "steps" -st)
+T = 15 minutes minus the minimum remaining amount of time you want when the pokemon is spotted.   (T=15-0=15 if you are just scanning for spawn points;   T= (15 - 5 ) = 10 means you will have 5 minutes left guaranteed after spotting it, more for twitter bots)
+```
 

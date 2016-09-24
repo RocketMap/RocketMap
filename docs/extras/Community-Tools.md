@@ -1,9 +1,18 @@
 # Community Tools
 Some useful tools made by the community for the community
 
-## [PTC Account Generator](https://github.com/skvvv/pikapy)
+## [ptc-acc-gen](https://github.com/FrostTheFox/ptc-acc-gen)
+A PTC account generation script, generates any # of accounts. ToS verification/trainer name setting via PogoPlayer. Google Scripts script to accept email verification included. Outputs in .csv format. Semi-auto (Manually finish captcha) and automatic (Automatically finish captcha using 2captcha) modes.
+
+## [PTC Account Generator](https://github.com/sriyegna/Pikaptcha)
 ### An automation script that can create any number of Nintendo Pokémon Trainer Club accounts
 Used to generate any desired number of PTC accounts - TOS verifies them and includes a google script that can be used to verify all the emails. Outputs generated account information in .csv format.
+
+## [PGM Multi Loc](https://beccasafan.github.io/pgm-multiloc/)
+### Easily visualize locations on a map before scanning, and generate a customized launch script.
+Add multiple scan locations on the map. Automatically convert an area to a beehive. Resize and move the location on the map. Disable individual hives to stop scanning a specific location.
+
+Generate a customized launch script, with the ability to edit the templates used for the individual commands. Pass in a list of account information that contains usernames, passwords, proxies, etc.
 
 ## [Cor3Zer0's Map Calculator](https://github.com/Cor3Zer0/Map-Calculator)
 ### Calculator that helps in the creation of PokemonGo Map

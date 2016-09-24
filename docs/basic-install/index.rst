@@ -150,7 +150,7 @@ If you are running a ``git`` version, you can update with a few quick commands:
 .. code-block:: bash
 
   git pull
-  pip install -r requirements.txt --upgrade
+  pip install -r requirements.txt --upgrade (Prepend sudo -H on Linux)
   npm install
   npm run build
 
