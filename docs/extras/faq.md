@@ -48,14 +48,24 @@ error: command 'gcc' failed with exit status 1
 Your OS is missing the `gcc` compiler library. For Debian, run `apt-get install build-essentials`. For Red Hat, run `yum groupinstall 'Development Tools'`
 
 ## Formulas?
-Worker Count Formula: `W= 10/T * (R/5)^2`
-
-Another:
 ```
-A = 10 / T * (R/5)^2
+st=step distance
 
-A = Accounts
-R = Radius (in "steps" -st)
-T = 15 minutes minus the minimum remaining amount of time you want when the pokemon is spotted.   (T=15-0=15 if you are just scanning for spawn points;   T= (15 - 5 ) = 10 means you will have 5 minutes left guaranteed after spotting it, more for twitter bots)
+sd=scan delay [default: 10]
+
+w=# of workers
+
+t=desired scan time
 ```
+time to scan:
+`(sd/w)*(3st^2-3st+1)`
+
+workers needed:
+`(sd/t)*(3st^2-3st+1)`
+
+time to scan (using default scan delay):
+`(10/w)*(3st^2-3st+1)`
+
+workers needed (using default scan delay):
+`(10/t)*(3st^2-3st+1)`
 
