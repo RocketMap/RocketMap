@@ -24,3 +24,4 @@ beehive.*
 !Tools/Easy-Setup/setup.bat
 !contrib/supervisord/gen-workers.sh
 !contrib/supervisord/install-reinstall.sh
+!static/data/*

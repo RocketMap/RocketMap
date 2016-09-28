@@ -23,6 +23,12 @@
 #min-seconds-left:      # time that must be left on a spawn before considering it too late and skipping it (default 0)
 #status-name:           # enables writing status updates to the database - if you use multiple processes, each needs a unique value
 
+#Pokemon IV 
+#encounter:             # Set to true to start encounters to pull more info, like IVs or movesets. (default false)
+#encounter-delay:       # delay before starting an encounter. Must not be zero. (default 1)
+#encounter-whitelist:   # whitelist of pokemon ids to encounter. Syntax [id,id,id,id] (Do not use with blacklist)
+#encounter-blacklist:   # blacklist of pokemon ids to NOT encounter. Syntax [id,id,id,id] (Do not use with whitelist)
+
 # Misc
 #gmaps-key:             # your Google Maps API key
 #proxy:                 # Proxy URL e.g. socks5://127.0.0.1:9050 or a list of proxies e.g. [socks5://127.0.0.1:9050,socks5://127.0.0.1:9050]
@@ -41,4 +47,5 @@
 #status-page-password:  # enables and protects the /status page to view status of all workers
 
 #Uncomment a line when you want to change its default value (Remove # at the beginning)
+#Please ensure to leave a space after the : (example setting: value)
 #username, password, location and gmaps-key are required

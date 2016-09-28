@@ -688,6 +688,10 @@ var StoreOptions = {
     default: [],
     type: StoreTypes.JSON
   },
+  'remember_text_perfection_notify': {
+    default: '',
+    type: StoreTypes.Number
+  },
   'showGyms': {
     default: false,
     type: StoreTypes.Boolean
