@@ -5,6 +5,8 @@
                         [-p PASSWORD] [-w WORKERS] [-asi ACCOUNT_SEARCH_INTERVAL]
                         [-ari ACCOUNT_REST_INTERVAL] [-ac ACCOUNTCSV]
                         [-l LOCATION] [-j] [-st STEP_LIMIT] [-sd SCAN_DELAY]
+                        [-enc] [-ed ENCOUNTER_DELAY]
+                        [-ewht ENCOUNTER_WHITELIST | -eblk ENCOUNTER_BLACKLIST]
                         [-ld LOGIN_DELAY] [-lr LOGIN_RETRIES] [-mf MAX_FAILURES]
                         [-msl MIN_SECONDS_LEFT] [-dc] [-H HOST] [-P PORT]
                         [-L LOCALE] [-c] [-m MOCK] [-ns] [-os] [-nsc] [-fl] -k
@@ -72,6 +74,17 @@
       -sd SCAN_DELAY, --scan-delay SCAN_DELAY
                             Time delay between requests in scan threads [env var:
                             POGOMAP_SCAN_DELAY]
+      -enc, --encounter     Start an encounter to gather IVs and moves [env var:
+                            POGOMAP_ENCOUNTER]
+      -ed ENCOUNTER_DELAY, --encounter-delay ENCOUNTER_DELAY
+                            Time delay between encounter pokemon in scan threads
+                            [env var: POGOMAP_ENCOUNTER_DELAY]
+      -ewht ENCOUNTER_WHITELIST, --encounter-whitelist ENCOUNTER_WHITELIST
+                            List of pokemon to encounter for more stats [env var:
+                            POGOMAP_ENCOUNTER_WHITELIST]
+      -eblk ENCOUNTER_BLACKLIST, --encounter-blacklist ENCOUNTER_BLACKLIST
+                            List of pokemon to NOT encounter for more stats [env
+                            var: POGOMAP_ENCOUNTER_BLACKLIST]    
       -ld LOGIN_DELAY, --login-delay LOGIN_DELAY
                             Time delay between each login attempt [env var:
                             POGOMAP_LOGIN_DELAY]
