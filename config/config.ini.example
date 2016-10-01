@@ -25,7 +25,7 @@
 
 #Pokemon IV 
 #encounter:             # Set to true to start encounters to pull more info, like IVs or movesets. (default false)
-#encounter-delay:       # delay before starting an encounter. Must not be zero. (default 1)
+#encounter-delay:       # delay in seconds before starting an encounter. Must not be zero. (default 1)
 #encounter-whitelist:   # whitelist of pokemon ids to encounter. Syntax [id,id,id,id] (Do not use with blacklist)
 #encounter-blacklist:   # blacklist of pokemon ids to NOT encounter. Syntax [id,id,id,id] (Do not use with whitelist)
 
