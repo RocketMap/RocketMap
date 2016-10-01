@@ -98,11 +98,6 @@ def main():
 
     args = get_args()
 
-    # Check for depreciated argumented
-    if args.debug:
-        log.warning('--debug is depreciated. Please use --verbose instead.  Enabling --verbose')
-        args.verbose = 'nofile'
-
     # Add file logging if enabled
     if args.verbose and args.verbose != 'nofile':
         filelog = logging.FileHandler(args.verbose)

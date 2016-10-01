@@ -188,7 +188,6 @@ def get_args():
     verbosity = parser.add_mutually_exclusive_group()
     verbosity.add_argument('-v', '--verbose', help='Show debug messages from PomemonGo-Map and pgoapi. Optionally specify file to log to.', nargs='?', const='nofile', default=False, metavar='filename.log')
     verbosity.add_argument('-vv', '--very-verbose', help='Like verbose, but show debug messages from all modules as well.  Optionally specify file to log to.', nargs='?', const='nofile', default=False, metavar='filename.log')
-    verbosity.add_argument('-d', '--debug', help='Deprecated, use -v or -vv instead.', action='store_true')
     parser.set_defaults(DEBUG=False)
 
     args = parser.parse_args()
