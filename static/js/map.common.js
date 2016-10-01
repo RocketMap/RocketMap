@@ -744,6 +744,14 @@ var StoreOptions = {
     default: [],
     type: StoreTypes.JSON
   },
+  'scanHere': {
+    default: false,
+    type: StoreTypes.Boolean
+  },
+  'scanHereAlerted': {
+    default: false,
+    type: StoreTypes.Boolean
+  },
   'pokemonIcons': {
     default: 'highres',
     type: StoreTypes.String

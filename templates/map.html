@@ -180,6 +180,16 @@
                 </label>
               </div>
             </div>
+            <div class="form-control switch-container" style="display:{{show_scan}}">
+              <h3>Scan here button</h3>
+              <div class="onoffswitch">
+                <input id="scan-here-switch" type="checkbox" name="scan-here-switch" class="onoffswitch-checkbox" checked/>
+                <label class="onoffswitch-label" for="scan-here-switch">
+                <span class="switch-label" data-on="On" data-off="Off"></span>
+                <span class="switch-handle"></span>
+                </label>
+              </div>
+            </div>
           </div>
 
           <h3>Notification Settings</h3>
@@ -286,6 +296,7 @@
         </div>
       </nav>
       <div id="map"></div>
+      <div class="fab" id="scan-here" style="display:none"></div>
     </div>
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.9.1/polyfill.min.js"></script>
