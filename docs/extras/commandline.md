@@ -23,7 +23,7 @@
                         [--ssl-certificate SSL_CERTIFICATE]
                         [--ssl-privatekey SSL_PRIVATEKEY] [-ps] [-sn STATUS_NAME]
                         [-spp STATUS_PAGE_PASSWORD] [-el ENCRYPT_LIB]
-                        [-v [filename.log] | -vv [filename.log] | -d]
+                        [-v [filename.log] | -vv [filename.log]]
     
     Args that start with '--' (eg. -a) can also be set in a config file
     (default: <PokemonGo-Map Project Root>/config/config.ini or via -cf).
@@ -219,5 +219,3 @@
                             Like verbose, but show debug messages from all modules
                             as well. Optionally specify file to log to. [env var:
                             POGOMAP_VERY_VERBOSE]
-      -d, --debug           Deprecated, use -v or -vv instead. [env var:
-                            POGOMAP_DEBUG]
