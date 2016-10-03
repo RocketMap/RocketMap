@@ -22,10 +22,16 @@ var languageLookupThreshold = 3
 
 var searchMarkerStyles
 
+var timestamp
 var excludedPokemon = []
 var notifiedPokemon = []
 var notifiedRarity = []
 var notifiedMinPerfection = null
+
+var buffer = []
+var reincludedPokemon = []
+var reids = []
+
 
 var map
 var rawDataIsLoading = false
@@ -35,6 +41,17 @@ var searchMarker
 var storeZoom = true
 var scanPath
 var moves
+
+var oSwLat
+var oSwLng
+var oNeLat
+var oNeLng
+
+var lastpokestops
+var lastgyms
+var lastpokemon
+var lastslocs
+var lastspawns
 
 var selectedStyle = 'light'
 
@@ -55,6 +72,7 @@ function excludePokemon (id) { // eslint-disable-line no-unused-vars
     $selectExclude.val().concat(id)
   ).trigger('change')
 }
+
 
 function notifyAboutPokemon (id) { // eslint-disable-line no-unused-vars
   $selectPokemonNotify.val(
@@ -914,6 +932,7 @@ function loadRawData () {
   var loadPokestops = Store.get('showPokestops')
   var loadScanned = Store.get('showScanned')
   var loadSpawnpoints = Store.get('showSpawnpoints')
+  var loadLuredOnly = Boolean(Store.get('showLuredPokestopsOnly'))
 
   var bounds = map.getBounds()
   var swPoint = bounds.getSouthWest()
@@ -927,15 +946,28 @@ function loadRawData () {
     url: 'raw_data',
     type: 'GET',
     data: {
+      'timestamp': timestamp,
       'pokemon': loadPokemon,
+      'lastpokemon': lastpokemon,
       'pokestops': loadPokestops,
+      'lastpokestops': lastpokestops,
+      'luredonly': loadLuredOnly,
       'gyms': loadGyms,
+      'lastgyms': lastgyms,
       'scanned': loadScanned,
+      'lastslocs': lastslocs,
       'spawnpoints': loadSpawnpoints,
+      'lastspawns': lastspawns,
       'swLat': swLat,
       'swLng': swLng,
       'neLat': neLat,
-      'neLng': neLng
+      'neLng': neLng,
+      'oSwLat': oSwLat,
+      'oSwLng': oSwLng,
+      'oNeLat': oNeLat,
+      'oNeLng': oNeLng,
+      'reids': String(reincludedPokemon),
+      'eids': String(excludedPokemon)
     },
     dataType: 'json',
     cache: false,
@@ -958,7 +990,7 @@ function processPokemons (i, item) {
   }
 
   if (!(item['encounter_id'] in mapData.pokemons) &&
-    excludedPokemon.indexOf(item['pokemon_id']) < 0) {
+    excludedPokemon.indexOf(item['pokemon_id']) < 0 && item['disappear_time'] > Date.now()) {
     // add marker to map and item to dict
     if (item.marker) {
       item.marker.setMap(null)
@@ -977,18 +1009,10 @@ function processPokestops (i, item) {
   }
 
   if (Store.get('showLuredPokestopsOnly') && !item['lure_expiration']) {
-    if (mapData.pokestops[item['pokestop_id']] && mapData.pokestops[item['pokestop_id']].marker) {
-      if (mapData.pokestops[item['pokestop_id']].marker.rangeCircle) {
-        mapData.pokestops[item['pokestop_id']].marker.rangeCircle.setMap(null)
-      }
-      mapData.pokestops[item['pokestop_id']].marker.setMap(null)
-      delete mapData.pokestops[item['pokestop_id']]
-    }
     return true
   }
 
-  if (!mapData.pokestops[item['pokestop_id']]) { // add marker to map and item to dict
-    // add marker to map and item to dict
+  if (!mapData.pokestops[item['pokestop_id']]) { // new pokestop, add marker to map and item to dict
     if (item.marker && item.marker.rangeCircle) {
       item.marker.rangeCircle.setMap(null)
     }
@@ -997,7 +1021,7 @@ function processPokestops (i, item) {
     }
     item.marker = setupPokestopMarker(item)
     mapData.pokestops[item['pokestop_id']] = item
-  } else {
+  } else {  // change existing pokestop marker to unlured/lured
     var item2 = mapData.pokestops[item['pokestop_id']]
     if (!!item['lure_expiration'] !== !!item2['lure_expiration']) {
       if (item2.marker && item2.marker.rangeCircle) {
@@ -1007,6 +1031,45 @@ function processPokestops (i, item) {
       item.marker = setupPokestopMarker(item)
       mapData.pokestops[item['pokestop_id']] = item
     }
+  }
+}
+
+function updatePokestops () {
+  if (!Store.get('showPokestops')) {
+    return false
+  }
+
+  var removeStops = []
+  var currentTime = new Date().getTime()
+
+  // change lured pokestop marker to unlured when expired
+  $.each(mapData.pokestops, function (key, value) {
+    if (value['lure_expiration'] && value['lure_expiration'] < currentTime) {
+      value['lure_expiration'] = null
+      if (value.marker && value.marker.rangeCircle) {
+        value.marker.rangeCircle.setMap(null)
+      }
+      value.marker.setMap(null)
+      value.marker = setupPokestopMarker(value)
+    }
+  })
+
+  // remove unlured stops if show lured only is selected
+  if (Store.get('showLuredPokestopsOnly')) {
+    $.each(mapData.pokestops, function (key, value) {
+      if (!value['lure_expiration']) {
+        removeStops.push(key)
+      }
+    })
+    $.each(removeStops, function (key, value) {
+      if (mapData.pokestops[value] && mapData.pokestops[value].marker) {
+        if (mapData.pokestops[value].marker.rangeCircle) {
+          mapData.pokestops[value].marker.rangeCircle.setMap(null)
+        }
+        mapData.pokestops[value].marker.setMap(null)
+        delete mapData.pokestops[value]
+      }
+    })
   }
 }
 
@@ -1030,11 +1093,7 @@ function processScanned (i, item) {
 
   var scanId = item['latitude'] + '|' + item['longitude']
 
-  if (scanId in mapData.scanned) {
-    mapData.scanned[scanId].marker.setOptions({
-      fillColor: getColorByDate(item['last_modified'])
-    })
-  } else { // add marker to map and item to dict
+  if (!(scanId in mapData.scanned)) { // add marker to map and item to dict
     if (item.marker) {
       item.marker.setMap(null)
     }
@@ -1043,25 +1102,50 @@ function processScanned (i, item) {
   }
 }
 
+function updateScanned () {
+  if (!Store.get('showScanned')) {
+    return false
+  }
+
+  $.each(mapData.scanned, function (key, value) {
+    if (map.getBounds().intersects(value.marker.getBounds())) {
+      value.marker.setOptions({
+        fillColor: getColorByDate(value['last_modified'])
+      })
+    }
+  })
+}
+
 function processSpawnpoints (i, item) {
   if (!Store.get('showSpawnpoints')) {
     return false
   }
 
   var id = item['spawnpoint_id']
-  var zoom = map.getZoom()
 
-  if (id in mapData.spawnpoints) {
-    var hue = getColorBySpawnTime(item['time'])
-    mapData.spawnpoints[id].marker.setIcon(changeSpawnIcon(hue, zoom))
-    mapData.spawnpoints[id].marker.setZIndex(spawnPointIndex(hue))
-  } else { // add marker to map and item to dict
+  if (!(id in mapData.spawnpoints)) { // add marker to map and item to dict
     if (item.marker) {
       item.marker.setMap(null)
     }
     item.marker = setupSpawnpointMarker(item)
     mapData.spawnpoints[id] = item
   }
+}
+
+function updateSpawnPoints () {
+  if (!Store.get('showSpawnpoints')) {
+    return false
+  }
+
+  var zoom = map.getZoom()
+
+  $.each(mapData.spawnpoints, function (key, value) {
+    if (map.getBounds().contains(value.marker.getPosition())) {
+      var hue = getColorBySpawnTime(value['time'])
+      value.marker.setIcon(changeSpawnIcon(hue, zoom))
+      value.marker.setZIndex(spawnPointIndex(hue))
+    }
+  })
 }
 
 function updateMap () {
@@ -1079,9 +1163,31 @@ function updateMap () {
     showInBoundsMarkers(mapData.spawnpoints, 'inbound')
 //    drawScanPath(result.scanned);
     clearStaleMarkers()
+
+    updateScanned()
+    updateSpawnPoints()
+    updatePokestops()
+
     if ($('#stats').hasClass('visible')) {
       countMarkers(map)
     }
+
+    oSwLat = result.oSwLat
+    oSwLng = result.oSwLng
+    oNeLat = result.oNeLat
+    oNeLng = result.oNeLng
+
+    lastgyms = result.lastgyms
+    lastpokestops = result.lastpokestops
+    lastpokemon = result.lastpokemon
+    lastslocs = result.lastslocs
+    lastspawns = result.lastspawns
+
+    reids = result.reids
+    if (reids instanceof Array) {
+      reincludedPokemon = reids.filter(function (e) { return this.indexOf(e) < 0 }, reincludedPokemon)
+    }
+    timestamp = result.timestamp
     lastUpdateTime = Date.now()
   })
 }
@@ -1425,6 +1531,7 @@ $(function () {
 
   $selectLuredPokestopsOnly.on('change', function () {
     Store.set('showLuredPokestopsOnly', this.value)
+    lastpokestops = false
     updateMap()
   })
 
@@ -1556,7 +1663,10 @@ $(function () {
 
     // setup list change behavior now that we have the list to work from
     $selectExclude.on('change', function (e) {
+      buffer = excludedPokemon
       excludedPokemon = $selectExclude.val().map(Number)
+      buffer = buffer.filter(function (e) { return this.indexOf(e) < 0 }, excludedPokemon)
+      reincludedPokemon = reincludedPokemon.concat(buffer)
       clearStaleMarkers()
       Store.set('remember_select_exclude', excludedPokemon)
     })
@@ -1603,6 +1713,20 @@ $(function () {
     return function () {
       Store.set(storageKey, this.checked)
       if (this.checked) {
+        // When switch is turned on we asume it has been off, makes sure we dont end up in limbo
+        // Without this there could've been a situation where no markers are on map and only newly modified ones are loaded
+        if (storageKey === 'showPokemon') {
+          lastpokemon = false
+        } else if (storageKey === 'showGyms') {
+          lastgyms = false
+        } else if (storageKey === 'showPokestops') {
+          lastpokestops = false
+        } else if (storageKey === 'showScanned') {
+          lastslocs = false
+        } else if (storageKey === 'showSpawnpoints') {
+          lastspawns = false
+        }
+
         updateMap()
       } else {
         $.each(dataType, function (d, dType) {
@@ -1624,10 +1748,18 @@ $(function () {
   }
 
   // Setup UI element interactions
-  $('#gyms-switch').change(buildSwitchChangeListener(mapData, ['gyms'], 'showGyms'))
-  $('#pokemon-switch').change(buildSwitchChangeListener(mapData, ['pokemons'], 'showPokemon'))
-  $('#scanned-switch').change(buildSwitchChangeListener(mapData, ['scanned'], 'showScanned'))
-  $('#spawnpoints-switch').change(buildSwitchChangeListener(mapData, ['spawnpoints'], 'showSpawnpoints'))
+  $('#gyms-switch').change(function () {
+    buildSwitchChangeListener(mapData, ['gyms'], 'showGyms').bind(this)()
+  })
+  $('#pokemon-switch').change(function () {
+    buildSwitchChangeListener(mapData, ['pokemons'], 'showPokemon').bind(this)()
+  })
+  $('#scanned-switch').change(function () {
+    buildSwitchChangeListener(mapData, ['scanned'], 'showScanned').bind(this)()
+  })
+  $('#spawnpoints-switch').change(function () {
+    buildSwitchChangeListener(mapData, ['spawnpoints'], 'showSpawnpoints').bind(this)()
+  })
   $('#ranges-switch').change(buildSwitchChangeListener(mapData, ['gyms', 'pokemons', 'pokestops'], 'showRanges'))
 
   $('#pokestops-switch').change(function () {
@@ -1636,8 +1768,10 @@ $(function () {
     }
     var wrapper = $('#lured-pokestops-only-wrapper')
     if (this.checked) {
+      lastpokestops = false
       wrapper.show(options)
     } else {
+      lastpokestops = false
       wrapper.hide(options)
     }
     return buildSwitchChangeListener(mapData, ['pokestops'], 'showPokestops').bind(this)()

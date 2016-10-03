@@ -91,27 +91,117 @@ class Pogom(Flask):
         if args.on_demand_timeout > 0:
             self.search_control.clear()
         d = {}
+
+        # Request time of this request
+        d['timestamp'] = datetime.utcnow()
+
+        # Request time of previous request
+        if request.args.get('timestamp'):
+            timestamp = int(request.args.get('timestamp'))
+            timestamp -= 1000  # Overlap, for rounding errors.
+        else:
+            timestamp = 0
+
         swLat = request.args.get('swLat')
         swLng = request.args.get('swLng')
         neLat = request.args.get('neLat')
         neLng = request.args.get('neLng')
+
+        oSwLat = request.args.get('oSwLat')
+        oSwLng = request.args.get('oSwLng')
+        oNeLat = request.args.get('oNeLat')
+        oNeLng = request.args.get('oNeLng')
+
+        # Previous switch settings
+        lastgyms = request.args.get('lastgyms')
+        lastpokestops = request.args.get('lastpokestops')
+        lastpokemon = request.args.get('lastpokemon')
+        lastslocs = request.args.get('lastslocs')
+        lastspawns = request.args.get('lastspawns')
+
+        if request.args.get('luredonly', 'true') == 'true':
+            luredonly = True
+        else:
+            luredonly = False
+
+        # Current switch settings saved for next request
+        if request.args.get('gyms', 'true') == 'true':
+            d['lastgyms'] = request.args.get('gyms', 'true')
+
+        if request.args.get('pokestops', 'true') == 'true':
+            d['lastpokestops'] = request.args.get('pokestops', 'true')
+
+        if request.args.get('pokemon', 'true') == 'true':
+            d['lastpokemon'] = request.args.get('pokemon', 'true')
+
+        if request.args.get('scanned', 'true') == 'true':
+            d['lastslocs'] = request.args.get('scanned', 'true')
+
+        if request.args.get('spawnpoints', 'false') == 'true':
+            d['lastspawns'] = request.args.get('spawnpoints', 'false')
+
+        # If old coords are not equal to current coords we have moved/zoomed!
+        if oSwLng < swLng and oSwLat < swLat and oNeLat > neLat and oNeLng > neLng:
+            newArea = False  # We zoomed in no new area uncovered
+        elif not (oSwLat == swLat and oSwLng == swLng and oNeLat == neLat and oNeLng == neLng):
+            newArea = True
+        else:
+            newArea = False
+
+        # Pass current coords as old coords.
+        d['oSwLat'] = swLat
+        d['oSwLng'] = swLng
+        d['oNeLat'] = neLat
+        d['oNeLng'] = neLng
+
         if request.args.get('pokemon', 'true') == 'true':
             if request.args.get('ids'):
                 ids = [int(x) for x in request.args.get('ids').split(',')]
                 d['pokemons'] = Pokemon.get_active_by_id(ids, swLat, swLng,
                                                          neLat, neLng)
-            else:
+            elif lastpokemon != 'true':
+                # If this is first request since switch on, load all pokemon on screen.
                 d['pokemons'] = Pokemon.get_active(swLat, swLng, neLat, neLng)
+            else:
+                # If map is already populated only request modified Pokemon since last request time
+                d['pokemons'] = Pokemon.get_active(swLat, swLng, neLat, neLng, timestamp=timestamp)
+                if newArea:
+                    # If screen is moved add newly uncovered Pokemon to the ones that were modified since last request time
+                    d['pokemons'] = d['pokemons'] + (Pokemon.get_active(swLat, swLng, neLat, neLng, oSwLat=oSwLat, oSwLng=oSwLng, oNeLat=oNeLat, oNeLng=oNeLng))
+
+            if request.args.get('eids'):
+                # Exclude id's of pokemon that are hidden
+                eids = [int(x) for x in request.args.get('eids').split(',')]
+                d['pokemons'] = [x for x in d['pokemons'] if x['pokemon_id'] not in eids]
+
+            if request.args.get('reids'):
+                reids = [int(x) for x in request.args.get('reids').split(',')]
+                d['pokemons'] = d['pokemons'] + (Pokemon.get_active_by_id(reids, swLat, swLng, neLat, neLng))
+                d['reids'] = reids
 
         if request.args.get('pokestops', 'true') == 'true':
-            d['pokestops'] = Pokestop.get_stops(swLat, swLng, neLat, neLng)
+            if lastpokestops != 'true':
+                d['pokestops'] = Pokestop.get_stops(swLat, swLng, neLat, neLng, lured=luredonly)
+            else:
+                d['pokestops'] = Pokestop.get_stops(swLat, swLng, neLat, neLng, timestamp=timestamp)
+                if newArea:
+                    d['pokestops'] = d['pokestops'] + (Pokestop.get_stops(swLat, swLng, neLat, neLng, oSwLat=oSwLat, oSwLng=oSwLng, oNeLat=oNeLat, oNeLng=oNeLng, lured=luredonly))
 
         if request.args.get('gyms', 'true') == 'true':
-            d['gyms'] = Gym.get_gyms(swLat, swLng, neLat, neLng)
+            if lastgyms != 'true':
+                d['gyms'] = Gym.get_gyms(swLat, swLng, neLat, neLng)
+            else:
+                d['gyms'] = Gym.get_gyms(swLat, swLng, neLat, neLng, timestamp=timestamp)
+                if newArea:
+                    d['gyms'].update(Gym.get_gyms(swLat, swLng, neLat, neLng, oSwLat=oSwLat, oSwLng=oSwLng, oNeLat=oNeLat, oNeLng=oNeLng))
 
         if request.args.get('scanned', 'true') == 'true':
-            d['scanned'] = ScannedLocation.get_recent(swLat, swLng, neLat,
-                                                      neLng)
+            if lastslocs != 'true':
+                d['scanned'] = ScannedLocation.get_recent(swLat, swLng, neLat, neLng)
+            else:
+                d['scanned'] = ScannedLocation.get_recent(swLat, swLng, neLat, neLng, timestamp=timestamp)
+                if newArea:
+                    d['scanned'] = d['scanned'] + (ScannedLocation.get_recent(swLat, swLng, neLat, neLng, oSwLat=oSwLat, oSwLng=oSwLng, oNeLat=oNeLat, oNeLng=oNeLng))
 
         selected_duration = None
 
@@ -133,7 +223,12 @@ class Pogom(Flask):
                                                                                 selected_duration)
 
         if request.args.get('spawnpoints', 'false') == 'true':
-            d['spawnpoints'] = Pokemon.get_spawnpoints(swLat, swLng, neLat, neLng)
+            if lastspawns != 'true':
+                d['spawnpoints'] = Pokemon.get_spawnpoints(swLat=swLat, swLng=swLng, neLat=neLat, neLng=neLng)
+            else:
+                d['spawnpoints'] = Pokemon.get_spawnpoints(swLat=swLat, swLng=swLng, neLat=neLat, neLng=neLng, timestamp=timestamp)
+                if newArea:
+                    d['spawnpoints'] = d['spawnpoints'] + (Pokemon.get_spawnpoints(swLat, swLng, neLat, neLng, oSwLat=oSwLat, oSwLng=oSwLng, oNeLat=oNeLat, oNeLng=oNeLng))
 
         if request.args.get('status', 'false') == 'true':
             args = get_args()
@@ -143,7 +238,6 @@ class Pogom(Flask):
             elif request.args.get('password', None) == args.status_page_password:
                 d['main_workers'] = MainWorker.get_all()
                 d['workers'] = WorkerStatus.get_all()
-
         return jsonify(d)
 
     def loc(self):
