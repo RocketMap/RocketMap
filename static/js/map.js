@@ -1099,6 +1099,8 @@ function processScanned (i, item) {
     }
     item.marker = setupScannedMarker(item)
     mapData.scanned[scanId] = item
+  } else {
+    mapData.scanned[scanId].last_modified = item['last_modified']
   }
 }
 
