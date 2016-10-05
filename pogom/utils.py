@@ -43,12 +43,14 @@ def memoize(function):
 
 @memoize
 def get_args():
-    # fuck PEP8
-    defaultconfigpath = os.getenv('POGOMAP_CONFIG', os.path.join(os.path.dirname(__file__), '../config/config.ini'))
-    if not os.path.isfile(os.path.realpath(defaultconfigpath)):
-        defaultconfigpath = None
-    parser = configargparse.ArgParser(auto_env_var_prefix='POGOMAP_')
-    parser.add_argument('-cf', '--config', is_config_file=True, default=defaultconfigpath, help='Configuration file')
+    # pre-check to see if the -cf or --config flag is used on the command line
+    # if not, we'll use the env var or default value.  this prevents layering of
+    # config files, and handles missing config.ini as well
+    defaultconfigfiles = []
+    if '-cf' not in sys.argv and '--config' not in sys.argv:
+        defaultconfigfiles = [os.getenv('POGOMAP_CONFIG', os.path.join(os.path.dirname(__file__), '../config/config.ini'))]
+    parser = configargparse.ArgParser(default_config_files=defaultconfigfiles, auto_env_var_prefix='POGOMAP_')
+    parser.add_argument('-cf', '--config', is_config_file=True, help='Configuration file')
     parser.add_argument('-a', '--auth-service', type=str.lower, action='append', default=[],
                         help='Auth Services, either one for all accounts or one per account: ptc or google. Defaults all to ptc.')
     parser.add_argument('-u', '--username', action='append', default=[],
