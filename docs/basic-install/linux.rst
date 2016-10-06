@@ -52,9 +52,13 @@ After install, check that you have the correct versions in your environment vari
 If your output looks as above, you can proceed with installation:
 
 .. code-block:: bash
-
+        
+	cd ~/
+	sudo apt-get install git
+	git clone https://github.com/PokemonGoMap/PokemonGo-Map.git
+	cd PokemonGo-Map
 	sudo -H pip install -r requirements.txt
-	sudo npm install
+	npm install
 	sudo npm install -g grunt-cli
 	sudo grunt build
 
