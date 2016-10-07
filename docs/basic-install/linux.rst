@@ -113,5 +113,10 @@ You may also need to install the EPEL repository to install ``python-pip`` and `
 
   yum install epel-release
   yum install python python-pip python-devel
+  
+  Fedora Server:
+  dnf install python
+  dnf install redhat-rpm-config // fix for error: command 'gcc' failed with exit status 1
+  
 
 All set, head back to the basic install guide.
