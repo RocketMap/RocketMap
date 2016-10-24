@@ -1,5 +1,5 @@
 
-# PokemonGo Map
+# PokemonGo Map (Currently non-functional, awaiting API Update)
 
 ![Python 2.7](https://img.shields.io/badge/python-2.7-blue.svg) ![License](https://img.shields.io/github/license/pokemongomap/pokemongo-map.svg) [![Build Status](https://travis-ci.org/PokemonGoMap/PokemonGo-Map.svg?branch=develop)](https://travis-ci.org/PokemonGoMap/PokemonGo-Map) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/PoGoMapDev)
 
