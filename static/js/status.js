@@ -1,7 +1,6 @@
 /* Shared */
 var monthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-
 /* Main stats page */
 var rawDataIsLoading = false
 var statusPagePassword = false

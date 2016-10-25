@@ -32,7 +32,6 @@ var buffer = []
 var reincludedPokemon = []
 var reids = []
 
-
 var map
 var rawDataIsLoading = false
 var locationMarker
@@ -62,7 +61,6 @@ var gymTypes = ['Uncontested', 'Mystic', 'Valor', 'Instinct']
 var gymPrestige = [2000, 4000, 8000, 12000, 16000, 20000, 30000, 40000, 50000]
 var audio = new Audio('static/sounds/ding.mp3')
 
-
 //
 // Functions
 //
@@ -72,7 +70,6 @@ function excludePokemon (id) { // eslint-disable-line no-unused-vars
     $selectExclude.val().concat(id)
   ).trigger('change')
 }
-
 
 function notifyAboutPokemon (id) { // eslint-disable-line no-unused-vars
   $selectPokemonNotify.val(
