@@ -425,7 +425,7 @@ def search_worker_thread(args, account_queue, account_failures, search_items_que
                 log.debug("Using proxy %s", status['proxy_url'])
                 api.set_proxy({'http': status['proxy_url'], 'https': status['proxy_url']})
 
-            api.activate_signature(encryption_lib_path)
+            # api.activate_signature(encryption_lib_path)
 
             # The forever loop for the searches
             while True:
