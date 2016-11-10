@@ -35,7 +35,7 @@ If you're going to run a copy from the latest ``develop`` branch in ``git`` you 
 
 .. code-block:: bash
 
-  git clone https://github.com/PokemonGoMap/PokemonGo-Map.git
+  git clone --recursive https://github.com/PokemonGoMap/PokemonGo-Map.git
 
 Installing Modules
 ******************
