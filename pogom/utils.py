@@ -77,6 +77,14 @@ def get_args():
     parser.add_argument('-enc', '--encounter',
                         help='Start an encounter to gather IVs and moves',
                         action='store_true', default=False)
+    parser.add_argument('-cs', '--captcha-solving',
+                        help='Enables captcha solving',
+                        action='store_true', default=False)
+    parser.add_argument('-ck', '--captcha-key',
+                        help='2Captcha API key')
+    parser.add_argument('-cds', '--captcha-dsk',
+                        help='PokemonGo captcha data-sitekey',
+                        default="6LeeTScTAAAAADqvhqVMhPpr_vB9D364Ia-1dSgK")
     parser.add_argument('-ed', '--encounter-delay',
                         help='Time delay between encounter pokemon in scan threads',
                         type=float, default=1)
