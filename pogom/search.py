@@ -252,7 +252,7 @@ def worker_status_db_thread(threads_status, name, db_updates_queue):
 
 
 # The main search loop that keeps an eye on the over all process
-def search_overseer_thread(args, new_location_queue, pause_bit, heartb, encryption_lib_path, db_updates_queue, wh_queue):
+def search_overseer_thread(args, new_location_queue, pause_bit, heartb, db_updates_queue, wh_queue):
 
     log.info('Search overseer starting')
 
@@ -332,7 +332,7 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb, encrypti
         t = Thread(target=search_worker_thread,
                    name='search-worker-{}'.format(i),
                    args=(args, account_queue, account_failures, search_items_queue, pause_bit,
-                         encryption_lib_path, threadStatus[workerId],
+                         threadStatus[workerId],
                          db_updates_queue, wh_queue))
         t.daemon = True
         t.start()
@@ -385,7 +385,7 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb, encrypti
         time.sleep(1)
 
 
-def search_worker_thread(args, account_queue, account_failures, search_items_queue, pause_bit, encryption_lib_path, status, dbq, whq):
+def search_worker_thread(args, account_queue, account_failures, search_items_queue, pause_bit, status, dbq, whq):
 
     log.debug('Search worker thread starting')
 
@@ -427,7 +427,7 @@ def search_worker_thread(args, account_queue, account_failures, search_items_que
                 log.debug("Using proxy %s", status['proxy_url'])
                 api.set_proxy({'http': status['proxy_url'], 'https': status['proxy_url']})
 
-            api.activate_signature(encryption_lib_path)
+            # api.activate_signature(encryption_lib_path)
 
             # The forever loop for the searches
             while True:

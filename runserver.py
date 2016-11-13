@@ -20,7 +20,7 @@ from flask_cache_bust import init_cache_busting
 
 from pogom import config
 from pogom.app import Pogom
-from pogom.utils import get_args, get_encryption_lib_path, now
+from pogom.utils import get_args, now
 
 from pogom.search import search_overseer_thread
 from pogom.models import init_database, create_tables, drop_tables, Pokemon, db_updater, clean_db_loop
@@ -107,11 +107,6 @@ def main():
         filelog = logging.FileHandler(args.very_verbose)
         filelog.setFormatter(logging.Formatter('%(asctime)s [%(threadName)16s][%(module)14s][%(levelname)8s] %(message)s'))
         logging.getLogger('').addHandler(filelog)
-
-    # Check if we have the proper encryption library file and get its path
-    encryption_lib_path = get_encryption_lib_path(args)
-    if encryption_lib_path is "":
-        sys.exit(1)
 
     if args.verbose or args.very_verbose:
         log.setLevel(logging.DEBUG)
@@ -253,7 +248,7 @@ def main():
                 file.write(json.dumps(spawns))
                 log.info('Finished exporting spawn points')
 
-        argset = (args, new_location_queue, pause_bit, heartbeat, encryption_lib_path, db_updates_queue, wh_updates_queue)
+        argset = (args, new_location_queue, pause_bit, heartbeat, db_updates_queue, wh_updates_queue)
 
         log.debug('Starting a %s search thread', args.scheduler)
         search_thread = Thread(target=search_overseer_thread, name='search-overseer', args=argset)
