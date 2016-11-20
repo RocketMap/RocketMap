@@ -11,10 +11,9 @@ from threading import Thread
 log = logging.getLogger(__name__)
 
 
-# Simple function to do a call to Niantic's system for testing proxy connectivity
+# Simple function to do a call to Niantic's system for testing proxy connectivity.
 def check_proxy(proxy_queue, timeout, proxies):
 
-    # Update check url - Thanks ChipWolf #1282 and #1281
     proxy_test_url = 'https://pgorelease.nianticlabs.com/plfe/rpc'
     proxy = proxy_queue.get()
 
