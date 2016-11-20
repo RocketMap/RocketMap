@@ -10,7 +10,7 @@ from .utils import get_args
 class FakePogoApi:
 
     def __init__(self, mock):
-        # Fake a 24 hour auth token
+        # Fake a 24 hour auth token.
         self._auth_provider = type('', (object,), {"_ticket_expire": (time() + (3600 * 24)) * 1000})()
         self.inited = False
         self.mock = mock
@@ -22,7 +22,7 @@ class FakePogoApi:
         pass
 
     def set_position(self, lat, lng, alt):
-        # meters radius (very, very rough approximation -- deal with it)
+        # Meters radius (very, very rough approximation -- deal with it.)
         if not self.inited:
             args = get_args()
             radius = 140 * args.step_limit

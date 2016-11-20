@@ -3,7 +3,7 @@ from pogom.utils import get_args
 from datetime import datetime
 
 args = get_args()
-# temporarily disabling because -o and -i is removed from 51f651228c00a96b86f5c38d1a2d53b32e5d9862
+# Temporarily disabling because -o and -i is removed from 51f651228c00a96b86f5c38d1a2d53b32e5d9862.
 # IGNORE = None
 # ONLY = None
 # if args.ignore:
