@@ -100,6 +100,7 @@ def makeWildPokemon(location):
         })
     return pokes
 
+
 # Fancy app time
 app = Flask(__name__)
 
@@ -177,6 +178,7 @@ def api_scan(lat, lng):
             'nearby_pokemons': []  # unused
         })
     return jsonify({'responses': {'GET_MAP_OBJECTS': {'map_cells': cells}}})
+
 
 if __name__ == '__main__':
     app.run(threaded=True, debug=args.debug, host=args.host, port=args.port)
