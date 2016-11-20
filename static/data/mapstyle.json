@@ -8,5 +8,8 @@
   "style_pgo": "Pokémon Go",
   "dark_style_nl": "Dark (No Labels)",
   "style_light2_nl": "Light2 (No Labels)",
-  "style_pgo_nl": "Pokémon Go (No Labels)"
+  "style_pgo_nl": "Pokémon Go (No Labels)",
+  "style_pgo_day": "Pokémon Go Day",
+  "style_pgo_night": "Pokémon Go Night",
+  "style_pgo_dynamic": "Pokémon Go Dynamic"
 }

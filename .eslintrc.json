@@ -31,6 +31,8 @@
     "pGoStyle": true,
     "darkStyleNoLabels": true,
     "light2StyleNoLabels": true,
-    "pGoStyleNoLabels": true
+    "pGoStyleNoLabels": true,
+    "pGoStyleDay": true,
+    "pGoStyleNight": true
   }
 }
