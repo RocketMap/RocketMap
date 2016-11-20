@@ -212,7 +212,7 @@ def get_args():
         # If using a CSV file, add the data where needed into the username,password and auth_service arguments.
         # CSV file should have lines like "ptc,username,password", "username,password" or "username".
         if args.accountcsv is not None:
-            # Giving num_fields something it would usually not get
+            # Giving num_fields something it would usually not get.
             num_fields = -1
             with open(args.accountcsv, 'r') as f:
                 for num, line in enumerate(f, 1):
@@ -229,7 +229,7 @@ def get_args():
                     csv_input.append('<username>,<password>')
                     csv_input.append('<ptc/google>,<username>,<password>')
 
-                    # If the number of fields is differend this is not a CSV
+                    # If the number of fields is differend this is not a CSV.
                     if num_fields != line.count(',') + 1:
                         print(sys.argv[0] + ": Error parsing CSV file on line " + str(num) + ". Your file started with the following input, '" + csv_input[num_fields] + "' but now you gave us '" + csv_input[line.count(',') + 1] + "'.")
                         sys.exit(1)
@@ -237,21 +237,21 @@ def get_args():
                     field_error = ''
                     line = line.strip()
 
-                    # Ignore blank lines and comment lines
+                    # Ignore blank lines and comment lines.
                     if len(line) == 0 or line.startswith('#'):
                         continue
 
-                    # If number of fields is more than 1 split the line into fields and strip them
+                    # If number of fields is more than 1 split the line into fields and strip them.
                     if num_fields > 1:
                         fields = line.split(",")
                         fields = map(str.strip, fields)
 
-                    # If the number of fields is one then assume this is "username". As requested..
+                    # If the number of fields is one then assume this is "username". As requested.
                     if num_fields == 1:
                         # Empty lines are already ignored.
                         args.username.append(line)
 
-                    # If the number of fields is two then assume this is "username,password". As requested..
+                    # If the number of fields is two then assume this is "username,password". As requested.
                     if num_fields == 2:
                         # If field length is not longer then 0 something is wrong!
                         if len(fields[0]) > 0:
@@ -265,7 +265,7 @@ def get_args():
                         else:
                             field_error = 'password'
 
-                    # If the number of fields is three then assume this is "ptc,username,password". As requested..
+                    # If the number of fields is three then assume this is "ptc,username,password". As requested.
                     if num_fields == 3:
                         # If field 0 is not ptc or google something is wrong!
                         if fields[0].lower() == 'ptc' or fields[0].lower() == 'google':
@@ -335,29 +335,29 @@ def get_args():
             print(sys.argv[0] + ": errors: \n - " + "\n - ".join(errors))
             sys.exit(1)
 
-        # Fill the pass/auth if set to a single value
+        # Fill the pass/auth if set to a single value.
         if num_passwords == 1:
             args.password = [args.password[0]] * num_usernames
         if num_auths == 1:
             args.auth_service = [args.auth_service[0]] * num_usernames
 
-        # Make our accounts list
+        # Make our accounts list.
         args.accounts = []
 
-        # Make the accounts list
+        # Make the accounts list.
         for i, username in enumerate(args.username):
             args.accounts.append({'username': username, 'password': args.password[i], 'auth_service': args.auth_service[i]})
 
-        # Make max workers equal number of accounts if unspecified, and disable account switching
+        # Make max workers equal number of accounts if unspecified, and disable account switching.
         if args.workers is None:
             args.workers = len(args.accounts)
             args.account_search_interval = None
 
-        # Disable search interval if 0 specified
+        # Disable search interval if 0 specified.
         if args.account_search_interval == 0:
             args.account_search_interval = None
 
-        # Make sure we don't have an empty account list after adding command line and CSV accounts
+        # Make sure we don't have an empty account list after adding command line and CSV accounts.
         if len(args.accounts) == 0:
             print(sys.argv[0] + ": Error: no accounts specified. Use -a, -u, and -p or --accountcsv to add accounts.")
             sys.exit(1)
@@ -365,7 +365,7 @@ def get_args():
         args.encounter_blacklist = [int(i) for i in args.encounter_blacklist]
         args.encounter_whitelist = [int(i) for i in args.encounter_whitelist]
 
-        # Decide which scanning mode to use
+        # Decide which scanning mode to use.
         if args.spawnpoint_scanning:
             args.scheduler = 'SpawnScan'
         elif args.skip_empty:
@@ -381,7 +381,7 @@ def now():
     return int(time.time())
 
 
-# gets the current time past the hour
+# Gets the current time past the hour.
 def cur_sec():
     return (60 * time.gmtime().tm_min) + time.gmtime().tm_sec
 

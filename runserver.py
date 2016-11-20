@@ -173,20 +173,20 @@ def main():
         log.error('Unable to retrieve altitude from Google APIs; setting to 0')
 
     if not any(position):
-        log.error('Could not get a position by name, aborting')
+        log.error('Could not get a position by name, aborting!')
         sys.exit()
 
     log.info('Parsed location is: %.4f/%.4f/%.4f (lat/lng/alt)',
              position[0], position[1], position[2])
 
     if args.no_pokemon:
-        log.info('Parsing of Pokemon disabled')
+        log.info('Parsing of Pokemon disabled.')
     if args.no_pokestops:
-        log.info('Parsing of Pokestops disabled')
+        log.info('Parsing of Pokestops disabled.')
     if args.no_gyms:
-        log.info('Parsing of Gyms disabled')
+        log.info('Parsing of Gyms disabled.')
     if args.encounter:
-        log.info('Encountering pokemon enabled')
+        log.info('Encountering pokemon enabled.')
 
     config['LOCALE'] = args.locale
     config['CHINA'] = args.china

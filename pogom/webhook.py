@@ -12,7 +12,7 @@ def send_to_webhook(message_type, message):
     args = get_args()
 
     if not args.webhooks:
-        # what are you even doing here...
+        # What are you even doing here...
         return
 
     data = {
@@ -30,10 +30,10 @@ def send_to_webhook(message_type, message):
 
 
 def wh_updater(args, q):
-    # The forever loop
+    # The forever loop.
     while True:
         try:
-            # Loop the queue
+            # Loop the queue.
             while True:
                 whtype, message = q.get()
                 send_to_webhook(whtype, message)
