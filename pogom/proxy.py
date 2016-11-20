@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 # Simple function to do a call to Niantic's system for testing proxy connectivity.
 def check_proxy(proxy_queue, timeout, proxies):
-    
+
     # Url for proxy testing.
     proxy_test_url = 'https://pgorelease.nianticlabs.com/plfe/rpc'
     proxy = proxy_queue.get()
