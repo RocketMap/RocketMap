@@ -48,7 +48,7 @@ from .utils import now, cur_sec
 log = logging.getLogger(__name__)
 
 
-# Simple base class that all other schedulers inherit from
+# Simple base class that all other schedulers inherit from.
 # Most of these functions should be overridden in the actual scheduler classes.
 # Not all scheduler methods will need to use all of the functions.
 class BaseScheduler(object):
@@ -59,17 +59,17 @@ class BaseScheduler(object):
         self.scan_location = False
         self.size = None
 
-    # schedule function fills the queues with data
+    # Schedule function fills the queues with data.
     def schedule(self):
         log.warning('BaseScheduler does not schedule any items')
 
-    # location_changed function is called whenever the location being scanned changes
+    # location_changed function is called whenever the location being scanned changes.
     # scan_location = (lat, lng, alt)
     def location_changed(self, scan_location):
         self.scan_location = scan_location
         self.empty_queues()
 
-    # scanning_pause function is called when scanning is paused from the UI
+    # scanning_pause function is called when scanning is paused from the UI.
     # The default function will empty all the queues.
     # Note: This function is called repeatedly while scanning is paused!
     def scanning_paused(self):
@@ -78,7 +78,7 @@ class BaseScheduler(object):
     def getsize(self):
         return self.size
 
-    # Function to empty all queues in the queues list
+    # Function to empty all queues in the queues list.
     def empty_queues(self):
         for queue in self.queues:
             if not queue.empty():
@@ -89,14 +89,14 @@ class BaseScheduler(object):
                     pass
 
 
-# Hex Search is the classic search method, with the pokepath modification, searching in a hex grid around the center location
+# Hex Search is the classic search method, with the pokepath modification, searching in a hex grid around the center location.
 class HexSearch(BaseScheduler):
 
-    # Call base initialization, set step_distance
+    # Call base initialization, set step_distance.
     def __init__(self, queues, status, args):
         BaseScheduler.__init__(self, queues, status, args)
 
-        # If we are only scanning for pokestops/gyms, the scan radius can be 900m.  Otherwise 70m
+        # If we are only scanning for pokestops/gyms, the scan radius can be 900m.  Otherwise 70m.
         if self.args.no_pokemon:
             self.step_distance = 0.900
         else:
@@ -104,24 +104,24 @@ class HexSearch(BaseScheduler):
 
         self.step_limit = args.step_limit
 
-        # This will hold the list of locations to scan so it can be reused, instead of recalculating on each loop
+        # This will hold the list of locations to scan so it can be reused, instead of recalculating on each loop.
         self.locations = False
 
-    # On location change, empty the current queue and the locations list
+    # On location change, empty the current queue and the locations list.
     def location_changed(self, scan_location):
         self.scan_location = scan_location
         self.empty_queues()
         self.locations = False
 
-    # Generates the list of locations to scan
+    # Generates the list of locations to scan.
     def _generate_locations(self):
         NORTH = 0
         EAST = 90
         SOUTH = 180
         WEST = 270
 
-        xdist = math.sqrt(3) * self.step_distance  # dist between column centers
-        ydist = 3 * (self.step_distance / 2)       # dist between row centers
+        xdist = math.sqrt(3) * self.step_distance  # Dist between column centers.
+        ydist = 3 * (self.step_distance / 2)       # Dist between row centers.
 
         results = []
 
@@ -130,7 +130,7 @@ class HexSearch(BaseScheduler):
         if self.step_limit > 1:
             loc = self.scan_location
 
-            # upper part
+            # Upper part.
             ring = 1
             while ring < self.step_limit:
 
@@ -153,7 +153,7 @@ class HexSearch(BaseScheduler):
 
                 ring += 1
 
-            # lower part
+            # Lower part.
             ring = self.step_limit - 1
 
             loc = get_new_coords(loc, ydist, SOUTH)
@@ -186,7 +186,7 @@ class HexSearch(BaseScheduler):
 
                 ring -= 1
 
-        # This will pull the last few steps back to the front of the list
+        # This will pull the last few steps back to the front of the list,
         # so you get a "center nugget" at the beginning of the scan, instead
         # of the entire nothern area before the scan spots 70m to the south.
         if self.step_limit >= 3:
@@ -195,13 +195,13 @@ class HexSearch(BaseScheduler):
             else:
                 results = results[-7:] + results[:-7]
 
-        # Add the required appear and disappear times
+        # Add the required appear and disappear times.
         locationsZeroed = []
         for step, location in enumerate(results, 1):
             locationsZeroed.append((step, (location[0], location[1], 0), 0, 0))
         return locationsZeroed
 
-    # Schedule the work to be done
+    # Schedule the work to be done.
     def schedule(self):
         if not self.scan_location:
             log.warning('Cannot schedule work until scan location has been set')
@@ -218,13 +218,13 @@ class HexSearch(BaseScheduler):
         self.size = len(self.locations)
 
 
-# Spawn Only Hex Search works like Hex Search, but skips locations that have no known spawnpoints
+# Spawn Only Hex Search works like Hex Search, but skips locations that have no known spawnpoints.
 class HexSearchSpawnpoint(HexSearch):
 
     def _any_spawnpoints_in_range(self, coords, spawnpoints):
         return any(geopy.distance.distance(coords, x).meters <= 70 for x in spawnpoints)
 
-    # Extend the generate_locations function to remove locations with no spawnpoints
+    # Extend the generate_locations function to remove locations with no spawnpoints.
     def _generate_locations(self):
         n, e, s, w = hex_bounds(self.scan_location, self.step_limit)
         spawnpoints = set((d['latitude'], d['longitude']) for d in Pokemon.get_spawnpoints(s, w, n, e))
@@ -232,10 +232,10 @@ class HexSearchSpawnpoint(HexSearch):
         if len(spawnpoints) == 0:
             log.warning('No spawnpoints found in the specified area!  (Did you forget to run a normal scan in this area first?)')
 
-        # Call the original _generate_locations
+        # Call the original _generate_locations.
         locations = super(HexSearchSpawnpoint, self)._generate_locations()
 
-        # Remove items with no spawnpoints in range
+        # Remove items with no spawnpoints in range.
         locations = [coords for coords in locations if self._any_spawnpoints_in_range(coords[1], spawnpoints)]
         return locations
 
@@ -248,7 +248,7 @@ class SpawnScan(BaseScheduler):
         # pokemon onto the map.
         self.firstscan = True
 
-        # If we are only scanning for pokestops/gyms, the scan radius can be 900m.  Otherwise 70m
+        # If we are only scanning for pokestops/gyms, the scan radius can be 900m.  Otherwise 70m.
         if self.args.no_pokemon:
             self.step_distance = 0.900
         else:
@@ -259,7 +259,7 @@ class SpawnScan(BaseScheduler):
 
     # Generate locations is called when the locations list is cleared - the first time it scans or after a location change.
     def _generate_locations(self):
-        # Attempt to load spawns from file
+        # Attempt to load spawns from file.
         if self.args.spawnpoint_scanning != 'nofile':
             log.debug('Loading spawn points from json file @ %s', self.args.spawnpoint_scanning)
             try:
@@ -294,8 +294,8 @@ class SpawnScan(BaseScheduler):
                 m = 'Scan [{:02}:{:02}] ({}) @ {},{}'.format(minute, sec, i['time'], i['lat'], i['lng'])
                 log.debug(m)
 
-        # 'time' from json and db alike has been munged to appearance time as seconds after the hour
-        # Here we'll convert that to a real timestamp
+        # 'time' from json and db alike has been munged to appearance time as seconds after the hour.
+        # Here we'll convert that to a real timestamp.
         for location in self.locations:
             # For a scan which should cover all CURRENT pokemon, we can offset
             # the comparison time by 15 minutes so that the "appears" time
@@ -314,18 +314,18 @@ class SpawnScan(BaseScheduler):
             cursec = location['time']
 
             if cursec > cur_sec():
-                # hasn't spawn in the current hour
+                # Hasn't spawn in the current hour.
                 from_now = location['time'] - cur_sec()
                 appears = now() + from_now
             else:
-                # won't spawn till next hour
+                # Won't spawn till next hour.
                 late_by = cur_sec() - location['time']
                 appears = now() + 3600 - late_by
 
             location['appears'] = appears
             location['leaves'] = appears + 900
 
-        # Put the spawn points in order of next appearance time
+        # Put the spawn points in order of next appearance time.
         self.locations.sort(key=itemgetter('appears'))
 
         # Match expected structure:
@@ -336,7 +336,7 @@ class SpawnScan(BaseScheduler):
 
         return retset
 
-    # Schedule the work to be done
+    # Schedule the work to be done.
     def schedule(self):
         if not self.scan_location:
             log.warning('Cannot schedule work until scan location has been set')
@@ -350,12 +350,12 @@ class SpawnScan(BaseScheduler):
             self.queues[0].put(location)
             log.debug("Added location {}".format(location))
 
-        # Clear the locations list so it gets regenerated next cycle
+        # Clear the locations list so it gets regenerated next cycle.
         self.size = len(self.locations)
         self.locations = None
 
 
-# The SchedulerFactory returns an instance of the correct type of scheduler
+# The SchedulerFactory returns an instance of the correct type of scheduler.
 class SchedulerFactory():
     __schedule_classes = {
         "hexsearch": HexSearch,
