@@ -238,7 +238,7 @@ def main():
             # Overwrite old args.proxy with new working list
             args.proxy = check_proxies(args)
 
-        # Gather the pokemons!
+        # Gather the Pokemon!
 
         # attempt to dump the spawn points (do this before starting threads of endure the woe)
         if args.spawnpoint_scanning and args.spawnpoint_scanning != 'nofile' and args.dump_spawnpoints:
