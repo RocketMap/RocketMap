@@ -216,7 +216,9 @@ def account_recycler(accounts_queue, account_failures, args):
                 account_failures.remove(a)
                 accounts_queue.put(a['account'])
             else:
-                log.info('Account {} needs to cool off for {} seconds due to {}'.format(a['account']['username'], a['last_fail_time'] - ok_time, a['reason']))
+                if 'notified' not in a:
+                    log.info('Account {} needs to cool off for {} minutes due to {}'.format(a['account']['username'], round((a['last_fail_time'] - ok_time) / 60, 0), a['reason']))
+                    a['notified'] = True
 
 
 def worker_status_db_thread(threads_status, name, db_updates_queue):
