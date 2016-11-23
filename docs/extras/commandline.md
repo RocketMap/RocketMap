@@ -5,7 +5,7 @@
                         [-p PASSWORD] [-w WORKERS] [-asi ACCOUNT_SEARCH_INTERVAL]
                         [-ari ACCOUNT_REST_INTERVAL] [-ac ACCOUNTCSV]
                         [-l LOCATION] [-j] [-st STEP_LIMIT] [-sd SCAN_DELAY]
-                        [-enc] [-ed ENCOUNTER_DELAY]
+                        [-enc] [-cs] [-ck CAPTCHA-KEY] [-cds CAPTCHA-DSK] [-ed ENCOUNTER_DELAY]
                         [-ewht ENCOUNTER_WHITELIST | -eblk ENCOUNTER_BLACKLIST]
                         [-ld LOGIN_DELAY] [-lr LOGIN_RETRIES] [-mf MAX_FAILURES]
                         [-msl MIN_SECONDS_LEFT] [-dc] [-H HOST] [-P PORT]
@@ -76,6 +76,13 @@
                             POGOMAP_SCAN_DELAY]
       -enc, --encounter     Start an encounter to gather IVs and moves [env var:
                             POGOMAP_ENCOUNTER]
+      -cs, --captcha-solving
+                            Enables captcha solving [env var:
+                            POGOMAP_CAPTCHA_SOLVING]
+      -ck, --captcha-key    2Captcha API Key [env var:
+                            POGOMAP_CAPTCHA_KEY]
+      -cds, --captcha-dsk   PokemonGo Captcha data-sitekey [env var:
+                            POGOMAP_CAPTCHA_DSK]
       -ed ENCOUNTER_DELAY, --encounter-delay ENCOUNTER_DELAY
                             Time delay between encounter pokemon in scan threads
                             [env var: POGOMAP_ENCOUNTER_DELAY]
