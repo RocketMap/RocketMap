@@ -38,6 +38,7 @@ from pgoapi.exceptions import AuthException
 from .models import parse_map, GymDetails, parse_gyms, MainWorker, WorkerStatus
 from .fakePogoApi import FakePogoApi
 from .utils import now
+from .transform import get_new_coords
 import schedulers
 
 import terminalsize
@@ -89,7 +90,7 @@ def switch_status_printer(display_type, current_page):
 
 
 # Thread to print out the status of each worker.
-def status_printer(threadStatus, search_items_queue, db_updates_queue, wh_queue, account_queue, account_failures):
+def status_printer(threadStatus, search_items_queue_array, db_updates_queue, wh_queue, account_queue, account_failures):
     display_type = ["workers"]
     current_page = [1]
 
@@ -127,7 +128,11 @@ def status_printer(threadStatus, search_items_queue, db_updates_queue, wh_queue,
                     skip_total += threadStatus[item]['skip']
 
             # Print the queue length.
-            status_text.append('Queues: {} search items, {} db updates, {} webhook.  Total skipped items: {}. Spare accounts available: {}. Accounts on hold: {}'.format(search_items_queue.qsize(), db_updates_queue.qsize(), wh_queue.qsize(), skip_total, account_queue.qsize(), len(account_failures)))
+            search_items_queue_size = 0
+            for i in range(0, len(search_items_queue_array)):
+                search_items_queue_size += search_items_queue_array[i].qsize()
+
+            status_text.append('Queues: {} search items, {} db updates, {} webhook.  Total skipped items: {}. Spare accounts available: {}. Accounts on hold: {}'.format(search_items_queue_size, db_updates_queue.qsize(), wh_queue.qsize(), skip_total, account_queue.qsize(), len(account_failures)))
 
             # Print status of overseer.
             status_text.append('{} Overseer: {}'.format(threadStatus['Overseer']['scheduler'], threadStatus['Overseer']['message']))
@@ -258,7 +263,8 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb, db_updat
 
     log.info('Search overseer starting')
 
-    search_items_queue = Queue()
+    search_items_queue_array = []
+    scheduler_array = []
     account_queue = Queue()
     threadStatus = {}
 
@@ -284,7 +290,7 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb, db_updat
         log.info('Starting status printer thread')
         t = Thread(target=status_printer,
                    name='status_printer',
-                   args=(threadStatus, search_items_queue, db_updates_queue, wh_queue, account_queue, account_failures))
+                   args=(threadStatus, search_items_queue_array, db_updates_queue, wh_queue, account_queue, account_failures))
         t.daemon = True
         t.start()
 
@@ -302,10 +308,25 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb, db_updat
         t.daemon = True
         t.start()
 
+    search_items_queue = Queue()
+    # Create the appropriate type of scheduler to handle the search queue.
+    scheduler = schedulers.SchedulerFactory.get_scheduler(args.scheduler, [search_items_queue], threadStatus, args)
+
+    scheduler_array.append(scheduler)
+    search_items_queue_array.append(search_items_queue)
+
     # Create specified number of search_worker_thread.
     log.info('Starting search worker threads')
     for i in range(0, args.workers):
         log.debug('Starting search worker thread %d', i)
+
+        if args.beehive and i > 0:
+            search_items_queue = Queue()
+            # Create the appropriate type of scheduler to handle the search queue.
+            scheduler = schedulers.SchedulerFactory.get_scheduler(args.scheduler, [search_items_queue], threadStatus, args)
+
+            scheduler_array.append(scheduler)
+            search_items_queue_array.append(search_items_queue)
 
         # Set proxy for each worker, using round robin.
         proxy_display = 'No'
@@ -342,9 +363,6 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb, db_updat
     # A place to track the current location.
     current_location = False
 
-    # Create the appropriate type of scheduler to handle the search queue.
-    scheduler = schedulers.SchedulerFactory.get_scheduler(args.scheduler, [search_items_queue], threadStatus, args)
-
     # The real work starts here but will halt on pause_bit.set().
     while True:
 
@@ -354,7 +372,8 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb, db_updat
 
         # Wait here while scanning is paused.
         while pause_bit.is_set():
-            scheduler.scanning_paused()
+            for i in range(0, len(scheduler_array)):
+                scheduler_array[i].scanning_paused()
             time.sleep(1)
 
         # If a new location has been passed to us, get the most recent one.
@@ -365,26 +384,98 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb, db_updat
                     current_location = new_location_queue.get_nowait()
             except Empty:
                 pass
-            scheduler.location_changed(current_location)
+
+            step_distance = 0.07
+
+            if args.no_pokemon:
+                step_distance = 0.9
+
+            locations = _generate_locations(current_location, step_distance, args.step_limit, len(scheduler_array))
+
+            for i in range(0, len(scheduler_array)):
+                scheduler_array[i].location_changed(locations[i])
 
         # If there are no search_items_queue either the loop has finished (or been
-        # cleared above) -- either way, time to fill it back up.
-        if search_items_queue.empty():
-            log.debug('Search queue empty, scheduling more items to scan')
-            scheduler.schedule()
-        else:
-            nextitem = search_items_queue.queue[0]
-            threadStatus['Overseer']['message'] = 'Processing search queue, next item is {:6f},{:6f}'.format(nextitem[1][0], nextitem[1][1])
-            # If times are specified, print the time of the next queue item, and how many seconds ahead/behind realtime.
-            if nextitem[2]:
-                threadStatus['Overseer']['message'] += ' @ {}'.format(time.strftime('%H:%M:%S', time.localtime(nextitem[2])))
-                if nextitem[2] > now():
-                    threadStatus['Overseer']['message'] += ' ({}s ahead)'.format(nextitem[2] - now())
-                else:
-                    threadStatus['Overseer']['message'] += ' ({}s behind)'.format(now() - nextitem[2])
+        # cleared above) -- either way, time to fill it back up
+        for i in range(0, len(search_items_queue_array)):
+            if search_items_queue_array[i].empty():
+                log.debug('Search queue empty, scheduling more items to scan')
+                scheduler_array[i].schedule()
+            else:
+                nextitem = search_items_queue_array[i].queue[0]
+                threadStatus['Overseer']['message'] = 'Processing search queue, next item is {:6f},{:6f}'.format(nextitem[1][0], nextitem[1][1])
+                # If times are specified, print the time of the next queue item, and how many seconds ahead/behind realtime.
+                if nextitem[2]:
+                    threadStatus['Overseer']['message'] += ' @ {}'.format(time.strftime('%H:%M:%S', time.localtime(nextitem[2])))
+                    if nextitem[2] > now():
+                        threadStatus['Overseer']['message'] += ' ({}s ahead)'.format(nextitem[2] - now())
+                    else:
+                        threadStatus['Overseer']['message'] += ' ({}s behind)'.format(now() - nextitem[2])
 
         # Now we just give a little pause here.
         time.sleep(1)
+
+
+# Generates the list of locations to scan
+def _generate_locations(current_location, step_distance, step_limit, worker_count):
+    NORTH = 0
+    EAST = 90
+    SOUTH = 180
+    WEST = 270
+
+    xdist = math.sqrt(3) * step_distance  # dist between column centers
+    ydist = 3 * (step_distance / 2)  # dist between row centers
+
+    results = []
+
+    results.append((current_location[0], current_location[1], 0))
+
+    loc = current_location
+    ring = 1
+
+    while len(results) < worker_count:
+
+        loc = get_new_coords(loc, ydist * (step_limit - 1), NORTH)
+        loc = get_new_coords(loc, xdist * (1.5 * step_limit - 0.5), EAST)
+        results.append((loc[0], loc[1], 0))
+
+        for i in range(ring):
+            loc = get_new_coords(loc, ydist * step_limit, NORTH)
+            loc = get_new_coords(loc, xdist * (1.5 * step_limit - 1), WEST)
+            results.append((loc[0], loc[1], 0))
+
+        for i in range(ring):
+            loc = get_new_coords(loc, ydist * (step_limit - 1), SOUTH)
+            loc = get_new_coords(loc, xdist * (1.5 * step_limit - 0.5), WEST)
+            results.append((loc[0], loc[1], 0))
+
+        for i in range(ring):
+            loc = get_new_coords(loc, ydist * (2 * step_limit - 1), SOUTH)
+            loc = get_new_coords(loc, xdist * 0.5, WEST)
+            results.append((loc[0], loc[1], 0))
+
+        for i in range(ring):
+            loc = get_new_coords(loc, ydist * (step_limit), SOUTH)
+            loc = get_new_coords(loc, xdist * (1.5 * step_limit - 1), EAST)
+            results.append((loc[0], loc[1], 0))
+
+        for i in range(ring):
+            loc = get_new_coords(loc, ydist * (step_limit - 1), NORTH)
+            loc = get_new_coords(loc, xdist * (1.5 * step_limit - 0.5), EAST)
+            results.append((loc[0], loc[1], 0))
+
+        # Back to start
+        for i in range(ring - 1):
+            loc = get_new_coords(loc, ydist * (2 * step_limit - 1), NORTH)
+            loc = get_new_coords(loc, xdist * 0.5, EAST)
+            results.append((loc[0], loc[1], 0))
+
+        loc = get_new_coords(loc, ydist * (2 * step_limit - 1), NORTH)
+        loc = get_new_coords(loc, xdist * 0.5, EAST)
+
+        ring += 1
+
+    return results
 
 
 def search_worker_thread(args, account_queue, account_failures, search_items_queue, pause_bit, status, dbq, whq):
@@ -743,11 +834,11 @@ def calc_distance(pos1, pos2):
     return d
 
 
-# Delay each thread start time so that logins only occur ~1s.
+# Delay each thread start time so that logins occur after delay.
 def stagger_thread(args, account):
     if args.accounts.index(account) == 0:
         return  # No need to delay the first one.
-    delay = args.accounts.index(account) + ((random.random() - .5) / 2)
+    delay = args.accounts.index(account) * args.login_delay + ((random.random() - .5) / 2)
     log.debug('Delaying thread startup for %.2f seconds', delay)
     time.sleep(delay)
 

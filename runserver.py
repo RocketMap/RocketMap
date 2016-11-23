@@ -225,7 +225,7 @@ def main():
         t.daemon = True
         t.start()
 
-    # db clearner; really only need one ever.
+    # db cleaner; really only need one ever.
     if not args.disable_clean:
         t = Thread(target=clean_db_loop, name='db-cleaner', args=(args,))
         t.daemon = True
