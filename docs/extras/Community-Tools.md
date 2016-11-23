@@ -24,3 +24,8 @@ _Example: I have an ST of 7, a delay of 10, and need my scan to be around 100 se
 Constantly in development - but allows the generation of a multi-worker .bat file with ease, along with custom flags. Can read account and location data right off a .csv file (no need to edit the files either - just set the right columns) and allows you to customize everything from the starting parameters to the naming of each instance through an easily configurable config.ini. 
 _Example: I need to search a few small areas very very quickly with accounts I've generated through the_ [PTC Acc Gen](https://github.com/skvvv/pikapy) 
 _Example: I have a list of locations and a list of accounts, but I don't want to go through the tedium of having to create the .bat myself_
+
+## [HoneyFill - Multi-account-multi-location generator in python](https://github.com/joostsijm/HoneyFill)
+### Easily parsing your accounts and coordinates.
+Generate .sh file to start PokemonGo-Map with given coordinates. Use your .csv files to fill the users and coordinates. Providing Command line arguments to configure the output. Allows setting the step size of multiple coordinates, and amount of users it's using. Useful when you need to regenerate a scanner starter with new accounts.
+_Example: python2 generate.py -a EXAMPLEaccounts.csv -c EXAMPLElocations.csv_
