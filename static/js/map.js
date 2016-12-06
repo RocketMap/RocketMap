@@ -13,6 +13,7 @@ var $selectLuredPokestopsOnly
 var $selectSearchIconMarker
 var $selectGymMarkerStyle
 var $selectLocationIconMarker
+var $switchGymSidebar
 
 var language = document.documentElement.lang === '' ? 'en' : document.documentElement.lang
 var idToPokemon = {}
@@ -309,6 +310,8 @@ function updateSearchStatus () {
 
 function initSidebar () {
   $('#gyms-switch').prop('checked', Store.get('showGyms'))
+  $('#gym-sidebar-switch').prop('checked', Store.get('useGymSidebar'))
+  $('#gym-sidebar-wrapper').toggle(Store.get('showGyms'))
   $('#pokemon-switch').prop('checked', Store.get('showPokemon'))
   $('#pokestops-switch').prop('checked', Store.get('showPokestops'))
   $('#lured-pokestops-only-switch').val(Store.get('showLuredPokestopsOnly'))
@@ -407,7 +410,7 @@ function pokemonLabel (name, rarity, types, disappearTime, id, latitude, longitu
   return contentstring
 }
 
-function gymLabel (teamName, teamId, gymPoints, latitude, longitude, lastScanned = null, name = null, members = []) {
+function gymLabel (teamName, teamId, gymPoints, latitude, longitude, lastScanned = null, name = null, members = [], gymId) {
   var memberStr = ''
   for (var i = 0; i < members.length; i++) {
     memberStr += `
@@ -423,6 +426,12 @@ function gymLabel (teamName, teamId, gymPoints, latitude, longitude, lastScanned
     lastScannedStr = `${lastScannedDate.getFullYear()}-${pad(lastScannedDate.getMonth() + 1)}-${pad(lastScannedDate.getDate())} ${pad(lastScannedDate.getHours())}:${pad(lastScannedDate.getMinutes())}:${pad(lastScannedDate.getSeconds())}`
   } else {
     lastScannedStr = 'Unknown'
+  }
+  var directionsStr = ''
+  if (!Store.get('useGymSidebar')) {
+    directionsStr = `<div>
+        <a href='javascript:void(0);' onclick='javascript:openMapDirections(${latitude},${longitude});' title='View in Maps'>Get directions</a>
+      </div>`
   }
 
   var nameStr = (name ? `<div>${name}</div>` : '')
@@ -444,9 +453,7 @@ function gymLabel (teamName, teamId, gymPoints, latitude, longitude, lastScanned
           <div>
             Last Scanned: ${lastScannedStr}
           </div>
-          <div>
-            <a href='javascript:void(0);' onclick='javascript:openMapDirections(${latitude},${longitude});' title='View in Maps'>Get directions</a>
-          </div>
+          ${directionsStr}
         </center>
       </div>`
   } else {
@@ -476,9 +483,7 @@ function gymLabel (teamName, teamId, gymPoints, latitude, longitude, lastScanned
           <div>
             Last Scanned: ${lastScannedStr}
           </div>
-          <div>
-            <a href='javascript:void(0);' onclick='javascript:openMapDirections(${latitude},${longitude});' title='View in Maps'>Get directions</a>
-          </div>
+          ${directionsStr}
         </center>
       </div>`
   }
@@ -660,17 +665,45 @@ function setupGymMarker (item) {
   }
 
   marker.infoWindow = new google.maps.InfoWindow({
-    content: gymLabel(gymTypes[item['team_id']], item['team_id'], item['gym_points'], item['latitude'], item['longitude'], item['last_scanned'], item['name'], item['pokemon']),
+    content: gymLabel(gymTypes[item['team_id']], item['team_id'], item['gym_points'], item['latitude'], item['longitude'], item['last_scanned'], item['name'], item['pokemon'], item['gym_id']),
     disableAutoPan: true
   })
 
-  addListeners(marker)
+  if (Store.get('useGymSidebar')) {
+    marker.addListener('click', function () {
+      var gymSidebar = document.querySelector('#gym-details')
+      if (gymSidebar.getAttribute('data-id') === item['gym_id'] && gymSidebar.classList.contains('visible')) {
+        gymSidebar.classList.remove('visible')
+      } else {
+        gymSidebar.setAttribute('data-id', item['gym_id'])
+        showGymDetails(item['gym_id'])
+      }
+    })
+
+    google.maps.event.addListener(marker.infoWindow, 'closeclick', function () {
+      marker.persist = null
+    })
+
+    marker.addListener('mouseover', function () {
+      marker.infoWindow.open(map, marker)
+      clearSelection()
+      updateLabelDiffTime()
+    })
+
+    marker.addListener('mouseout', function () {
+      if (!marker.persist) {
+        marker.infoWindow.close()
+      }
+    })
+  } else {
+    addListeners(marker)
+  }
   return marker
 }
 
 function updateGymMarker (item, marker) {
   marker.setIcon({url: 'static/forts/' + Store.get('gymMarkerStyle') + '/' + gymTypes[item['team_id']] + (item['team_id'] !== 0 ? '_' + getGymLevel(item['gym_points']) : '') + '.png', scaledSize: new google.maps.Size(48, 48)})
-  marker.infoWindow.setContent(gymLabel(gymTypes[item['team_id']], item['team_id'], item['gym_points'], item['latitude'], item['longitude'], item['last_scanned'], item['name'], item['pokemon']))
+  marker.infoWindow.setContent(gymLabel(gymTypes[item['team_id']], item['team_id'], item['gym_points'], item['latitude'], item['longitude'], item['last_scanned'], item['name'], item['pokemon'], item['gym_id']))
   return marker
 }
 function updateGymIcons () {
@@ -1464,6 +1497,188 @@ function createUpdateWorker () {
   }
 }
 
+function showGymDetails (id) { // eslint-disable-line no-unused-vars
+  var sidebar = document.querySelector('#gym-details')
+  var sidebarClose
+
+  sidebar.classList.add('visible')
+
+  var data = $.ajax({
+    url: 'gym_data',
+    type: 'GET',
+    data: {
+      'id': id
+    },
+    dataType: 'json',
+    cache: false
+  })
+
+  data.done(function (result) {
+    var gymLevel = getGymLevel(result.gym_points)
+    var nextLvlPrestige = gymPrestige[gymLevel - 1] || 50000
+    var prestigePercentage = (result.gym_points / nextLvlPrestige) * 100
+    var lastScannedDate = new Date(result.last_scanned)
+    var freeSlots = result.pokemon.length ? gymLevel - result.pokemon.length : 0
+    var freeSlotsStr = freeSlots ? ` - ${freeSlots} Free Slots` : ''
+    var gymLevelStr = ''
+
+    if (result.team_id === 0) {
+      gymLevelStr = `
+        <center class="team-${result.team_id}-text">
+          <b class="team-${result.team_id}-text">Uncontested - 1 Free Slot</b>
+        </center>`
+    } else {
+      gymLevelStr = `<div>
+        <b class="team-${result.team_id}-text">Level ${gymLevel}${freeSlotsStr}</b>
+      </div>`
+    }
+    var pokemonHtml = ''
+    var headerHtml = `
+      <center class="team-${result.team_id}-text">
+        <div>
+          <b class="team-${result.team_id}-text">${result.name || ''}</b>
+        </div>
+        <img height="100px" style="padding: 5px;" src="static/forts/${gymTypes[result.team_id]}_large.png">
+        <div class="prestige-bar team-${result.team_id}">
+          <div class="prestige team-${result.team_id}" style="width: ${prestigePercentage}%">
+          </div>
+        </div>
+        <div>
+          ${result.gym_points}/${nextLvlPrestige}
+        </div>
+        ${gymLevelStr}
+        <div style="font-size: .7em;">
+          Last Scanned: ${lastScannedDate.getFullYear()}-${pad(lastScannedDate.getMonth() + 1)}-${pad(lastScannedDate.getDate())} ${pad(lastScannedDate.getHours())}:${pad(lastScannedDate.getMinutes())}:${pad(lastScannedDate.getSeconds())}
+        </div>
+        <div>
+          <a href='javascript:void(0);' onclick='javascript:openMapDirections(${result.latitude},${result.longitude});' title='View in Maps'>Get directions</a>
+        </div>
+      </center>
+    `
+
+    if (result.pokemon.length) {
+      $.each(result.pokemon, function (i, pokemon) {
+        var perfectPercent = Math.round((pokemon.iv_defense + pokemon.iv_attack + pokemon.iv_stamina) * 100 / 45)
+        var moveEnergy = Math.round(100 / pokemon.move_2_energy)
+
+        pokemonHtml += `
+          <tr onclick=toggleGymPokemonDetails(this)>
+            <td width="30px">
+              <i class="pokemon-sprite n${pokemon.pokemon_id}"></i>
+            </td>
+            <td class="team-${result.team_id}-text">
+              <div style="line-height:1em;">${pokemon.pokemon_name}</div>
+              <div class="cp">CP ${pokemon.pokemon_cp}</div>
+            </td>
+            <td width="190" class="team-${result.team_id}-text" align="center">
+              <div class="trainer-level">${pokemon.trainer_level}</div>
+              <div style="line-height: 1em;">${pokemon.trainer_name}</div>
+            </td>
+            <td width="10">
+              <!--<a href="#" onclick="toggleGymPokemonDetails(this)">-->
+                <i class="team-${result.team_id}-text fa fa-angle-double-down"></i>
+              <!--</a>-->
+            </td>
+          </tr>
+          <tr class="details">
+            <td colspan="2">
+              <div class="ivs">
+                <div class="iv">
+                  <div class="type">ATK</div>
+                  <div class="value">
+                    ${pokemon.iv_attack}
+                  </div>
+                </div>
+                <div class="iv">
+                  <div class="type">DEF</div>
+                  <div class="value">
+                    ${pokemon.iv_defense}
+                  </div>
+                </div>
+                <div class="iv">
+                  <div class="type">STA</div>
+                  <div class="value">
+                    ${pokemon.iv_stamina}
+                  </div>
+                </div>
+                <div class="iv" style="width: 36px;"">
+                  <div class="type">PERFECT</div>
+                  <div class="value">
+                    ${perfectPercent}<span style="font-size: .6em;">%</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td colspan="2">
+              <div class="moves">
+                <div class="move">
+                  <div class="name">
+                    ${pokemon.move_1_name}
+                    <div class="type ${pokemon.move_1_type.toLowerCase()}">${pokemon.move_1_type}</div>
+                  </div>
+                  <div class="damage">
+                    ${pokemon.move_1_damage}
+                  </div>
+                </div>
+                <br>
+                <div class="move">
+                  <div class="name">
+                    ${pokemon.move_2_name}
+                    <div class="type ${pokemon.move_2_type.toLowerCase()}">${pokemon.move_2_type}</div>
+                    <div>
+                      <i class="move-bar-sprite move-bar-sprite-${moveEnergy}"></i>
+                    </div>
+                  </div>
+                  <div class="damage">
+                    ${pokemon.move_2_damage}
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+          `
+      })
+
+      pokemonHtml = `<table><tbody>${pokemonHtml}</tbody></table>`
+    } else if (result.team_id === 0) {
+      pokemonHtml = ''
+    } else {
+      pokemonHtml = `
+        <center class="team-${result.team_id}-text">
+          Gym Leader:<br>
+          <i class="pokemon-large-sprite n${result.guard_pokemon_id}"></i><br>
+          <b class="team-${result.team_id}-text">${result.guard_pokemon_name}</b>
+
+          <p style="font-size: .75em; margin: 5px;">
+            No additional gym information is available for this gym. Make sure you are collecting <a href="https://pgm.readthedocs.io/en/develop/extras/gyminfo.html">detailed gym info.</a>
+            If you have detailed gym info collection running, this gym's Pokemon information may be out of date.
+          </p>
+        </center>
+      `
+    }
+
+    sidebar.innerHTML = `${headerHtml}${pokemonHtml}`
+
+    sidebarClose = document.createElement('a')
+    sidebarClose.href = '#'
+    sidebarClose.className = 'close'
+    sidebarClose.tabIndex = 0
+    sidebar.appendChild(sidebarClose)
+
+    sidebarClose.addEventListener('click', function (event) {
+      event.preventDefault()
+      event.stopPropagation()
+      sidebar.classList.remove('visible')
+    })
+  })
+}
+
+function toggleGymPokemonDetails (e) { // eslint-disable-line no-unused-vars
+  e.lastElementChild.firstElementChild.classList.toggle('fa-angle-double-up')
+  e.lastElementChild.firstElementChild.classList.toggle('fa-angle-double-down')
+  e.nextElementSibling.classList.toggle('visible')
+}
+
 //
 // Page Ready Exection
 //
@@ -1548,6 +1763,24 @@ $(function () {
   $selectLuredPokestopsOnly.on('change', function () {
     Store.set('showLuredPokestopsOnly', this.value)
     lastpokestops = false
+    updateMap()
+  })
+  $switchGymSidebar = $('#gym-sidebar-switch')
+
+  $switchGymSidebar.on('change', function () {
+    Store.set('useGymSidebar', this.checked)
+    lastgyms = false
+    $.each(['gyms'], function (d, dType) {
+      $.each(mapData[dType], function (key, value) {
+        // for any marker you're turning off, you'll want to wipe off the range
+        if (mapData[dType][key].marker.rangeCircle) {
+          mapData[dType][key].marker.rangeCircle.setMap(null)
+          delete mapData[dType][key].marker.rangeCircle
+        }
+        mapData[dType][key].marker.setMap(null)
+      })
+      mapData[dType] = {}
+    })
     updateMap()
   })
 
@@ -1742,7 +1975,6 @@ $(function () {
         } else if (storageKey === 'showSpawnpoints') {
           lastspawns = false
         }
-
         updateMap()
       } else {
         $.each(dataType, function (d, dType) {
@@ -1765,6 +1997,17 @@ $(function () {
 
   // Setup UI element interactions
   $('#gyms-switch').change(function () {
+    var options = {
+      'duration': 500
+    }
+    var wrapper = $('#gym-sidebar-wrapper')
+    if (this.checked) {
+      lastgyms = false
+      wrapper.show(options)
+    } else {
+      lastgyms = false
+      wrapper.hide(options)
+    }
     buildSwitchChangeListener(mapData, ['gyms'], 'showGyms').bind(this)()
   })
   $('#pokemon-switch').change(function () {

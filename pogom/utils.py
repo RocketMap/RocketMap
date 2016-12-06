@@ -434,6 +434,34 @@ def get_pokemon_types(pokemon_id):
     return map(lambda x: {"type": i8ln(x['type']), "color": x['color']}, pokemon_types)
 
 
+def get_moves_data(move_id):
+    if not hasattr(get_moves_data, 'moves'):
+        file_path = os.path.join(
+            config['ROOT_PATH'],
+            config['DATA_DIR'],
+            'moves.min.json')
+
+        with open(file_path, 'r') as f:
+            get_moves_data.moves = json.loads(f.read())
+    return get_moves_data.moves[str(move_id)]
+
+
+def get_move_name(move_id):
+    return i8ln(get_moves_data(move_id)['name'])
+
+
+def get_move_damage(move_id):
+    return i8ln(get_moves_data(move_id)['damage'])
+
+
+def get_move_energy(move_id):
+    return i8ln(get_moves_data(move_id)['energy'])
+
+
+def get_move_type(move_id):
+    return i8ln(get_moves_data(move_id)['type'])
+
+
 class Timer():
 
     def __init__(self, name):

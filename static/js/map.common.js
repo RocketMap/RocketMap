@@ -890,6 +890,10 @@ var StoreOptions = {
     default: false,
     type: StoreTypes.Boolean
   },
+  'useGymSidebar': {
+    default: false,
+    type: StoreTypes.Boolean
+  },
   'showPokemon': {
     default: true,
     type: StoreTypes.Boolean

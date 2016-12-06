@@ -9,7 +9,7 @@ import time
 import geopy
 from peewee import SqliteDatabase, InsertQuery, \
     IntegerField, CharField, DoubleField, BooleanField, \
-    DateTimeField, fn, DeleteQuery, CompositeKey, FloatField, SQL, TextField
+    DateTimeField, fn, DeleteQuery, CompositeKey, FloatField, SQL, TextField, JOIN
 from playhouse.flask_utils import FlaskDB
 from playhouse.pool import PooledMySQLDatabase
 from playhouse.shortcuts import RetryOperationalError
@@ -20,7 +20,7 @@ from cachetools import TTLCache
 from cachetools import cached
 
 from . import config
-from .utils import get_pokemon_name, get_pokemon_rarity, get_pokemon_types, get_args
+from .utils import get_pokemon_name, get_pokemon_rarity, get_pokemon_types, get_args, get_move_name, get_move_damage, get_move_energy, get_move_type
 from .transform import transform_from_wgs_to_gcj, get_new_coords
 from .customLog import printPokemon
 
@@ -569,6 +569,63 @@ class Gym(BaseModel):
         gc.enable()
 
         return gyms
+
+    @staticmethod
+    def get_gym(id):
+        result = (Gym
+                  .select(Gym.gym_id,
+                          Gym.team_id,
+                          GymDetails.name,
+                          GymDetails.description,
+                          Gym.guard_pokemon_id,
+                          Gym.gym_points,
+                          Gym.latitude,
+                          Gym.longitude,
+                          Gym.last_modified,
+                          Gym.last_scanned)
+                  .join(GymDetails, JOIN.LEFT_OUTER, on=(Gym.gym_id == GymDetails.gym_id))
+                  .where(Gym.gym_id == id)
+                  .dicts()
+                  .get())
+
+        result['guard_pokemon_name'] = get_pokemon_name(result['guard_pokemon_id']) if result['guard_pokemon_id'] else ''
+        result['pokemon'] = []
+
+        pokemon = (GymMember
+                   .select(GymPokemon.cp.alias('pokemon_cp'),
+                           GymPokemon.pokemon_id,
+                           GymPokemon.pokemon_uid,
+                           GymPokemon.move_1,
+                           GymPokemon.move_2,
+                           GymPokemon.iv_attack,
+                           GymPokemon.iv_defense,
+                           GymPokemon.iv_stamina,
+                           Trainer.name.alias('trainer_name'),
+                           Trainer.level.alias('trainer_level'))
+                   .join(Gym, on=(GymMember.gym_id == Gym.gym_id))
+                   .join(GymPokemon, on=(GymMember.pokemon_uid == GymPokemon.pokemon_uid))
+                   .join(Trainer, on=(GymPokemon.trainer_name == Trainer.name))
+                   .where(GymMember.gym_id == id)
+                   .where(GymMember.last_scanned > Gym.last_modified)
+                   .order_by(GymPokemon.cp.desc())
+                   .dicts())
+
+        for p in pokemon:
+            p['pokemon_name'] = get_pokemon_name(p['pokemon_id'])
+
+            p['move_1_name'] = get_move_name(p['move_1'])
+            p['move_1_damage'] = get_move_damage(p['move_1'])
+            p['move_1_energy'] = get_move_energy(p['move_1'])
+            p['move_1_type'] = get_move_type(p['move_1'])
+
+            p['move_2_name'] = get_move_name(p['move_2'])
+            p['move_2_damage'] = get_move_damage(p['move_2'])
+            p['move_2_energy'] = get_move_energy(p['move_2'])
+            p['move_2_type'] = get_move_type(p['move_2'])
+
+            result['pokemon'].append(p)
+
+        return result
 
 
 class ScannedLocation(BaseModel):

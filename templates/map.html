@@ -66,6 +66,16 @@
                 </label>
               </div>
             </div>
+            <div class="form-control switch-container" id="gym-sidebar-wrapper" style="display:none">
+              <h3>Use Gym Sidebar</h3>
+              <div class="onoffswitch">
+                <input id="gym-sidebar-switch" type="checkbox" name="gym-sidebar-switch" class="onoffswitch-checkbox" checked>
+                <label class="onoffswitch-label" for="gym-sidebar-switch">
+                <span class="switch-label" data-on="On" data-off="Off"></span>
+                <span class="switch-handle"></span>
+                </label>
+              </div>
+            </div>
             <div class="form-control switch-container">
               <h3>Pokéstops</h3>
               <div class="onoffswitch">
@@ -294,6 +304,9 @@
           </div>
           <div id="pokestopList" style="color: black;"></div>
         </div>
+      </nav>
+      <nav id="gym-details">
+        <center><h1>Loading...</h1></center>
       </nav>
       <div id="map"></div>
       <div class="fab" id="scan-here" style="display:none"></div>

@@ -107,6 +107,10 @@
   var $statsToggle = document.querySelector('a[href="#stats"]')
   var $statsClose
 
+  // Gym sidebar
+  var $gymSidebar = document.querySelector('#gym-details')
+  var $gymSidebarClose
+
   // Event: Prevent clicks/taps inside the nav from bubbling.
   addEventsListener($nav, 'click touchend', function (event) {
     event.stopPropagation()
@@ -115,6 +119,13 @@
   if ($stats) {
     // Event: Prevent clicks/taps inside the stats from bubbling.
     addEventsListener($stats, 'click touchend', function (event) {
+      event.stopPropagation()
+    })
+  }
+
+  if ($gymSidebar) {
+    // Event: Prevent clicks/taps inside the gym sidebar from bubbling.
+    addEventsListener($gymSidebar, 'click touchend', function (event) {
       event.stopPropagation()
     })
   }
@@ -135,7 +146,6 @@
       $stats.classList.remove('visible')
     }
   })
-
   // Toggle.
 
   // Event: Toggle nav on click.
@@ -171,12 +181,21 @@
     $stats.appendChild($statsClose)
   }
 
+  $gymSidebarClose = document.createElement('a')
+  $gymSidebarClose.href = '#'
+  $gymSidebarClose.className = 'close'
+  $gymSidebarClose.tabIndex = 0
+  $gymSidebar.appendChild($gymSidebarClose)
+
   // Event: Hide on ESC.
   window.addEventListener('keydown', function (event) {
     if (event.keyCode === 27) {
       $nav.classList.remove('visible')
       if ($stats) {
         $stats.classList.remove('visible')
+      }
+      if ($gymSidebar) {
+        $gymSidebar.classList.remove('visible')
       }
     }
   })
@@ -194,6 +213,15 @@
       event.preventDefault()
       event.stopPropagation()
       $stats.classList.remove('visible')
+    })
+  }
+
+  if ($gymSidebarClose) {
+    // Event: Hide stats on click.
+    $gymSidebarClose.addEventListener('click', function (event) {
+      event.preventDefault()
+      event.stopPropagation()
+      $gymSidebar.classList.remove('visible')
     })
   }
 })()

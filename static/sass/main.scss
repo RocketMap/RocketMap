@@ -51,8 +51,11 @@
 @import 'layout/header';
 @import 'layout/nav';
 @import 'layout/stats';
+@import 'layout/gym-details';
 @import 'layout/banner';
 @import 'layout/main';
 @import 'layout/footer';
 
-@import 'pokemon-sprite.scss'
+@import 'pokemon-sprite.scss';
+@import 'pokemon-large-sprite.scss';
+@import 'move-bar-sprite.scss';
