@@ -78,15 +78,13 @@ class Pogom(Flask):
 
         map_lat = self.current_location[0]
         map_lng = self.current_location[1]
-        if request.args:
-            if request.args.get('lat') is not None:
-                map_lat = request.args.get('lat')
-            if request.args.get('lon') is not None:
-                map_lng = request.args.get('lon')
+        if request.args and not args.fixed_location:
+            map_lat = request.args.get('lat') or self.current_location[0]
+            map_lng = request.args.get('lon') or self.current_location[1]
 
         return render_template('map.html',
-                               lat=self.current_location[0],
-                               lng=self.current_location[1],
+                               lat=map_lat,
+                               lng=map_lng,
                                gmaps_key=config['GMAPS_KEY'],
                                lang=config['LOCALE'],
                                is_fixed=fixed_display,
