@@ -12,7 +12,7 @@ queues - A list of queues for the workers they control. For now, this is a list 
             single queue.
 status - A list of status dicts for the workers. Schedulers can use this information to make
             more intelligent scheduling decisions. Useful values include:
-            - last_scan_time: unix timestamp of when the last scan was completed
+            - last_scan_date: unix timestamp of when the last scan was completed
             - location: [lat,lng,alt] of the last scan
 args - The configuration arguments. This may not include all of the arguments, just ones that are
             relevant to this scheduler instance (eg. if multiple locations become supported, the args
@@ -39,11 +39,15 @@ import logging
 import math
 import geopy
 import json
+import time
+from collections import Counter
 from queue import Empty
 from operator import itemgetter
+from datetime import datetime, timedelta
+from geopy.distance import vincenty
 from .transform import get_new_coords
-from .models import hex_bounds, Pokemon
-from .utils import now, cur_sec
+from .models import hex_bounds, Pokemon, SpawnPoint, ScannedLocation, ScanSpawnPoint
+from .utils import now, cur_sec, cellid, date_secs
 
 log = logging.getLogger(__name__)
 
@@ -58,6 +62,7 @@ class BaseScheduler(object):
         self.args = args
         self.scan_location = False
         self.size = None
+        self.ready = False
 
     # Schedule function fills the queues with data.
     def schedule(self):
@@ -65,7 +70,7 @@ class BaseScheduler(object):
 
     # location_changed function is called whenever the location being scanned changes.
     # scan_location = (lat, lng, alt)
-    def location_changed(self, scan_location):
+    def location_changed(self, scan_location, dbq):
         self.scan_location = scan_location
         self.empty_queues()
 
@@ -78,8 +83,45 @@ class BaseScheduler(object):
     def getsize(self):
         return self.size
 
-    # Function to empty all queues in the queues list.
+    def get_overseer_message(self):
+        nextitem = self.queues[0].queue[0]
+        message = 'Processing search queue, next item is {:6f},{:6f}'.format(nextitem[1][0], nextitem[1][1])
+        # If times are specified, print the time of the next queue item, and how many seconds ahead/behind realtime
+        if nextitem[2]:
+            message += ' @ {}'.format(time.strftime('%H:%M:%S', time.localtime(nextitem[2])))
+            if nextitem[2] > now():
+                message += ' ({}s ahead)'.format(nextitem[2] - now())
+            else:
+                message += ' ({}s behind)'.format(now() - nextitem[2])
+        return message
+
+    # check if time to refresh queue
+    def time_to_refresh_queue(self):
+        return self.queues[0].empty()
+
+    def task_done(self, *args):
+        return self.queues[0].task_done()
+
+    # Return the next item in the queue
+    def next_item(self, search_items_queue):
+        step, step_location, appears, leaves = self.queues[0].get()
+        remain = appears - now() + 10
+        messages = {
+            'wait': 'Waiting for item from queue',
+            'early': 'Early for {:6f},{:6f}; waiting {}s...'.format(step_location[0], step_location[1], remain),
+            'late': 'Too late for location {:6f},{:6f}; skipping'.format(step_location[0], step_location[1]),
+            'search': 'Searching at {:6f},{:6f}'.format(step_location[0], step_location[1]),
+            'invalid': 'Invalid response at {:6f},{:6f}, abandoning location'.format(step_location[0], step_location[1])
+        }
+        return step, step_location, appears, leaves, messages
+
+    # How long to delay since last action
+    def delay(self, *args):
+        return self.args.scan_delay  # always scan delay time
+
+    # Function to empty all queues in the queues list
     def empty_queues(self):
+        self.ready = False
         for queue in self.queues:
             if not queue.empty():
                 try:
@@ -107,8 +149,8 @@ class HexSearch(BaseScheduler):
         # This will hold the list of locations to scan so it can be reused, instead of recalculating on each loop.
         self.locations = False
 
-    # On location change, empty the current queue and the locations list.
-    def location_changed(self, scan_location):
+    # On location change, empty the current queue and the locations list
+    def location_changed(self, scan_location, dbq):
         self.scan_location = scan_location
         self.empty_queues()
         self.locations = False
@@ -216,6 +258,7 @@ class HexSearch(BaseScheduler):
             self.queues[0].put(location)
             log.debug("Added location {}".format(location))
         self.size = len(self.locations)
+        self.ready = True
 
 
 # Spawn Only Hex Search works like Hex Search, but skips locations that have no known spawnpoints.
@@ -353,6 +396,442 @@ class SpawnScan(BaseScheduler):
         # Clear the locations list so it gets regenerated next cycle.
         self.size = len(self.locations)
         self.locations = None
+        self.ready = True
+
+
+# SpeedScan is a complete search method that initially does a spawnpoint search in each scan location by scanning
+# five two-minute bands within an hour and ten minute intervals between bands.
+
+# After finishing the spawnpoint search or if timing isn't right for any of the remaining search bands,
+# workers will search the nearest scan location that has a new spawn.
+class SpeedScan(HexSearch):
+
+    # Call base initialization, set step_distance
+    def __init__(self, queues, status, args):
+        super(SpeedScan, self).__init__(queues, status, args)
+        self.refresh_date = datetime.utcnow() - timedelta(days=1)
+        self.next_band_date = self.refresh_date
+        self.queues = [[]]
+        self.ready = False
+        self.spawns_found = 0
+        self.spawns_missed_delay = {}
+        self.scans_done = 0
+        self.scans_missed = 0
+        self.scans_missed_list = []
+        self.minutes = 5  # Minutes between scan updates. Should be less than 10 to allow for new bands
+        self.found_percent = []
+        self.scan_percent = []
+        self.spawn_percent = []
+        self.status_message = []
+        self._stat_init()
+
+    def _stat_init(self):
+        self.spawns_found = 0
+        self.spawns_missed_delay = {}
+        self.scans_done = 0
+        self.scans_missed = 0
+        self.scans_missed_list = []
+
+    # On location change, empty the current queue and the locations list
+    def location_changed(self, scan_location, db_update_queue):
+        super(SpeedScan, self).location_changed(scan_location, db_update_queue)
+        self.locations = self._generate_locations()
+        scans = {}
+        initial = {}
+        all_scans = {}
+        for sl in ScannedLocation.select_in_hex(self.scan_location, self.args.step_limit):
+            all_scans[cellid((sl['latitude'], sl['longitude']))] = sl
+
+        for i, e in enumerate(self.locations):
+            cell = cellid(e[1])
+            scans[cell] = {'loc': e[1],  # Lat/long pair
+                           'step': e[0]}
+
+            initial[cell] = all_scans[cell] if cell in all_scans.keys() else ScannedLocation.new_loc(e[1])
+
+        self.scans = scans
+        db_update_queue.put((ScannedLocation, initial))
+        log.info('%d steps created', len(scans))
+        self.band_spacing = int(10 * 60 / len(scans))
+        self.band_status()
+        spawnpoints = SpawnPoint.select_in_hex(self.scan_location, self.args.step_limit)
+        if not spawnpoints:
+            log.info('No spawnpoints in hex found in SpawnPoint table. Doing initial scan.')
+        log.info('Found %d spawn points within hex', len(spawnpoints))
+
+        log.info('Assigning spawn points to scans')
+        scan_spawn_point = {}
+        ScannedLocation.link_spawn_points(scans, initial, spawnpoints, self.step_distance, scan_spawn_point)
+        if len(scan_spawn_point):
+            log.info('%d relations found between the spawn points and steps', len(scan_spawn_point))
+            db_update_queue.put((ScanSpawnPoint, scan_spawn_point))
+        else:
+            log.info('Spawn points assigned')
+
+    # Generates the list of locations to scan
+    # Created a new function, because speed scan requires fixed locations, even when increasing
+    # -st. With HexSearch locations, the location of inner rings would change if -st was increased
+    # requiring rescanning since it didn't recognize the location in the ScannedLocation table
+    def _generate_locations(self):
+
+        NORTH = 0
+        EAST = 90
+        SOUTH = 180
+        WEST = 270
+
+        xdist = math.sqrt(3) * self.step_distance  # dist between column centers
+        ydist = 3 * (self.step_distance / 2)       # dist between row centers
+
+        results = []
+
+        loc = self.scan_location
+        results.append((loc[0], loc[1], 0))
+
+        # upper part
+        for ring in range(1, self.step_limit):
+
+            for i in range(max(ring - 1, 1)):
+                if ring > 1:
+                    loc = get_new_coords(loc, ydist, NORTH)
+
+                loc = get_new_coords(loc, xdist / (1 + (ring > 1)), WEST)
+                results.append((loc[0], loc[1], 0))
+
+            for i in range(ring):
+                loc = get_new_coords(loc, ydist, NORTH)
+                loc = get_new_coords(loc, xdist / 2, EAST)
+                results.append((loc[0], loc[1], 0))
+
+            for i in range(ring):
+                loc = get_new_coords(loc, xdist, EAST)
+                results.append((loc[0], loc[1], 0))
+
+            for i in range(ring):
+                loc = get_new_coords(loc, ydist, SOUTH)
+                loc = get_new_coords(loc, xdist / 2, EAST)
+                results.append((loc[0], loc[1], 0))
+
+            for i in range(ring):
+                loc = get_new_coords(loc, ydist, SOUTH)
+                loc = get_new_coords(loc, xdist / 2, WEST)
+                results.append((loc[0], loc[1], 0))
+
+            for i in range(ring + (ring + 1 < self.step_limit)):
+                loc = get_new_coords(loc, xdist, WEST)
+                results.append((loc[0], loc[1], 0))
+
+        return [(step, (location[0], location[1], 0), 0, 0) for step, location in enumerate(results)]
+
+    def getsize(self):
+        return len(self.queues[0])
+
+    def get_overseer_message(self):
+        n = 0
+        ms = (datetime.utcnow() - self.refresh_date).total_seconds() + self.refresh_ms
+        counter = {
+            'TTH': 0,
+            'spawn': 0,
+            'band': 0,
+        }
+        for item in self.queues[0]:
+            if item.get('done', False):
+                continue
+
+            if ms > item['end']:
+                continue
+
+            if ms < item['start']:
+                break
+
+            n += 1
+            counter[item['kind']] += 1
+
+        message = 'Scanning status: {} total waiting, {} initial bands, {} TTH searches, and {} new spawns'\
+            .format(n, counter['band'], counter['TTH'], counter['spawn'])
+        if self.status_message:
+            message += '\n' + self.status_message
+
+        return message
+
+    # Refresh queue every 5 minutes
+    # the first band of a scan is done
+    def time_to_refresh_queue(self):
+        return (datetime.utcnow() - self.refresh_date).total_seconds() > self.minutes * 60 or \
+            self.queues == [[]]
+
+    # Function to empty all queues in the queues list
+    def empty_queues(self):
+        self.queues = [[]]
+
+    # How long to delay since last action
+    def delay(self, last_scan_date):
+        return max((last_scan_date - datetime.utcnow()).total_seconds() + self.args.scan_delay, 2)
+
+    def band_status(self):
+        try:
+            bands_total = len(self.locations) * 5
+            bands_filled = ScannedLocation.bands_filled(self.locations)
+            percent = bands_filled * 100.0 / bands_total
+            if bands_total == bands_filled:
+                log.info('Initial spawnpoint scan is complete')
+            else:
+                log.info('Initial spawnpoint scan, %d of %d bands are done or %.1f%% complete',
+                         bands_filled, bands_total, percent)
+            return percent
+
+        except Exception as e:
+            log.error('Exception in band_status: Exception message: {}'.format(e))
+
+    # Update the queue, and provide a report on performance of last minutes
+    def schedule(self):
+        log.info('Refreshing queue')
+        self.ready = False
+        now_date = datetime.utcnow()
+        self.refresh_date = now_date
+        self.refresh_ms = now_date.minute * 60 + now_date.second
+        old_q = list(self.queues[0])
+        queue = []
+
+        for cell, scan in self.scans.iteritems():
+            queue += ScannedLocation.get_times(scan, now_date)
+            queue += SpawnPoint.get_times(cell, scan, now_date, self.args.spawn_delay)
+
+        queue.sort(key=itemgetter('start'))
+        self.queues[0] = queue
+        self.ready = True
+        log.info('New queue created with %d entries', len(queue))
+        if old_q:
+            # Possible 'done' values are 'Missed', 'Scanned', None, or number
+            Not_none_list = filter(lambda e: e.get('done', None) is not None, old_q)
+            Missed_list = filter(lambda e: e.get('done', None) == 'Missed', Not_none_list)
+            Scanned_list = filter(lambda e: e.get('done', None) == 'Scanned', Not_none_list)
+            Timed_list = filter(lambda e: type(e['done']) is not str, Not_none_list)
+            spawns_timed_list = filter(lambda e: e['kind'] == 'spawn', Timed_list)
+            spawns_timed = len(spawns_timed_list)
+            bands_timed = len(filter(lambda e: e['kind'] == 'band', Timed_list))
+            spawns_all = spawns_timed + len(filter(lambda e: e['kind'] == 'spawn', Scanned_list))
+            spawns_missed = len(filter(lambda e: e['kind'] == 'spawn', Missed_list))
+            band_percent = self.band_status()
+            kinds = {}
+            tth_ranges = {}
+            tth_found = 0
+            active_sp = 0
+            found_percent = 100.0
+            good_percent = 100.0
+            spawns_reached = 100.0
+            spawnpoints = SpawnPoint.select_in_hex(self.scan_location, self.args.step_limit)
+            for sp in spawnpoints:
+                if sp['missed_count'] > 5:
+                    continue
+                active_sp += 1
+                tth_found += sp['earliest_unseen'] == sp['latest_seen']
+                kind = sp['kind']
+                kinds[kind] = kinds.get(kind, 0) + 1
+                tth_range = str(int(round(((sp['earliest_unseen'] - sp['latest_seen']) % 3600) / 60.0)))
+                tth_ranges[tth_range] = tth_ranges.get(tth_range, 0) + 1
+
+            tth_ranges['0'] = tth_ranges.get('0', 0) - tth_found
+            len_spawnpoints = len(spawnpoints) + (not len(spawnpoints))
+            log.info('Total Spawn Points found in hex: %d', len(spawnpoints))
+            log.info('Inactive Spawn Points found in hex: %d or %.1f%%',
+                     len(spawnpoints) - active_sp, (len(spawnpoints) - active_sp) * 100.0 / len_spawnpoints)
+            log.info('Active Spawn Points found in hex: %d or %.1f%%',
+                     active_sp, active_sp * 100.0 / len_spawnpoints)
+            active_sp += active_sp == 0
+            for k in sorted(kinds.keys()):
+                log.info('%s kind spawns: %d or %.1f%%', k, kinds[k], kinds[k] * 100.0 / active_sp)
+            log.info('Spawns with found TTH: %d or %.1f%%', tth_found, tth_found * 100.0 / active_sp)
+            for k in sorted(tth_ranges.keys(), key=int):
+                log.info('Spawnpoints with a %sm range to find TTH: %d', k, tth_ranges[k])
+            log.info('Over last %d minutes: %d new bands, %d Pokemon found',
+                     self.minutes, bands_timed, spawns_all)
+            log.info('Of the %d total spawns, %d were targeted, and %d found scanning for others',
+                     spawns_all, spawns_timed, spawns_all - spawns_timed)
+            scan_total = spawns_timed + bands_timed
+            spm = scan_total / self.minutes
+            seconds_per_scan = self.minutes * 60 * self.args.workers / scan_total if scan_total else 0
+            log.info('%d scans over %d minutes, %d scans per minute, %d secs per scan per worker',
+                     scan_total, self.minutes, spm, seconds_per_scan)
+
+            sum = spawns_all + spawns_missed
+            if sum:
+                spawns_reached = spawns_all * 100.0 / (spawns_all + spawns_missed)
+                log.info('%d Pokemon found, and %d were not reached in time for %.1f%% found',
+                         spawns_all, spawns_missed, spawns_reached)
+
+            if spawns_timed:
+                average = reduce(lambda x, y: x + y['done'], spawns_timed_list, 0) / spawns_timed
+                log.info('%d Pokemon found, %d were targeted, with an average delay of %d sec',
+                         spawns_all, spawns_timed, average)
+
+                spawns_missed = reduce(lambda x, y: x + len(y), self.spawns_missed_delay.values(), 0)
+                sum = spawns_missed + self.spawns_found
+                found_percent = self.spawns_found * 100.0 / sum if sum else 0
+                log.info('%d spawns scanned and %d spawns were not there when expected for %.1f%%',
+                         self.spawns_found, spawns_missed, found_percent)
+                self.spawn_percent.append(round(found_percent, 1))
+                if self.spawns_missed_delay:
+                    log.warning('Missed spawn IDs with times after spawn:')
+                    log.warning(self.spawns_missed_delay)
+                log.info('History: %s', str(self.spawn_percent).strip('[]'))
+
+            sum = self.scans_done + len(self.scans_missed_list)
+            good_percent = self.scans_done * 100.0 / sum if sum else 0
+            log.info('%d scans successful and %d scans missed for %.1f%% found',
+                     self.scans_done, len(self.scans_missed_list), good_percent)
+            self.scan_percent.append(round(good_percent, 1))
+            if self.scans_missed_list:
+                log.warning('Missed scans: %s', Counter(self.scans_missed_list).most_common(3))
+            log.info('History: %s', str(self.scan_percent).strip('[]'))
+            self.status_message = 'Initial scan: {:.2f}%, TTH found: {:.2f}%, '.format(band_percent, tth_found * 100.0 / (active_sp + (active_sp == 0)))
+            self.status_message += 'Spawns reached: {:.2f}%, Spawns found: {:.2f}%, Good scans {:.2f}%'\
+                .format(spawns_reached, found_percent, good_percent)
+            self._stat_init()
+
+    # Find the best item to scan next
+    def next_item(self, status):
+        # score each item in the queue by # of due spawns or scan time bands can be filled
+
+        while not self.ready:
+            time.sleep(1)
+
+        now_date = datetime.utcnow()
+        now_time = time.time()
+        n = 0  # count valid scans reviewed
+        q = self.queues[0]
+        ms = (now_date - self.refresh_date).total_seconds() + self.refresh_ms
+        best = {'score': 0}
+        cant_reach = False
+        worker_loc = [status['latitude'], status['longitude']]
+        last_action = status['last_scan_date']
+
+        # check all scan locations possible in the queue
+        for i, item in enumerate(q):
+            # if already claimed by another worker or done, pass
+            if item.get('done', False):
+                continue
+
+            # if already timed out, mark it as Missed and check next
+            if ms > item['end']:
+                item['done'] = 'Missed' if not item.get('done', False) else item['done']
+                continue
+
+            # if we just did a fresh band recently, wait a few seconds to space out the band scans
+            if now_date < self.next_band_date:
+                continue
+
+            # if the start time isn't yet, don't bother looking further, since queue sorted by start time
+            if ms < item['start']:
+                break
+
+            loc = item['loc']
+            distance = vincenty(loc, worker_loc).km
+            secs_to_arrival = distance / self.args.kph * 3600
+
+            # if we can't make it there before it disappears, don't bother trying
+            if ms + secs_to_arrival > item['end']:
+                cant_reach = True
+                continue
+
+            n += 1
+
+            # Bands are top priority to find new spawns first
+            score = 1e12 if item['kind'] == 'band' else (1e6 if item['kind'] == 'TTH' else 1)
+
+            # For spawns, score is purely based on how close they are to last worker position
+            score = score / (distance + .01)
+
+            if score > best['score']:
+                best = {'score': score, 'i': i}
+                best.update(item)
+
+        prefix = 'Calc %.2f for %d scans:' % (time.time() - now_time, n)
+        loc = best.get('loc', [])
+        step = best.get('step', 0)
+        i = best.get('i', 0)
+        item = q[i]
+        messages = {
+            'wait': 'Nothing to scan',
+            'early': 'Early for step {}; waiting {}s...'.format(step, 'a few second'),
+            'late': 'Too late for step {}; skipping'.format(step),
+            'search': 'Searching at step {}'.format(step),
+            'invalid': 'Invalid response at step {}, abandoning location'.format(step)
+        }
+
+        if best['score'] == 0:
+            if cant_reach:
+                messages['wait'] = 'Not able to reach any scan under the speed limit'
+            return -1, 0, 0, 0, messages
+
+        if vincenty(loc, worker_loc).km > (now_date - last_action).total_seconds() * self.args.kph / 3600:
+
+            messages['wait'] = 'Moving {}m to step {} for a {}'.format(
+                int(vincenty(loc, worker_loc).m), step, best['kind'])
+            return -1, 0, 0, 0, messages
+
+        prefix += ' Step %d,' % (step)
+        # Check again if another worker heading there
+        if item.get('done', False):
+            messages['wait'] = 'Skipping step {}. Other worker already scanned.'.format(step)
+            return -1, 0, 0, 0, messages
+
+        if not self.ready:
+            messages['wait'] = 'Search aborting. Overseer refreshing queue.'
+            return -1, 0, 0, 0, messages
+
+        # if a new band, set the date to wait until for the next band
+        if best['kind'] == 'band' and best['end'] - best['start'] > 5 * 60:
+            self.next_band_date = datetime.utcnow() + timedelta(seconds=self.band_spacing)
+
+        # Mark scanned
+        item['done'] = 'Scanned'
+        status['index_of_queue_item'] = i
+
+        messages['search'] = 'Scanning step {} for a {}'.format(best['step'], best['kind'])
+        return best['step'], best['loc'], 0, 0, messages
+
+    def task_done(self, status, parsed=False):
+        if parsed:
+            # Record delay between spawn time and scanning for statistics
+            now_secs = date_secs(datetime.utcnow())
+            item = self.queues[0][status['index_of_queue_item']]
+            seconds_within_band = int((datetime.utcnow() - self.refresh_date).total_seconds()) + self.refresh_ms
+            start_delay = seconds_within_band - item['start'] - (self.args.spawn_delay if item['kind'] == 'spawn' else 0)
+            safety_buffer = item['end'] - seconds_within_band
+
+            if safety_buffer < 0:
+                log.warning('Too late by %d sec for a %s at step %d', -safety_buffer, item['kind'], item['step'])
+
+            # If we had a 0/0/0 scan, then unmark as done so we can retry, and save for Statistics
+            elif parsed['bad_scan']:
+                self.scans_missed_list.append(cellid(item['loc']))
+                item['done'] = None
+                log.info('Putting back step %d in queue', item['step'])
+            else:
+                # Scan returned data
+                self.scans_done += 1
+                item['done'] = start_delay
+
+                # Were we looking for spawn?
+                if item['kind'] == 'spawn':
+
+                    sp_id = item['sp']
+                    # Did we find the spawn?
+                    if sp_id in parsed['sp_id_list']:
+                        self.spawns_found += 1
+                    elif start_delay > 0:  # not sure why this could be negative, but sometimes it is
+
+                        # if not, record ID and put back in queue
+                        self.spawns_missed_delay[sp_id] = self.spawns_missed_delay.get(sp_id, [])
+                        self.spawns_missed_delay[sp_id].append(start_delay)
+                        item['done'] = 'Scanned'
+
+                # For existing spawn points, if in any other queue items, mark 'scanned'
+                for sp_id in parsed['sp_id_list']:
+                    for item in self.queues[0]:
+                        if (sp_id == item.get('sp', None) and item.get('done', None) is None and
+                                now_secs > item['start'] and now_secs < item['end']):
+                            item['done'] = 'Scanned'
 
 
 # The SchedulerFactory returns an instance of the correct type of scheduler.
@@ -360,7 +839,8 @@ class SchedulerFactory():
     __schedule_classes = {
         "hexsearch": HexSearch,
         "hexsearchspawnpoint": HexSearchSpawnpoint,
-        "spawnscan": SpawnScan
+        "spawnscan": SpawnScan,
+        "speedscan": SpeedScan,
     }
 
     @staticmethod

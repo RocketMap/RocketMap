@@ -9,6 +9,8 @@ import logging
 import shutil
 import pprint
 import time
+from geopy.distance import vincenty
+from s2sphere import CellId, LatLng
 
 from . import config
 
@@ -74,6 +76,9 @@ def get_args():
                         default=12)
     parser.add_argument('-sd', '--scan-delay',
                         help='Time delay between requests in scan threads.',
+                        type=float, default=10)
+    parser.add_argument('--spawn-delay',
+                        help='Number of seconds after spawn time to wait before scanning to be sure the pokemon is there.',
                         type=float, default=10)
     parser.add_argument('-enc', '--encounter',
                         help='Start an encounter to gather IVs and moves.',
@@ -157,8 +162,13 @@ def get_args():
                         help='Disables PokeStops from the map (including parsing them into local db).',
                         action='store_true', default=False)
     parser.add_argument('-ss', '--spawnpoint-scanning',
-                        help='Use spawnpoint scanning (instead of hex grid). Scans in a circle based on step_limit when on DB.', nargs='?', const='nofile', default=False)
-    parser.add_argument('--dump-spawnpoints', help='Dump the spawnpoints from the db to json (only for use with -ss).',
+                        help='Use spawnpoint scanning (instead of hex grid). Scans in a circle based on step_limit when on DB', nargs='?', const='nofile', default=False)
+    parser.add_argument('-speed', '--speed-scan',
+                        help='Use speed scanning to identify spawn points and then scan closest spawns.',
+                        action='store_true', default=False)
+    parser.add_argument('-kph', '--kph',
+                        help='Set a maximum speed in km/hour for scanner movement', type=int, default=35)
+    parser.add_argument('--dump-spawnpoints', help='dump the spawnpoints from the db to json (only for use with -ss)',
                         action='store_true', default=False)
     parser.add_argument('-pd', '--purge-data',
                         help='Clear pokemon from database this many hours after they disappear \
@@ -372,6 +382,8 @@ def get_args():
             args.scheduler = 'SpawnScan'
         elif args.skip_empty:
             args.scheduler = 'HexSearchSpawnpoint'
+        elif args.speed_scan:
+            args.scheduler = 'SpeedScan'
         else:
             args.scheduler = 'HexSearch'
 
@@ -383,9 +395,34 @@ def now():
     return int(time.time())
 
 
-# Gets the current time past the hour.
+# gets the time past the hour
 def cur_sec():
     return (60 * time.gmtime().tm_min) + time.gmtime().tm_sec
+
+
+# gets the total seconds past the hour for a given date
+def date_secs(d):
+    return d.minute * 60 + d.second
+
+
+# checks to see if test is between start and end assuming roll over like a clock
+def clock_between(start, test, end):
+    return (start <= test <= end and start < end) or (not (end <= test <= start) and start > end)
+
+
+# return amount of seconds between two times on the clock
+def secs_between(time1, time2):
+    return min((time1 - time2) % 3600, (time2 - time1) % 3600)
+
+
+# Return the s2sphere cellid token from a location
+def cellid(loc):
+    return CellId.from_lat_lng(LatLng.from_degrees(loc[0], loc[1])).to_token()
+
+
+# Return True if distance between two locs is less than step_distance
+def in_radius(loc1, loc2, distance):
+    return vincenty(loc1, loc2).km < distance
 
 
 def i8ln(word):

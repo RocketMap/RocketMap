@@ -12,6 +12,7 @@
                         [-L LOCALE] [-c] [-m MOCK] [-ns] [-os] [-nsc] [-fl] -k
                         GMAPS_KEY [--skip-empty] [-C] [-D DB] [-cd] [-np]
                         [-ng] [-nk] [-ss [SPAWNPOINT_SCANNING]]
+                        [-kph KPH] [-speed [SPEED_SCANNING]]
                         [--dump-spawnpoints] [-pd PURGE_DATA] [-px PROXY]
                         [-pxt PROXY_TIMEOUT] [-pxd PROXY_DISPLAY]
                         [--db-type DB_TYPE] [--db-name DB_NAME]
@@ -151,6 +152,11 @@
                             Use spawnpoint scanning (instead of hex grid). Scans
                             in a circle based on step_limit when on DB [env var:
                             POGOMAP_SPAWNPOINT_SCANNING]
+      -speed [SPEED_SCANNING], Use hex scanning with 5 passes per hour to identify
+                            spawns, and then transition to spawn scanning based on
+                            closest spawn to the worker.
+      -kph                  Set speed limit in kilometers/hour. Default is 35 kp/h
+                            For use with -speed scanning.
       --dump-spawnpoints    dump the spawnpoints from the db to json (only for use
                             with -ss) [env var: POGOMAP_DUMP_SPAWNPOINTS]
       -pd PURGE_DATA, --purge-data PURGE_DATA

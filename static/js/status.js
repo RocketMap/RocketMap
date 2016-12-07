@@ -112,7 +112,7 @@ function processMainWorker (i, worker) {
 
   $('#name_' + hash).html(worker['worker_name'])
   $('#method_' + hash).html('(' + worker['method'] + ')')
-  $('#message_' + hash).html(worker['message'])
+  $('#message_' + hash).html(worker['message'].replace('\n', '<br>'))
 }
 
 function addWorker (mainWorkerHash, workerHash) {
