@@ -106,8 +106,11 @@ def get_args():
                         help='Number of logins attempts before refreshing a thread.',
                         type=int, default=3)
     parser.add_argument('-mf', '--max-failures',
-                        help='Maximum number of failures to parse locations before an account will go into a two hour sleep.',
+                        help='Maximum number of failures to parse locations before an account will go into a sleep for -ari/--account-rest-interval seconds',
                         type=int, default=5)
+    parser.add_argument('-me', '--max-empty',
+                        help='Maximum number of empty scans before an account will go into a sleep for -ari/--account-rest-interval seconds. Reasonable to use with proxies',
+                        type=int, default=0)
     parser.add_argument('-msl', '--min-seconds-left',
                         help='Time that must be left on a spawn before considering it too late and skipping it. eg. 600 would skip anything with < 10 minutes remaining. Default 0.',
                         type=int, default=0)
@@ -172,12 +175,17 @@ def get_args():
                         action='store_true', default=False)
     parser.add_argument('-pd', '--purge-data',
                         help='Clear pokemon from database this many hours after they disappear \
-                        (0 to disable).', type=int, default=0)
-    parser.add_argument('-px', '--proxy', help='Proxy url (e.g. socks5://127.0.0.1:9050).', action='append')
-    parser.add_argument('-pxsc', '--proxy-skip-check', help='Disable checking of proxies before start.', action='store_true', default=False)
-    parser.add_argument('-pxt', '--proxy-timeout', help='Timeout settings for proxy checker in seconds.', type=int, default=5)
-    parser.add_argument('-pxd', '--proxy-display', help='Display info on which proxy beeing used (index or full) To be used with -ps.', type=str, default='index')
-    parser.add_argument('--db-type', help='Type of database to be used (default: sqlite).',
+                        (0 to disable)', type=int, default=0)
+    parser.add_argument('-px', '--proxy', help='Proxy url (e.g. socks5://127.0.0.1:9050)', action='append')
+    parser.add_argument('-pxsc', '--proxy-skip-check', help='Disable checking of proxies before start', action='store_true', default=False)
+    parser.add_argument('-pxt', '--proxy-timeout', help='Timeout settings for proxy checker in seconds ', type=int, default=5)
+    parser.add_argument('-pxd', '--proxy-display', help='Display info on which proxy beeing used (index or full). To be used with -ps', type=str, default='index')
+    parser.add_argument('-pxf', '--proxy-file', help='Load proxy list from text file (one proxy per line), overrides -px/--proxy')
+    parser.add_argument('-pxr', '--proxy-refresh', help='Period of proxy file reloading, in seconds. Works only with -pxf/--proxy-file. \
+                        (0 to disable)', type=int, default=0)
+    parser.add_argument('-pxo', '--proxy-rotation', help='Enable proxy rotation with account changing for search threads \
+                        (none/round/random)', type=str, default='none')
+    parser.add_argument('--db-type', help='Type of database to be used (default: sqlite)',
                         default='sqlite')
     parser.add_argument('--db-name', help='Name of the database to be used.')
     parser.add_argument('--db-user', help='Username for the database.')

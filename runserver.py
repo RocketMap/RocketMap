@@ -26,7 +26,7 @@ from pogom.search import search_overseer_thread
 from pogom.models import init_database, create_tables, drop_tables, Pokemon, db_updater, clean_db_loop
 from pogom.webhook import wh_updater
 
-from pogom.proxy import check_proxies
+from pogom.proxy import check_proxies, proxies_refresher
 
 # Currently supported pgoapi.
 pgoapi_version = "1.1.7"
@@ -243,11 +243,16 @@ def main():
 
     if not args.only_server:
 
-        # Check all proxies before continue so we know they are good.
-        if args.proxy and not args.proxy_skip_check:
+        # Processing proxies if set (load from file, check and overwrite old args.proxy with new working list)
+        args.proxy = check_proxies(args)
 
-            # Overwrite old args.proxy with new working list.
-            args.proxy = check_proxies(args)
+        # Run periodical proxy refresh thread
+        if (args.proxy_file is not None) and (args.proxy_refresh > 0):
+            t = Thread(target=proxies_refresher, name='proxy-refresh', args=(args,))
+            t.daemon = True
+            t.start()
+        else:
+            log.info('Periodical proxies refresh disabled.')
 
         # Gather the Pokemon!
 

@@ -21,6 +21,8 @@
 #scan-delay:            # default 10
 #step-limit:            # default 12
 #gym-info:              # enables detailed gym info collection (default false)
+#max-failures:          # Maximum number of failures to parse locations before an account will go into a sleep for #account-rest-interval seconds (0 to disable), (default 5)
+#max-empty:             # Maximum number of empty scans before an account will go into a sleep for #account-rest-interval seconds. Reasonable to use with proxies (0 to disable), (default 0)
 #min-seconds-left:      # time that must be left on a spawn before considering it too late and skipping it (default 0)
 #status-name:           # enables writing status updates to the database - if you use multiple processes, each needs a unique value
 
@@ -35,6 +37,9 @@
 #proxy:                 # Proxy URL e.g. socks5://127.0.0.1:9050 or a list of proxies e.g. [socks5://127.0.0.1:9050,socks5://127.0.0.1:9050]
 #proxy-timeout:         # Timeout before proceeding with next proxy while checking if the proxy works, (default 5)
 #proxy-display:         # Used with -ps, full = display complete proxy address. Index = displays just the index for that proxy (default index)
+#proxy-file:            # Load proxy list from text file (one proxy per line), overrides #proxy
+#proxy-refresh:         # Period of proxy file reloading, in seconds. Works only with #proxy-file (0 to disable), (default 0)
+#proxy-rotation:        # Enable proxy rotation with account changing for search threads (none/round/random), (default='none')
 #webhook:               # webhook URL (including http://)
 #webhook-updates-only:  # only send updates to webhooks, (excludes gyms & non-lured pokéstops)
 
