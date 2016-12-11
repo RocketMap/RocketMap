@@ -1460,6 +1460,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue, a
     # If we saw nothing and there should be visible forts, it's bad
     if not len(wild_pokemon) and not len(forts) and ScannedLocation.visible_forts(step_location):
         log.warning('Bad scan. Parsing found 0/0/0 pokemons/pokestops/gyms')
+        log.info('Common causes: captchas, IP bans, or using -ng and -nk arguments')
         return {
             'count': 0,
             'gyms': gyms,
@@ -1469,6 +1470,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue, a
 
     if not len(nearby_pokemons) and not len(wild_pokemon):
         log.warning('Nothing on nearby_pokemons or wild. Speed violation?')
+        log.info("Common causes: not using -speed, deleting or dropping the WorkerStatus table without waiting before restarting, or there really aren't any pokemon in 200m")
 
     scan_loc = ScannedLocation.get_by_loc(step_location)
 
@@ -1535,9 +1537,6 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue, a
 
             seconds_until_despawn = (SpawnPoint.start_end(sp)[1] - now_secs) % 3600
             disappear_time = now_date + timedelta(seconds=seconds_until_despawn)
-
-            if seconds_until_despawn < 5 * 60:
-                pass
 
             printPokemon(p['pokemon_data']['pokemon_id'], p['latitude'], p['longitude'], disappear_time)
 
@@ -1708,6 +1707,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue, a
                 spawn_points[sp['id']] = sp
                 log.warning('%s kind spawnpoint %s has no pokemon %d times in a row',
                             sp['kind'], sp['id'], sp['missed_count'])
+                log.info('Possible causes: Still doing initial scan, or super rare double spawnpoint during hidden period, or Niantic has removed spawnpoint')
 
         if (not SpawnPoint.tth_found(sp) and scan_loc['done'] and
                 (sp['earliest_unseen'] - sp['latest_seen'] - args.spawn_delay) % 3600 < 60):
