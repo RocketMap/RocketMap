@@ -78,7 +78,7 @@ class Pogom(Flask):
 
         map_lat = self.current_location[0]
         map_lng = self.current_location[1]
-        if request.args and not args.fixed_location:
+        if request.args:
             map_lat = request.args.get('lat') or self.current_location[0]
             map_lng = request.args.get('lon') or self.current_location[1]
 
