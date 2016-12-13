@@ -13,6 +13,7 @@
                         GMAPS_KEY [--skip-empty] [-C] [-D DB] [-cd] [-np]
                         [-ng] [-nk] [-ss [SPAWNPOINT_SCANNING]]
                         [-kph KPH] [-speed [SPEED_SCANNING]]
+                        [-bh Beehives] [-wph Workers Per Hive]
                         [--dump-spawnpoints] [-pd PURGE_DATA] [-px PROXY]
                         [-pxt PROXY_TIMEOUT] [-pxd PROXY_DISPLAY]
                         [--db-type DB_TYPE] [--db-name DB_NAME]
@@ -157,6 +158,9 @@
                             closest spawn to the worker.
       -kph                  Set speed limit in kilometers/hour. Default is 35 kp/h
                             For use with -speed scanning.
+      -bh                   Use beehive with -wph workers per hive until
+                            hives * -wph > -w
+      -wph                  Workers per hive
       --dump-spawnpoints    dump the spawnpoints from the db to json (only for use
                             with -ss) [env var: POGOMAP_DUMP_SPAWNPOINTS]
       -pd PURGE_DATA, --purge-data PURGE_DATA
