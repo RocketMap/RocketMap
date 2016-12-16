@@ -718,7 +718,7 @@ def search_worker_thread(args, account_queue, account_failures, search_items_que
                         log.debug(status['message'])
 
                         if gym_responses:
-                            parse_gyms(args, gym_responses, whq)
+                            parse_gyms(args, gym_responses, whq, dbq)
 
                 # Delay the desired amount after "scan" completion
                 delay = scheduler.delay(status['last_scan_date'])

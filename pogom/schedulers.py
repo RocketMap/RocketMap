@@ -461,12 +461,9 @@ class SpeedScan(HexSearch):
             log.info('No spawnpoints in hex found in SpawnPoint table. Doing initial scan.')
         log.info('Found %d spawn points within hex', len(spawnpoints))
 
-        log.info('Doing %s distance calcs to assign %d spawn points to %d scans',
-                 "{:,}".format(len(spawnpoints) * len(scans)), len(spawnpoints), len(scans))
-        log.info('Until the intial scan is complete, this step can take a long time for large -st.')
-        log.info('If wait is too long, reduce the -st size and complete intial scan before increasing -st again.')
+        log.info('Doing %s distance calcs to assign spawn points to scans', "{:,}".format(len(spawnpoints) * len(scans)))
         scan_spawn_point = {}
-        ScannedLocation.link_spawn_points(scans, initial, spawnpoints, self.step_distance, scan_spawn_point)
+        ScannedLocation.link_spawn_points(scans, initial, spawnpoints, self.step_distance, scan_spawn_point, force=True)
         if len(scan_spawn_point):
             log.info('%d relations found between the spawn points and steps', len(scan_spawn_point))
             db_update_queue.put((ScanSpawnPoint, scan_spawn_point))
