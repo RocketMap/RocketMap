@@ -1054,5 +1054,13 @@
 		"duration": 3200,
 		"energy": 20,
 		"dps": 4.68
+	},
+	"242": {
+		"name": "Transform",
+		"type": "Normal",
+		"damage": 0,
+		"duration": 1730,
+		"energy": 0,
+		"dps": 0
 	}
 }
