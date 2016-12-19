@@ -179,7 +179,7 @@ def get_new_proxy(args):
 
     # If none/round - simply get next proxy
     if (args.proxy_rotation is None) or (args.proxy_rotation == 'none') or (args.proxy_rotation == 'round'):
-        if last_proxy >= len(args.proxy):
+        if last_proxy >= len(args.proxy) - 1:
             last_proxy = 0
         else:
             last_proxy = last_proxy + 1
