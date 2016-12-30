@@ -162,6 +162,9 @@ def main():
         log.debug('Looking up coordinates in API')
         position = util.get_pos_by_name(args.location)
 
+    if position is None or not any(position):
+        log.error("Location not found: '{}'".format(args.location))
+        sys.exit()
     # Use the latitude and longitude to get the local altitude from Google.
     try:
         url = 'https://maps.googleapis.com/maps/api/elevation/json?locations={},{}'.format(
@@ -171,10 +174,6 @@ def main():
         position = (position[0], position[1], altitude)
     except (requests.exceptions.RequestException, IndexError, KeyError):
         log.error('Unable to retrieve altitude from Google APIs; setting to 0')
-
-    if not any(position):
-        log.error('Could not get a position by name, aborting!')
-        sys.exit()
 
     log.info('Parsed location is: %.4f/%.4f/%.4f (lat/lng/alt)',
              position[0], position[1], position[2])
