@@ -242,9 +242,9 @@ class Pokemon(BaseModel):
     @classmethod
     def get_appearances(cls, pokemon_id, timediff):
         '''
-        :param pokemon_id: id of pokemon that we need appearances for
+        :param pokemon_id: id of Pokémon that we need appearances for
         :param timediff: limiting period of the selection
-        :return: list of  pokemon  appearances over a selected period
+        :return: list of Pokémon appearances over a selected period
         '''
         if timediff:
             timediff = datetime.utcnow() - timediff
@@ -262,7 +262,7 @@ class Pokemon(BaseModel):
     @classmethod
     def get_appearances_times_by_spawnpoint(cls, pokemon_id, spawnpoint_id, timediff):
         '''
-        :param pokemon_id: id of pokemon that we need appearances times for
+        :param pokemon_id: id of Pokémon that we need appearances times for
         :param spawnpoint_id: spawnpoing id we need appearances times for
         :param timediff: limiting period of the selection
         :return: list of time appearances over a selected period
@@ -382,7 +382,7 @@ class Pokemon(BaseModel):
             # examples: time    shifted
             #           0       (   0 + 2700) = 2700 % 3600 = 2700 (0th minute to 45th minute, 15 minutes prior to appearance as time wraps around the hour.)
             #           1800    (1800 + 2700) = 4500 % 3600 =  900 (30th minute, moved to arrive at 15th minute.)
-            # todo: this DOES NOT ACCOUNT for pokemons that appear sooner and live longer, but you'll _always_ have at least 15 minutes, so it works well enough.
+            # todo: this DOES NOT ACCOUNT for Pokémon that appear sooner and live longer, but you'll _always_ have at least 15 minutes, so it works well enough.
             location['time'] = cls.get_spawn_time(location['time'])
 
         return filtered
@@ -1016,7 +1016,7 @@ class SpawnPoint(BaseModel):
     # for example, a 30 minute spawn is 'hhss'
     kind = CharField(max_length=4, default='hhhs')
 
-    # links shows whether a pokemon encounter id changes between quartiles or stays the same
+    # links shows whether a Pokémon encounter id changes between quartiles or stays the same
     # both 1x45 and 1x60h3 have the kind of 'sssh', but the different links shows when the
     # encounter id changes
     # same encounter id is shared between two quartiles, links shows a '+',
@@ -1031,7 +1031,7 @@ class SpawnPoint(BaseModel):
     missed_count = IntegerField(default=0)
 
     # next 2 fields are to narrow down on the valid TTH window
-    # seconds after the hour of the latest pokemon seen time within the hour
+    # seconds after the hour of the latest Pokémon seen time within the hour
     latest_seen = IntegerField()
 
     # seconds after the hour of the earliest time wasn't seen after an appearance
@@ -1275,7 +1275,7 @@ class SpawnpointDetectionData(BaseModel):
         # same: whether encounter ID was same or different over that time}
 
         # for 60 min spawns ('ssss'), the largest gap doesn't give the earliest spawn point,
-        # because a pokemon is always there
+        # because a Pokémon is always there
         # use the union of all intervals where the same encounter ID was seen to find the latest_seen
         # If a different encounter ID was seen, then the complement of that interval was the same
         # ID, so union that complement as well
@@ -1444,7 +1444,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue, a
     sp_id_list = []
     now_secs = date_secs(now_date)
 
-    # consolidate the individual lists in each cell into one list of pokemon and a list of forts
+    # consolidate the individual lists in each cell into one list of Pokémon and a list of forts
     cells = map_dict['responses']['GET_MAP_OBJECTS']['map_cells']
     for cell in cells:
         nearby_pokemons += cell.get('nearby_pokemons', [])
@@ -1457,7 +1457,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue, a
     # Check for a 0/0/0 bad scan
     # If we saw nothing and there should be visible forts, it's bad
     if not len(wild_pokemon) and not len(forts) and ScannedLocation.visible_forts(step_location):
-        log.warning('Bad scan. Parsing found 0/0/0 pokemons/pokestops/gyms')
+        log.warning('Bad scan. Parsing found 0/0/0 Pokémon/pokestops/gyms')
         log.info('Common causes: captchas, IP bans, or using -ng and -nk arguments')
         return {
             'count': 0,
@@ -1467,8 +1467,8 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue, a
         }
 
     if not len(nearby_pokemons) and not len(wild_pokemon):
-        log.warning('Nothing on nearby_pokemons or wild. Speed violation?')
-        log.info("Common causes: not using -speed, deleting or dropping the WorkerStatus table without waiting before restarting, or there really aren't any pokemon in 200m")
+        log.warning('No nearby or wild Pokémon. Speed violation?')
+        log.info("Common causes: not using -speed, deleting or dropping the WorkerStatus table without waiting before restarting, or there really aren't any Pokémon in 200m")
 
     scan_loc = ScannedLocation.get_by_loc(step_location)
     done_already = scan_loc['done']
@@ -1477,13 +1477,13 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue, a
 
     if len(wild_pokemon):
         encounter_ids = [b64encode(str(p['encounter_id'])) for p in wild_pokemon]
-        # For all the wild Pokemon we found check if an active Pokemon is in the database.
+        # For all the wild Pokémon we found check if an active Pokémon is in the database.
         query = (Pokemon
                  .select(Pokemon.encounter_id, Pokemon.spawnpoint_id)
                  .where((Pokemon.disappear_time > datetime.utcnow()) & (Pokemon.encounter_id << encounter_ids))
                  .dicts())
 
-        # Store all encounter_ids and spawnpoint_id for the pokemon in query (all thats needed to make sure its unique).
+        # Store all encounter_ids and spawnpoint_id for the Pokémon in query (all thats needed to make sure its unique).
         encountered_pokemon = [(p['encounter_id'], p['spawnpoint_id']) for p in query]
 
         for p in wild_pokemon:
@@ -1511,7 +1511,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue, a
                     sighting['tth_secs'] = d_t_secs
 
                     # only update when TTH is seen for the first time
-                    # just before pokemon migrations, Niantic sets all TTH to the exact time of the migration
+                    # just before Pokémon migrations, Niantic sets all TTH to the exact time of the migration
                     # not the normal despawn time
                     sp['latest_seen'] = d_t_secs
                     sp['earliest_unseen'] = d_t_secs
@@ -1536,7 +1536,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue, a
             sp['last_scanned'] = datetime.utcfromtimestamp(p['last_modified_timestamp_ms'] / 1000.0)
 
             if (b64encode(str(p['encounter_id'])), p['spawn_point_id']) in encountered_pokemon:
-                # If pokemon has been encountered before dont process it.
+                # If Pokémon has been encountered before don't process it.
                 skipped += 1
                 continue
 
@@ -1691,12 +1691,13 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue, a
                         f['last_modified_timestamp_ms'] / 1000.0),
                 }
 
-    log.info('Parsing found %d pokemons, %d pokestops, and %d gyms.',
+    log.info('Parsing found %d Pokémon, %d nearby, %d pokestops, and %d gyms.',
              len(pokemons) + skipped,
+             len(nearby_pokemons),
              len(pokestops) + stopsskipped,
              len(gyms))
 
-    log.debug('Skipped %d Pokemons and %d pokestops.', skipped, stopsskipped)
+    log.debug('Skipped %d Pokémon and %d pokestops.', skipped, stopsskipped)
 
     # look for spawnpoints within scan_loc that are not here to see if can narrow down tth window
     for sp in ScannedLocation.linked_spawn_points(scan_loc['cellid']):
@@ -1709,13 +1710,13 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue, a
             if clock_between(endpoints[0], now_secs, endpoints[1]):
                 sp['missed_count'] += 1
                 spawn_points[sp['id']] = sp
-                log.warning('%s kind spawnpoint %s has no pokemon %d times in a row',
+                log.warning('%s kind spawnpoint %s has no Pokémon %d times in a row',
                             sp['kind'], sp['id'], sp['missed_count'])
                 log.info('Possible causes: Still doing initial scan, or super rare double spawnpoint during hidden period, or Niantic has removed spawnpoint')
 
         if (not SpawnPoint.tth_found(sp) and scan_loc['done'] and
                 (sp['earliest_unseen'] - sp['latest_seen'] - args.spawn_delay) % 3600 < 60):
-            log.warning('Spawnpoint %s was unable to locate a TTH, with only %ss after pokemon last seen',
+            log.warning('Spawnpoint %s was unable to locate a TTH, with only %ss after Pokémon last seen',
                         sp['id'], (sp['earliest_unseen'] - sp['latest_seen']) % 3600)
             log.info('Embiggening search for TTH by 15 minutes to try again')
             if sp['id'] not in sp_id_list:
@@ -1914,7 +1915,7 @@ def clean_db_loop(args):
                      .where(Pokestop.lure_expiration < datetime.utcnow()))
             query.execute()
 
-            # If desired, clear old pokemon spawns.
+            # If desired, clear old Pokémon spawns.
             if args.purge_data > 0:
                 query = (Pokemon
                          .delete()
@@ -2041,7 +2042,7 @@ def database_migrate(db, old_ver):
         db.drop_tables([ScannedLocation])
 
     if old_ver < 5:
-        # Some pokemon were added before the 595 bug was "fixed".
+        # Some Pokémon were added before the 595 bug was "fixed".
         # Clean those up for a better UX.
         query = (Pokemon
                  .delete()
