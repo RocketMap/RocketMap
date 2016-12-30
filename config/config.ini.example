@@ -40,7 +40,7 @@
 #proxy-file:            # Load proxy list from text file (one proxy per line), overrides #proxy
 #proxy-refresh:         # Period of proxy file reloading, in seconds. Works only with #proxy-file (0 to disable), (default 0)
 #proxy-rotation:        # Enable proxy rotation with account changing for search threads (none/round/random), (default='none')
-#webhook:               # webhook URL (including http://)
+#webhook:               # webhook URL e.g. http://127.0.0.1:12345 or a list for multiple webhooks [http://127.0.0.1:1345,http://127.0.0.1:12346]
 #webhook-updates-only:  # only send updates to webhooks, (excludes gyms & non-lured pokéstops)
 
 # Webserver settings

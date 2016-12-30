@@ -194,7 +194,7 @@
       --db-threads DB_THREADS
                             Number of db threads; increase if the db queue falls
                             behind [env var: POGOMAP_DB_THREADS]
-      -wh [WEBHOOKS [WEBHOOKS ...]], --webhook [WEBHOOKS [WEBHOOKS ...]]
+      -wh [WEBHOOKS [-wh WEBHOOKS ...]], --webhook [WEBHOOKS [--webhook WEBHOOKS ...]]
                             Define URL(s) to POST webhook information to [env var:
                             POGOMAP_WEBHOOK]
       -gi, --gym-info       Get all details about gyms (causes an additional API

@@ -199,7 +199,7 @@ def get_args():
     parser.add_argument('--db-threads', help='Number of db threads; increase if the db queue falls behind.',
                         type=int, default=1)
     parser.add_argument('-wh', '--webhook', help='Define URL(s) to POST webhook information to.',
-                        nargs='*', default=False, dest='webhooks')
+                        default=None, dest='webhooks', action='append')
     parser.add_argument('-gi', '--gym-info', help='Get all details about gyms (causes an additional API hit for every gym).',
                         action='store_true', default=False)
     parser.add_argument('--disable-clean', help='Disable clean db loop.',
