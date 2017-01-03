@@ -26,22 +26,25 @@
 #min-seconds-left:      # time that must be left on a spawn before considering it too late and skipping it (default 0)
 #status-name:           # enables writing status updates to the database - if you use multiple processes, each needs a unique value
 
-#Pokemon IV 
+# Pokemon IV
 #encounter:             # Set to true to start encounters to pull more info, like IVs or movesets. (default false)
 #encounter-delay:       # delay in seconds before starting an encounter. Must not be zero. (default 1)
 #encounter-whitelist:   # whitelist of pokemon ids to encounter. Syntax [id,id,id,id] (Do not use with blacklist)
 #encounter-blacklist:   # blacklist of pokemon ids to NOT encounter. Syntax [id,id,id,id] (Do not use with whitelist)
 
 # Misc
-#gmaps-key:             # your Google Maps API key
+#gmaps-key:             # Your Google Maps API key
 #proxy:                 # Proxy URL e.g. socks5://127.0.0.1:9050 or a list of proxies e.g. [socks5://127.0.0.1:9050,socks5://127.0.0.1:9050]
 #proxy-timeout:         # Timeout before proceeding with next proxy while checking if the proxy works, (default 5)
 #proxy-display:         # Used with -ps, full = display complete proxy address. Index = displays just the index for that proxy (default index)
 #proxy-file:            # Load proxy list from text file (one proxy per line), overrides #proxy
 #proxy-refresh:         # Period of proxy file reloading, in seconds. Works only with #proxy-file (0 to disable), (default 0)
 #proxy-rotation:        # Enable proxy rotation with account changing for search threads (none/round/random), (default='none')
-#webhook:               # webhook URL e.g. http://127.0.0.1:12345 or a list for multiple webhooks [http://127.0.0.1:1345,http://127.0.0.1:12346]
-#webhook-updates-only:  # only send updates to webhooks, (excludes gyms & non-lured pokéstops)
+#webhook:               # Webhook URL e.g. http://127.0.0.1:12345 or a list for multiple webhooks [http://127.0.0.1:1345,http://127.0.0.1:12346]
+#webhook-updates-only:  # Only send updates to webhooks (excludes gyms & non-lured pokéstops).
+#wh-retries:            # Number of times to retry sending webhook data on failure (default: 5).
+#wh-timeout:            # Timeout (in seconds) for webhook requests (default: 2).
+#wh-backoff-factor:     # Factor (in seconds) by which the delay until next retry will increase (default: 0.25).
 
 # Webserver settings
 #host:                  # address to listen on (default 127.0.0.1)
@@ -52,6 +55,6 @@
 #encrypt-lib:           # path to encrypt lib to be used instead of the shipped ones
 #status-page-password:  # enables and protects the /status page to view status of all workers
 
-#Uncomment a line when you want to change its default value (Remove # at the beginning)
-#Please ensure to leave a space after the : (example setting: value)
-#username, password, location and gmaps-key are required
+# Uncomment a line when you want to change its default value (Remove # at the beginning)
+# Please ensure to leave a space after the colon (:) (example setting: value)
+# Username, password, location and gmaps-key are required
