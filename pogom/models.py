@@ -1642,7 +1642,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue, a
                         'enabled': f['enabled'],
                         'latitude': f['latitude'],
                         'longitude': f['longitude'],
-                        'last_modified': f['last_modified_timestamp_ms'],
+                        'last_modified_time': f['last_modified_timestamp_ms'],
                         'lure_expiration': l_e,
                         'active_fort_modifier': active_fort_modifier
                     }))
