@@ -53,19 +53,41 @@ def send_to_webhook(message_type, message):
             log.exception(e)
 
 
-def wh_updater(args, q):
+def wh_updater(args, queue, key_cache):
     # The forever loop.
     while True:
         try:
             # Loop the queue.
-            while True:
-                whtype, message = q.get()
+            whtype, message = queue.get()
+
+            # Extract the proper identifier.
+            ident_fields = {
+                'pokestop': 'pokestop_id',
+                'pokemon': 'encounter_id',
+                'gym': 'gym_id'
+            }
+            ident = message.get(ident_fields.get(whtype))
+
+            # Only send if identifier isn't already in cache.
+            if ident is None:
+                log.warning(
+                    'Trying to send webhook item of invalid type: %s.', whtype)
+            elif ident not in key_cache:
+                key_cache[ident] = 1
+                log.debug('Sending %s to webhook: %s.', whtype, ident)
                 send_to_webhook(whtype, message)
+            else:
+                # Make sure to call key_cache[ident] so it updates the LFU
+                # usage count. We just use it as a count for now, can come in
+                # useful for stats/debugging later.
+                key_cache[ident] = key_cache[ident] + 1
+                log.debug('Not resending %s to webhook: %s.', whtype, ident)
 
-                if q.qsize() > 50:
-                    log.warning(
-                        'Webhook queue is > 50 (@%d); try increasing --wh-threads.', q.qsize())
+            # Webhook queue moving too slow.
+            if queue.qsize() > 50:
+                log.warning(
+                    'Webhook queue is > 50 (@%d); try increasing --wh-threads.', queue.qsize())
 
-                q.task_done()
+            queue.task_done()
         except Exception as e:
             log.exception('Exception in wh_updater: %s.', e)
