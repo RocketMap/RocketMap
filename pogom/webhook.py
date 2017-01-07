@@ -73,15 +73,23 @@ def wh_updater(args, queue, key_cache):
                 log.warning(
                     'Trying to send webhook item of invalid type: %s.', whtype)
             elif ident not in key_cache:
-                key_cache[ident] = 1
+                key_cache[ident] = message
                 log.debug('Sending %s to webhook: %s.', whtype, ident)
                 send_to_webhook(whtype, message)
             else:
-                # Make sure to call key_cache[ident] so it updates the LFU
-                # usage count. We just use it as a count for now, can come in
-                # useful for stats/debugging later.
-                key_cache[ident] = key_cache[ident] + 1
-                log.debug('Not resending %s to webhook: %s.', whtype, ident)
+                # Make sure to call key_cache[ident] in all branches so it
+                # updates the LFU usage count.
+
+                # If the object has changed in an important way, send new data
+                # to webhooks.
+                if __wh_object_changed(whtype, key_cache[ident], message):
+                    key_cache[ident] = message
+                    send_to_webhook(whtype, message)
+                    log.debug('Sending updated %s to webhook: %s.',
+                              whtype, ident)
+                else:
+                    log.debug('Not resending %s to webhook: %s.',
+                              whtype, ident)
 
             # Webhook queue moving too slow.
             if queue.qsize() > 50:
@@ -91,3 +99,35 @@ def wh_updater(args, queue, key_cache):
             queue.task_done()
         except Exception as e:
             log.exception('Exception in wh_updater: %s.', e)
+
+
+# Helpers
+
+# Determine if a webhook object has changed in any important way (and
+# requires a resend).
+def __wh_object_changed(whtype, old, new):
+    # Only test for important fields: don't trust last_modified fields.
+    if whtype == 'pokestop':
+        # lure_expiration is a UTC timestamp so it's good (Y).
+        fields = ['enabled', 'latitude', 'longitude',
+                  'lure_expiration', 'active_fort_modifier']
+    elif whtype == 'pokemon':
+        fields = ['spawnpoint_id', 'pokemon_id', 'latitude', 'longitude', 'disappear_time',
+                  'move_1', 'move_2', 'individual_stamina', 'individual_defense', 'individual_attack']
+    elif whtype == 'gym':
+        fields = ['team_id', 'guard_pokemon_id',
+                  'gym_points', 'enabled', 'latitude', 'longitude']
+    else:
+        log.critical('Received an object of unknown type %s.', whtype)
+        return False
+
+    return not __dict_fields_equal(fields, old, new)
+
+
+# Determine if two dicts have equal values for all keys in a list.
+def __dict_fields_equal(keys, a, b):
+    for k in keys:
+        if a.get(k) != b.get(k):
+            return False
+
+    return True
