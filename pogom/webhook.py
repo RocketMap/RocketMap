@@ -66,12 +66,14 @@ def wh_updater(args, queue, key_cache):
                 'pokemon': 'encounter_id',
                 'gym': 'gym_id'
             }
-            ident = message.get(ident_fields.get(whtype))
+            ident = message.get(ident_fields.get(whtype), None)
 
             # Only send if identifier isn't already in cache.
             if ident is None:
+                # We don't know what it is, so let's just log and send as-is.
                 log.warning(
-                    'Trying to send webhook item of invalid type: %s.', whtype)
+                    'Sending webhook item of unknown type: %s.', whtype)
+                send_to_webhook(whtype, message)
             elif ident not in key_cache:
                 key_cache[ident] = message
                 log.debug('Sending %s to webhook: %s.', whtype, ident)
