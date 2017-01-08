@@ -21,17 +21,7 @@ Credentials
 Downloading the Application
 ***************************
 
-You have an important decision here, you may either download a "release" or use ``git`` to fetch the latest development version. The release versions tend to be more stable and require less technical install steps, but they will have fewer features.
-
-Release Version
-===============
-If you want to run a release version, visit the `Github releases page <https://github.com/PokemonGoMap/PokemonGo-Map/releases>`_ and download and extract the release you want to run
-
-
-``git`` Version
-===============
-
-If you're going to run a copy from the latest ``develop`` branch in ``git`` you can clone the repository:
+To run a copy from the latest ``develop`` branch in ``git`` you can clone the repository:
 
 .. code-block:: bash
 
@@ -83,14 +73,12 @@ Linux/OSX:
 
 .. warning::
 
-  This only applies if you are running from a ``git clone``. If you are using a release version, skip this section
+  This only applies if you are running from a ``git clone``.
 
 In order to run from a git clone, you must compile the front-end assets with node. Make sure you have node installed for your platform:
 
  * `Windows/OSX <https://nodejs.org/en/download/>`_ (Click the Windows or Macintosh Installer respectively)
- * Linux -- refer to the `package installation <https://nodejs.org/en/download/package-manager/>`_ for your flavor of OS
- 
- If you have build errors, try the current version. Otherwise, use LTS."
+ * Linux -- refer to the `package installation <https://nodejs.org/en/download/package-manager/>`_ for your flavor of OS"
 
 Once node/npm is installed, open a command window and validation your install:
 
@@ -143,8 +131,6 @@ Updating the Application
 ************************
 
 PokemonGo-Map is a very active project and updates often. You can follow the `latest changes <https://github.com/PokemonGoMap/PokemonGo-Map/commits/develop>`_ to see what's changing.
-
-If you are running a **release** version, you can simply start this tutorial over again with a new download.
 
 If you are running a ``git`` version, you can update with a few quick commands:
 
