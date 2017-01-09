@@ -235,6 +235,8 @@ def get_args():
                         help='Enable status page database update using STATUS_NAME as main worker name.')
     parser.add_argument('-spp', '--status-page-password', default=None,
                         help='Set the status page password.')
+    parser.add_argument('-hk', '--hash-key', default=None, action='append',
+                        help='Key for hash server')
     parser.add_argument('-el', '--encrypt-lib',
                         help='Path to encrypt lib to be used instead of the shipped ones.')
     parser.add_argument('-odt', '--on-demand_timeout',

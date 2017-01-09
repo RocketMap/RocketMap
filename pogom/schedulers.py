@@ -35,6 +35,7 @@ Where:
 If implementing a new scheduler, place it before SchedulerFactory, and add it to __scheduler_classes
 '''
 
+import itertools
 import logging
 import math
 import geopy
@@ -864,3 +865,13 @@ class SchedulerFactory():
             return scheduler_class(*args, **kwargs)
 
         raise NotImplementedError("The requested scheduler has not been implemented")
+
+
+# The KeyScheduler returns a scheduler that cycles through the given hash server keys.
+class KeyScheduler(object):
+    def __init__(self, keys):
+        self.keys = keys
+
+    def scheduler(self):
+        cycle = itertools.cycle(self.keys)
+        return cycle
