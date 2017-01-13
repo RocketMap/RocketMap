@@ -39,7 +39,7 @@ from pgoapi.exceptions import AuthException
 
 from .models import parse_map, GymDetails, parse_gyms, MainWorker, WorkerStatus
 from .fakePogoApi import FakePogoApi
-from .utils import now
+from .utils import now, get_tutorial_state, complete_tutorial
 from .transform import get_new_coords
 import schedulers
 
@@ -502,6 +502,9 @@ def search_worker_thread(args, account_queue, account_failures, search_items_que
         try:
             status['starttime'] = now()
 
+            # Track per loop.
+            first_login = True
+
             # Get an account.
             status['message'] = 'Waiting to get new account from the queue...'
             log.info(status['message'])
@@ -664,6 +667,18 @@ def search_worker_thread(args, account_queue, account_failures, search_items_que
                 status['message'] = 'Logging in...'
                 check_login(args, account, api, step_location,
                             status['proxy_url'])
+
+                # Only run this when it's the account's first login, after
+                # check_login().
+                if first_login:
+                    first_login = False
+
+                    # Check tutorial completion.
+                    if args.complete_tutorial:
+                        tutorial_state = get_tutorial_state(api)
+
+                        if not all(x in tutorial_state for x in (0, 1, 3, 4, 7)):
+                            complete_tutorial(api, account, tutorial_state)
 
                 # Putting this message after the check_login so the messages
                 # aren't out of order.
