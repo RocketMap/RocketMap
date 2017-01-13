@@ -59,6 +59,7 @@ log = logging.getLogger(__name__)
 # Most of these functions should be overridden in the actual scheduler classes.
 # Not all scheduler methods will need to use all of the functions.
 class BaseScheduler(object):
+
     def __init__(self, queues, status, args):
         self.queues = queues
         self.status = status
@@ -88,10 +89,13 @@ class BaseScheduler(object):
 
     def get_overseer_message(self):
         nextitem = self.queues[0].queue[0]
-        message = 'Processing search queue, next item is {:6f},{:6f}'.format(nextitem[1][0], nextitem[1][1])
-        # If times are specified, print the time of the next queue item, and how many seconds ahead/behind realtime
+        message = 'Processing search queue, next item is {:6f},{:6f}'.format(nextitem[
+                                                                             1][0], nextitem[1][1])
+        # If times are specified, print the time of the next queue item, and
+        # how many seconds ahead/behind realtime
         if nextitem[2]:
-            message += ' @ {}'.format(time.strftime('%H:%M:%S', time.localtime(nextitem[2])))
+            message += ' @ {}'.format(time.strftime('%H:%M:%S',
+                                                    time.localtime(nextitem[2])))
             if nextitem[2] > now():
                 message += ' ({}s ahead)'.format(nextitem[2] - now())
             else:
@@ -134,22 +138,25 @@ class BaseScheduler(object):
                     pass
 
 
-# Hex Search is the classic search method, with the pokepath modification, searching in a hex grid around the center location.
+# Hex Search is the classic search method, with the pokepath modification,
+# searching in a hex grid around the center location.
 class HexSearch(BaseScheduler):
 
     # Call base initialization, set step_distance.
     def __init__(self, queues, status, args):
         BaseScheduler.__init__(self, queues, status, args)
 
-        # If we are only scanning for pokestops/gyms, the scan radius can be 900m.  Otherwise 70m.
+        # If we are only scanning for pokestops/gyms, the scan radius can be
+        # 450m.  Otherwise 70m.
         if self.args.no_pokemon:
-            self.step_distance = 0.900
+            self.step_distance = 0.450
         else:
             self.step_distance = 0.070
 
         self.step_limit = args.step_limit
 
-        # This will hold the list of locations to scan so it can be reused, instead of recalculating on each loop.
+        # This will hold the list of locations to scan so it can be reused,
+        # instead of recalculating on each loop.
         self.locations = False
 
     # On location change, empty the current queue and the locations list
@@ -165,7 +172,8 @@ class HexSearch(BaseScheduler):
         SOUTH = 180
         WEST = 270
 
-        xdist = math.sqrt(3) * self.step_distance  # Dist between column centers.
+        # Dist between column centers.
+        xdist = math.sqrt(3) * self.step_distance
         ydist = 3 * (self.step_distance / 2)       # Dist between row centers.
 
         results = []
@@ -179,21 +187,25 @@ class HexSearch(BaseScheduler):
             ring = 1
             while ring < self.step_limit:
 
-                loc = get_new_coords(loc, xdist, WEST if ring % 2 == 1 else EAST)
+                loc = get_new_coords(
+                    loc, xdist, WEST if ring % 2 == 1 else EAST)
                 results.append((loc[0], loc[1], 0))
 
                 for i in range(ring):
                     loc = get_new_coords(loc, ydist, NORTH)
-                    loc = get_new_coords(loc, xdist / 2, EAST if ring % 2 == 1 else WEST)
+                    loc = get_new_coords(
+                        loc, xdist / 2, EAST if ring % 2 == 1 else WEST)
                     results.append((loc[0], loc[1], 0))
 
                 for i in range(ring):
-                    loc = get_new_coords(loc, xdist, EAST if ring % 2 == 1 else WEST)
+                    loc = get_new_coords(
+                        loc, xdist, EAST if ring % 2 == 1 else WEST)
                     results.append((loc[0], loc[1], 0))
 
                 for i in range(ring):
                     loc = get_new_coords(loc, ydist, SOUTH)
-                    loc = get_new_coords(loc, xdist / 2, EAST if ring % 2 == 1 else WEST)
+                    loc = get_new_coords(
+                        loc, xdist / 2, EAST if ring % 2 == 1 else WEST)
                     results.append((loc[0], loc[1], 0))
 
                 ring += 1
@@ -202,7 +214,8 @@ class HexSearch(BaseScheduler):
             ring = self.step_limit - 1
 
             loc = get_new_coords(loc, ydist, SOUTH)
-            loc = get_new_coords(loc, xdist / 2, WEST if ring % 2 == 1 else EAST)
+            loc = get_new_coords(
+                loc, xdist / 2, WEST if ring % 2 == 1 else EAST)
             results.append((loc[0], loc[1], 0))
 
             while ring > 0:
@@ -214,19 +227,23 @@ class HexSearch(BaseScheduler):
                 else:
                     for i in range(ring - 1):
                         loc = get_new_coords(loc, ydist, SOUTH)
-                        loc = get_new_coords(loc, xdist / 2, WEST if ring % 2 == 1 else EAST)
+                        loc = get_new_coords(
+                            loc, xdist / 2, WEST if ring % 2 == 1 else EAST)
                         results.append((loc[0], loc[1], 0))
 
                     for i in range(ring):
-                        loc = get_new_coords(loc, xdist, WEST if ring % 2 == 1 else EAST)
+                        loc = get_new_coords(
+                            loc, xdist, WEST if ring % 2 == 1 else EAST)
                         results.append((loc[0], loc[1], 0))
 
                     for i in range(ring - 1):
                         loc = get_new_coords(loc, ydist, NORTH)
-                        loc = get_new_coords(loc, xdist / 2, WEST if ring % 2 == 1 else EAST)
+                        loc = get_new_coords(
+                            loc, xdist / 2, WEST if ring % 2 == 1 else EAST)
                         results.append((loc[0], loc[1], 0))
 
-                    loc = get_new_coords(loc, xdist, EAST if ring % 2 == 1 else WEST)
+                    loc = get_new_coords(
+                        loc, xdist, EAST if ring % 2 == 1 else WEST)
                     results.append((loc[0], loc[1], 0))
 
                 ring -= 1
@@ -249,65 +266,77 @@ class HexSearch(BaseScheduler):
     # Schedule the work to be done.
     def schedule(self):
         if not self.scan_location:
-            log.warning('Cannot schedule work until scan location has been set')
+            log.warning(
+                'Cannot schedule work until scan location has been set')
             return
 
-        # Only generate the list of locations if we don't have it already calculated.
+        # Only generate the list of locations if we don't have it already
+        # calculated.
         if not self.locations:
             self.locations = self._generate_locations()
 
         for location in self.locations:
-            # FUTURE IMPROVEMENT - For now, queues is assumed to have a single queue.
+            # FUTURE IMPROVEMENT - For now, queues is assumed to have a single
+            # queue.
             self.queues[0].put(location)
             log.debug("Added location {}".format(location))
         self.size = len(self.locations)
         self.ready = True
 
 
-# Spawn Only Hex Search works like Hex Search, but skips locations that have no known spawnpoints.
+# Spawn Only Hex Search works like Hex Search, but skips locations that
+# have no known spawnpoints.
 class HexSearchSpawnpoint(HexSearch):
 
     def _any_spawnpoints_in_range(self, coords, spawnpoints):
         return any(geopy.distance.distance(coords, x).meters <= 70 for x in spawnpoints)
 
-    # Extend the generate_locations function to remove locations with no spawnpoints.
+    # Extend the generate_locations function to remove locations with no
+    # spawnpoints.
     def _generate_locations(self):
         n, e, s, w = hex_bounds(self.scan_location, self.step_limit)
-        spawnpoints = set((d['latitude'], d['longitude']) for d in Pokemon.get_spawnpoints(s, w, n, e))
+        spawnpoints = set((d['latitude'], d['longitude'])
+                          for d in Pokemon.get_spawnpoints(s, w, n, e))
 
         if len(spawnpoints) == 0:
-            log.warning('No spawnpoints found in the specified area!  (Did you forget to run a normal scan in this area first?)')
+            log.warning(
+                'No spawnpoints found in the specified area!  (Did you forget to run a normal scan in this area first?)')
 
         # Call the original _generate_locations.
         locations = super(HexSearchSpawnpoint, self)._generate_locations()
 
         # Remove items with no spawnpoints in range.
-        locations = [coords for coords in locations if self._any_spawnpoints_in_range(coords[1], spawnpoints)]
+        locations = [coords for coords in locations if self._any_spawnpoints_in_range(
+            coords[1], spawnpoints)]
         return locations
 
 
 # Spawn Scan searches known spawnpoints at the specific time they spawn.
 class SpawnScan(BaseScheduler):
+
     def __init__(self, queues, status, args):
         BaseScheduler.__init__(self, queues, status, args)
         # On the first scan, we want to search the last 15 minutes worth of spawns to get existing
         # pokemon onto the map.
         self.firstscan = True
 
-        # If we are only scanning for pokestops/gyms, the scan radius can be 900m.  Otherwise 70m.
+        # If we are only scanning for pokestops/gyms, the scan radius can be
+        # 450m.  Otherwise 70m.
         if self.args.no_pokemon:
-            self.step_distance = 0.900
+            self.step_distance = 0.450
         else:
             self.step_distance = 0.070
 
         self.step_limit = args.step_limit
         self.locations = False
 
-    # Generate locations is called when the locations list is cleared - the first time it scans or after a location change.
+    # Generate locations is called when the locations list is cleared - the
+    # first time it scans or after a location change.
     def _generate_locations(self):
         # Attempt to load spawns from file.
         if self.args.spawnpoint_scanning != 'nofile':
-            log.debug('Loading spawn points from json file @ %s', self.args.spawnpoint_scanning)
+            log.debug('Loading spawn points from json file @ %s',
+                      self.args.spawnpoint_scanning)
             try:
                 with open(self.args.spawnpoint_scanning) as file:
                     self.locations = json.load(file)
@@ -315,12 +344,14 @@ class SpawnScan(BaseScheduler):
                 log.exception(e)
                 log.error('JSON error: %s; will fallback to database', e)
             except IOError as e:
-                log.error('Error opening json file: %s; will fallback to database', e)
+                log.error(
+                    'Error opening json file: %s; will fallback to database', e)
 
         # No locations yet? Try the database!
         if not self.locations:
             log.debug('Loading spawn points from database')
-            self.locations = Pokemon.get_spawnpoints_in_hex(self.scan_location, self.args.step_limit)
+            self.locations = Pokemon.get_spawnpoints_in_hex(
+                self.scan_location, self.args.step_limit)
 
         # Well shit...
         # if not self.locations:
@@ -337,7 +368,8 @@ class SpawnScan(BaseScheduler):
             for i in self.locations:
                 sec = i['time'] % 60
                 minute = (i['time'] / 60) % 60
-                m = 'Scan [{:02}:{:02}] ({}) @ {},{}'.format(minute, sec, i['time'], i['lat'], i['lng'])
+                m = 'Scan [{:02}:{:02}] ({}) @ {},{}'.format(
+                    minute, sec, i['time'], i['lat'], i['lng'])
                 log.debug(m)
 
         # 'time' from json and db alike has been munged to appearance time as seconds after the hour.
@@ -378,21 +410,25 @@ class SpawnScan(BaseScheduler):
         # locations = [((lat, lng, alt), ts_appears, ts_leaves),...]
         retset = []
         for step, location in enumerate(self.locations, 1):
-            retset.append((step, (location['lat'], location['lng'], 40.32), location['appears'], location['leaves']))
+            retset.append((step, (location['lat'], location['lng'], 40.32), location[
+                          'appears'], location['leaves']))
 
         return retset
 
     # Schedule the work to be done.
     def schedule(self):
         if not self.scan_location:
-            log.warning('Cannot schedule work until scan location has been set')
+            log.warning(
+                'Cannot schedule work until scan location has been set')
             return
 
-        # SpawnScan needs to calculate the list every time, since the times will change.
+        # SpawnScan needs to calculate the list every time, since the times
+        # will change.
         self.locations = self._generate_locations()
 
         for location in self.locations:
-            # FUTURE IMPROVEMENT - For now, queues is assumed to have a single queue.
+            # FUTURE IMPROVEMENT - For now, queues is assumed to have a single
+            # queue.
             self.queues[0].put(location)
             log.debug("Added location {}".format(location))
 
@@ -450,23 +486,29 @@ class SpeedScan(HexSearch):
             scans[cell] = {'loc': e[1],  # Lat/long pair
                            'step': e[0]}
 
-            initial[cell] = all_scans[cell] if cell in all_scans.keys() else ScannedLocation.new_loc(e[1])
+            initial[cell] = all_scans[cell] if cell in all_scans.keys(
+            ) else ScannedLocation.new_loc(e[1])
 
         self.scans = scans
         db_update_queue.put((ScannedLocation, initial))
         log.info('%d steps created', len(scans))
         self.band_spacing = int(10 * 60 / len(scans))
         self.band_status()
-        spawnpoints = SpawnPoint.select_in_hex(self.scan_location, self.args.step_limit)
+        spawnpoints = SpawnPoint.select_in_hex(
+            self.scan_location, self.args.step_limit)
         if not spawnpoints:
-            log.info('No spawnpoints in hex found in SpawnPoint table. Doing initial scan.')
+            log.info(
+                'No spawnpoints in hex found in SpawnPoint table. Doing initial scan.')
         log.info('Found %d spawn points within hex', len(spawnpoints))
 
-        log.info('Doing %s distance calcs to assign spawn points to scans', "{:,}".format(len(spawnpoints) * len(scans)))
+        log.info('Doing %s distance calcs to assign spawn points to scans',
+                 "{:,}".format(len(spawnpoints) * len(scans)))
         scan_spawn_point = {}
-        ScannedLocation.link_spawn_points(scans, initial, spawnpoints, self.step_distance, scan_spawn_point, force=True)
+        ScannedLocation.link_spawn_points(
+            scans, initial, spawnpoints, self.step_distance, scan_spawn_point, force=True)
         if len(scan_spawn_point):
-            log.info('%d relations found between the spawn points and steps', len(scan_spawn_point))
+            log.info('%d relations found between the spawn points and steps', len(
+                scan_spawn_point))
             db_update_queue.put((ScanSpawnPoint, scan_spawn_point))
         else:
             log.info('Spawn points assigned')
@@ -474,7 +516,8 @@ class SpeedScan(HexSearch):
     # Generates the list of locations to scan
     # Created a new function, because speed scan requires fixed locations, even when increasing
     # -st. With HexSearch locations, the location of inner rings would change if -st was increased
-    # requiring rescanning since it didn't recognize the location in the ScannedLocation table
+    # requiring rescanning since it didn't recognize the location in the
+    # ScannedLocation table
     def _generate_locations(self):
 
         NORTH = 0
@@ -482,7 +525,8 @@ class SpeedScan(HexSearch):
         SOUTH = 180
         WEST = 270
 
-        xdist = math.sqrt(3) * self.step_distance  # dist between column centers
+        # dist between column centers
+        xdist = math.sqrt(3) * self.step_distance
         ydist = 3 * (self.step_distance / 2)       # dist between row centers
 
         results = []
@@ -530,7 +574,8 @@ class SpeedScan(HexSearch):
 
     def get_overseer_message(self):
         n = 0
-        ms = (datetime.utcnow() - self.refresh_date).total_seconds() + self.refresh_ms
+        ms = (datetime.utcnow() - self.refresh_date).total_seconds() + \
+            self.refresh_ms
         counter = {
             'TTH': 0,
             'spawn': 0,
@@ -597,7 +642,8 @@ class SpeedScan(HexSearch):
 
         for cell, scan in self.scans.iteritems():
             queue += ScannedLocation.get_times(scan, now_date)
-            queue += SpawnPoint.get_times(cell, scan, now_date, self.args.spawn_delay)
+            queue += SpawnPoint.get_times(cell,
+                                          scan, now_date, self.args.spawn_delay)
 
         queue.sort(key=itemgetter('start'))
         self.queues[0] = queue
@@ -606,16 +652,25 @@ class SpeedScan(HexSearch):
         if len(old_q):
             try:  # Enclosing in try: to avoid divide by zero exceptions from killing overseer
 
-                # Possible 'done' values are 'Missed', 'Scanned', None, or number
-                Not_none_list = filter(lambda e: e.get('done', None) is not None, old_q)
-                Missed_list = filter(lambda e: e.get('done', None) == 'Missed', Not_none_list)
-                Scanned_list = filter(lambda e: e.get('done', None) == 'Scanned', Not_none_list)
-                Timed_list = filter(lambda e: type(e['done']) is not str, Not_none_list)
-                spawns_timed_list = filter(lambda e: e['kind'] == 'spawn', Timed_list)
+                # Possible 'done' values are 'Missed', 'Scanned', None, or
+                # number
+                Not_none_list = filter(lambda e: e.get(
+                    'done', None) is not None, old_q)
+                Missed_list = filter(lambda e: e.get(
+                    'done', None) == 'Missed', Not_none_list)
+                Scanned_list = filter(lambda e: e.get(
+                    'done', None) == 'Scanned', Not_none_list)
+                Timed_list = filter(lambda e: type(
+                    e['done']) is not str, Not_none_list)
+                spawns_timed_list = filter(
+                    lambda e: e['kind'] == 'spawn', Timed_list)
                 spawns_timed = len(spawns_timed_list)
-                bands_timed = len(filter(lambda e: e['kind'] == 'band', Timed_list))
-                spawns_all = spawns_timed + len(filter(lambda e: e['kind'] == 'spawn', Scanned_list))
-                spawns_missed = len(filter(lambda e: e['kind'] == 'spawn', Missed_list))
+                bands_timed = len(
+                    filter(lambda e: e['kind'] == 'band', Timed_list))
+                spawns_all = spawns_timed + \
+                    len(filter(lambda e: e['kind'] == 'spawn', Scanned_list))
+                spawns_missed = len(
+                    filter(lambda e: e['kind'] == 'spawn', Missed_list))
                 band_percent = self.band_status()
                 kinds = {}
                 tth_ranges = {}
@@ -624,7 +679,8 @@ class SpeedScan(HexSearch):
                 found_percent = 100.0
                 good_percent = 100.0
                 spawns_reached = 100.0
-                spawnpoints = SpawnPoint.select_in_hex(self.scan_location, self.args.step_limit)
+                spawnpoints = SpawnPoint.select_in_hex(
+                    self.scan_location, self.args.step_limit)
                 for sp in spawnpoints:
                     if sp['missed_count'] > 5:
                         continue
@@ -632,44 +688,53 @@ class SpeedScan(HexSearch):
                     tth_found += sp['earliest_unseen'] == sp['latest_seen']
                     kind = sp['kind']
                     kinds[kind] = kinds.get(kind, 0) + 1
-                    tth_range = str(int(round(((sp['earliest_unseen'] - sp['latest_seen']) % 3600) / 60.0)))
+                    tth_range = str(
+                        int(round(((sp['earliest_unseen'] - sp['latest_seen']) % 3600) / 60.0)))
                     tth_ranges[tth_range] = tth_ranges.get(tth_range, 0) + 1
 
                 tth_ranges['0'] = tth_ranges.get('0', 0) - tth_found
                 len_spawnpoints = len(spawnpoints) + (not len(spawnpoints))
-                log.info('Total Spawn Points found in hex: %d', len(spawnpoints))
+                log.info('Total Spawn Points found in hex: %d',
+                         len(spawnpoints))
                 log.info('Inactive Spawn Points found in hex: %d or %.1f%%',
                          len(spawnpoints) - active_sp, (len(spawnpoints) - active_sp) * 100.0 / len_spawnpoints)
                 log.info('Active Spawn Points found in hex: %d or %.1f%%',
                          active_sp, active_sp * 100.0 / len_spawnpoints)
                 active_sp += active_sp == 0
                 for k in sorted(kinds.keys()):
-                    log.info('%s kind spawns: %d or %.1f%%', k, kinds[k], kinds[k] * 100.0 / active_sp)
-                log.info('Spawns with found TTH: %d or %.1f%%', tth_found, tth_found * 100.0 / active_sp)
+                    log.info('%s kind spawns: %d or %.1f%%', k,
+                             kinds[k], kinds[k] * 100.0 / active_sp)
+                log.info('Spawns with found TTH: %d or %.1f%%',
+                         tth_found, tth_found * 100.0 / active_sp)
                 for k in sorted(tth_ranges.keys(), key=int):
-                    log.info('Spawnpoints with a %sm range to find TTH: %d', k, tth_ranges[k])
+                    log.info(
+                        'Spawnpoints with a %sm range to find TTH: %d', k, tth_ranges[k])
                 log.info('Over last %d minutes: %d new bands, %d Pokemon found',
                          self.minutes, bands_timed, spawns_all)
                 log.info('Of the %d total spawns, %d were targeted, and %d found scanning for others',
                          spawns_all, spawns_timed, spawns_all - spawns_timed)
                 scan_total = spawns_timed + bands_timed
                 spm = scan_total / self.minutes
-                seconds_per_scan = self.minutes * 60 * self.args.workers / scan_total if scan_total else 0
+                seconds_per_scan = self.minutes * 60 * \
+                    self.args.workers / scan_total if scan_total else 0
                 log.info('%d scans over %d minutes, %d scans per minute, %d secs per scan per worker',
                          scan_total, self.minutes, spm, seconds_per_scan)
 
                 sum = spawns_all + spawns_missed
                 if sum:
-                    spawns_reached = spawns_all * 100.0 / (spawns_all + spawns_missed)
+                    spawns_reached = spawns_all * 100.0 / \
+                        (spawns_all + spawns_missed)
                     log.info('%d Pokemon found, and %d were not reached in time for %.1f%% found',
                              spawns_all, spawns_missed, spawns_reached)
 
                 if spawns_timed:
-                    average = reduce(lambda x, y: x + y['done'], spawns_timed_list, 0) / spawns_timed
+                    average = reduce(
+                        lambda x, y: x + y['done'], spawns_timed_list, 0) / spawns_timed
                     log.info('%d Pokemon found, %d were targeted, with an average delay of %d sec',
                              spawns_all, spawns_timed, average)
 
-                    spawns_missed = reduce(lambda x, y: x + len(y), self.spawns_missed_delay.values(), 0)
+                    spawns_missed = reduce(
+                        lambda x, y: x + len(y), self.spawns_missed_delay.values(), 0)
                     sum = spawns_missed + self.spawns_found
                     found_percent = self.spawns_found * 100.0 / sum if sum else 0
                     log.info('%d spawns scanned and %d spawns were not there when expected for %.1f%%',
@@ -678,7 +743,8 @@ class SpeedScan(HexSearch):
                     if self.spawns_missed_delay:
                         log.warning('Missed spawn IDs with times after spawn:')
                         log.warning(self.spawns_missed_delay)
-                    log.info('History: %s', str(self.spawn_percent).strip('[]'))
+                    log.info('History: %s', str(
+                        self.spawn_percent).strip('[]'))
 
                 sum = self.scans_done + len(self.scans_missed_list)
                 good_percent = self.scans_done * 100.0 / sum if sum else 0
@@ -686,20 +752,24 @@ class SpeedScan(HexSearch):
                          self.scans_done, len(self.scans_missed_list), good_percent)
                 self.scan_percent.append(round(good_percent, 1))
                 if self.scans_missed_list:
-                    log.warning('Missed scans: %s', Counter(self.scans_missed_list).most_common(3))
+                    log.warning('Missed scans: %s', Counter(
+                        self.scans_missed_list).most_common(3))
                     log.info('History: %s', str(self.scan_percent).strip('[]'))
-                self.status_message = 'Initial scan: {:.2f}%, TTH found: {:.2f}%, '.format(band_percent, tth_found * 100.0 / active_sp)
+                self.status_message = 'Initial scan: {:.2f}%, TTH found: {:.2f}%, '.format(
+                    band_percent, tth_found * 100.0 / active_sp)
                 self.status_message += 'Spawns reached: {:.2f}%, Spawns found: {:.2f}%, Good scans {:.2f}%'\
                     .format(spawns_reached, found_percent, good_percent)
                 self._stat_init()
 
             except Exception as e:
-                log.error('Performance statistics had an Exception: {}'.format(e))
+                log.error(
+                    'Performance statistics had an Exception: {}'.format(e))
                 traceback.print_exc(file=sys.stdout)
 
     # Find the best item to scan next
     def next_item(self, status):
-        # score each item in the queue by # of due spawns or scan time bands can be filled
+        # score each item in the queue by # of due spawns or scan time bands
+        # can be filled
 
         while not self.ready:
             time.sleep(1)
@@ -722,14 +792,17 @@ class SpeedScan(HexSearch):
 
             # if already timed out, mark it as Missed and check next
             if ms > item['end']:
-                item['done'] = 'Missed' if not item.get('done', False) else item['done']
+                item['done'] = 'Missed' if not item.get(
+                    'done', False) else item['done']
                 continue
 
-            # if we just did a fresh band recently, wait a few seconds to space out the band scans
+            # if we just did a fresh band recently, wait a few seconds to space
+            # out the band scans
             if now_date < self.next_band_date:
                 continue
 
-            # if the start time isn't yet, don't bother looking further, since queue sorted by start time
+            # if the start time isn't yet, don't bother looking further, since
+            # queue sorted by start time
             if ms < item['start']:
                 break
 
@@ -737,7 +810,8 @@ class SpeedScan(HexSearch):
             distance = equi_rect_distance(loc, worker_loc)
             secs_to_arrival = distance / self.args.kph * 3600
 
-            # if we can't make it there before it disappears, don't bother trying
+            # if we can't make it there before it disappears, don't bother
+            # trying
             if ms + secs_to_arrival > item['end']:
                 cant_reach = True
                 continue
@@ -745,9 +819,11 @@ class SpeedScan(HexSearch):
             n += 1
 
             # Bands are top priority to find new spawns first
-            score = 1e12 if item['kind'] == 'band' else (1e6 if item['kind'] == 'TTH' else 1)
+            score = 1e12 if item['kind'] == 'band' else (
+                1e6 if item['kind'] == 'TTH' else 1)
 
-            # For spawns, score is purely based on how close they are to last worker position
+            # For spawns, score is purely based on how close they are to last
+            # worker position
             score = score / (distance + .01)
 
             if score > best['score']:
@@ -774,7 +850,8 @@ class SpeedScan(HexSearch):
 
         if best['score'] == 0:
             if cant_reach:
-                messages['wait'] = 'Not able to reach any scan under the speed limit'
+                messages[
+                    'wait'] = 'Not able to reach any scan under the speed limit'
             return -1, 0, 0, 0, messages
 
         if equi_rect_distance(loc, worker_loc) > (now_date - last_action).total_seconds() * self.args.kph / 3600:
@@ -786,7 +863,8 @@ class SpeedScan(HexSearch):
         prefix += ' Step %d,' % (step)
         # Check again if another worker heading there
         if item.get('done', False):
-            messages['wait'] = 'Skipping step {}. Other worker already scanned.'.format(step)
+            messages[
+                'wait'] = 'Skipping step {}. Other worker already scanned.'.format(step)
             return -1, 0, 0, 0, messages
 
         if not self.ready:
@@ -801,7 +879,8 @@ class SpeedScan(HexSearch):
         item['done'] = 'Scanned'
         status['index_of_queue_item'] = i
 
-        messages['search'] = 'Scanning step {} for a {}'.format(best['step'], best['kind'])
+        messages['search'] = 'Scanning step {} for a {}'.format(
+            best['step'], best['kind'])
         return best['step'], best['loc'], 0, 0, messages
 
     def task_done(self, status, parsed=False):
@@ -809,14 +888,19 @@ class SpeedScan(HexSearch):
             # Record delay between spawn time and scanning for statistics
             now_secs = date_secs(datetime.utcnow())
             item = self.queues[0][status['index_of_queue_item']]
-            seconds_within_band = int((datetime.utcnow() - self.refresh_date).total_seconds()) + self.refresh_ms
-            start_delay = seconds_within_band - item['start'] - (self.args.spawn_delay if item['kind'] == 'spawn' else 0)
+            seconds_within_band = int(
+                (datetime.utcnow() - self.refresh_date).total_seconds()) + self.refresh_ms
+            start_delay = seconds_within_band - \
+                item['start'] - \
+                (self.args.spawn_delay if item['kind'] == 'spawn' else 0)
             safety_buffer = item['end'] - seconds_within_band
 
             if safety_buffer < 0:
-                log.warning('Too late by %d sec for a %s at step %d', -safety_buffer, item['kind'], item['step'])
+                log.warning('Too late by %d sec for a %s at step %d', -
+                            safety_buffer, item['kind'], item['step'])
 
-            # If we had a 0/0/0 scan, then unmark as done so we can retry, and save for Statistics
+            # If we had a 0/0/0 scan, then unmark as done so we can retry, and
+            # save for Statistics
             elif parsed['bad_scan']:
                 self.scans_missed_list.append(cellid(item['loc']))
                 item['done'] = None
@@ -836,11 +920,13 @@ class SpeedScan(HexSearch):
                     elif start_delay > 0:  # not sure why this could be negative, but sometimes it is
 
                         # if not, record ID and put back in queue
-                        self.spawns_missed_delay[sp_id] = self.spawns_missed_delay.get(sp_id, [])
+                        self.spawns_missed_delay[
+                            sp_id] = self.spawns_missed_delay.get(sp_id, [])
                         self.spawns_missed_delay[sp_id].append(start_delay)
                         item['done'] = 'Scanned'
 
-                # For existing spawn points, if in any other queue items, mark 'scanned'
+                # For existing spawn points, if in any other queue items, mark
+                # 'scanned'
                 for sp_id in parsed['sp_id_list']:
                     for item in self.queues[0]:
                         if (sp_id == item.get('sp', None) and item.get('done', None) is None and
@@ -859,16 +945,20 @@ class SchedulerFactory():
 
     @staticmethod
     def get_scheduler(name, *args, **kwargs):
-        scheduler_class = SchedulerFactory.__schedule_classes.get(name.lower(), None)
+        scheduler_class = SchedulerFactory.__schedule_classes.get(
+            name.lower(), None)
 
         if scheduler_class:
             return scheduler_class(*args, **kwargs)
 
-        raise NotImplementedError("The requested scheduler has not been implemented")
+        raise NotImplementedError(
+            "The requested scheduler has not been implemented")
 
 
-# The KeyScheduler returns a scheduler that cycles through the given hash server keys.
+# The KeyScheduler returns a scheduler that cycles through the given hash
+# server keys.
 class KeyScheduler(object):
+
     def __init__(self, keys):
         self.keys = keys
 
