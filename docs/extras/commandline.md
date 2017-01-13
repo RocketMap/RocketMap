@@ -26,7 +26,7 @@
                         [--ssl-privatekey SSL_PRIVATEKEY] [-ps] [-sn STATUS_NAME]
                         [-spp STATUS_PAGE_PASSWORD] [-el ENCRYPT_LIB]
                         [-v [filename.log] | -vv [filename.log]]
-    
+
     Args that start with '--' (eg. -a) can also be set in a config file
     (default: <PokemonGo-Map Project Root>/config/config.ini or via -cf).
     The recognized syntax for setting (key, value) pairs is based on the INI and
@@ -35,7 +35,7 @@
     documentation. If an arg is specified in more than one place, then commandline
     values override environment variables which override config file values which
     override defaults.
-    
+
     optional arguments:
       -h, --help            show this help message and exit [env var:
                             POGOMAP_HELP]
@@ -69,8 +69,8 @@
       -l LOCATION, --location LOCATION
                             Location, can be an address or coordinates [env var:
                             POGOMAP_LOCATION]
-      -j, --jitter          Apply random -9m to +9m jitter to location [env var:
-                            POGOMAP_JITTER]
+      -nj, --no-jitter      Don't apply random -9m to +9m jitter to location
+                            [env var: POGOMAP_NO_JITTER]
       -st STEP_LIMIT, --step-limit STEP_LIMIT
                             Steps [env var: POGOMAP_STEP_LIMIT]
       -sd SCAN_DELAY, --scan-delay SCAN_DELAY

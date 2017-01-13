@@ -75,7 +75,7 @@ def get_args():
                         help='Only referenced when using --beehive. Sets number of workers per hive. Default value is 1.', type=int, default=1)
     parser.add_argument('-l', '--location', type=parse_unicode,
                         help='Location, can be an address or coordinates.')
-    parser.add_argument('-j', '--jitter', help='Apply random -9m to +9m jitter to location.',
+    parser.add_argument('-nj', '--no-jitter', help="Don't apply random -9m to +9m jitter to location.",
                         action='store_true', default=False)
     parser.add_argument('-st', '--step-limit', help='Steps.', type=int,
                         default=12)

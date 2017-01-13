@@ -36,7 +36,7 @@ Does Speed Scheduler work with beehives (-bh argument)?
 
 > Yes, although before using beehives, it's first recommended to use larger -st. The logic of Speed Scheduler scheduler works with the beehives, but the strength of Speed Scheduler is it's ability to have multiple workers in a single hive working together to cover the closest spawns. If the area you have to cover is so large (> -st 50?) that CPU load is becoming an issue, then using -bh in combination with -wph (--workers_per_hive) to set more workers per hive may be helpful.
 
-Does Speed Scheduler work with jitter (-j)?
+Does Speed Scheduler work with no-jitter (-nj)?
 
 > Yes. Jitter adjusts only the location sent to the API, not the location used internally, so Speed Scheduler can still recognize the location.
 
