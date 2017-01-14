@@ -903,8 +903,15 @@ class SpeedScan(HexSearch):
             # save for Statistics
             elif parsed['bad_scan']:
                 self.scans_missed_list.append(cellid(item['loc']))
-                item['done'] = None
-                log.info('Putting back step %d in queue', item['step'])
+                # Only try for a set amount of times (BAD_SCAN_RETRY)
+                if self.args.bad_scan_retry > 0 and (
+                        self.scans_missed_list.count(cellid(item['loc'])) >
+                        self.args.bad_scan_retry):
+                    log.info('Step %d failed scan for %d times! Giving up...', item[
+                             'step'], self.args.bad_scan_retry + 1)
+                else:
+                    item['done'] = None
+                    log.info('Putting back step %d in queue', item['step'])
             else:
                 # Scan returned data
                 self.scans_done += 1
