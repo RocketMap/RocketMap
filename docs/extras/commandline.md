@@ -23,7 +23,7 @@
                         [--db-threads DB_THREADS] [-wh [WEBHOOKS [WEBHOOKS ...]]]
                         [-gi] [--webhook-updates-only] [--wh-threads WH_THREADS]
                         [--ssl-certificate SSL_CERTIFICATE]
-                        [--ssl-privatekey SSL_PRIVATEKEY] [-ps] [-sn STATUS_NAME]
+                        [--ssl-privatekey SSL_PRIVATEKEY] [-ps [logs]] [-sn STATUS_NAME]
                         [-spp STATUS_PAGE_PASSWORD] [-el ENCRYPT_LIB]
                         [-v [filename.log] | -vv [filename.log]]
 
@@ -212,9 +212,11 @@
       --ssl-privatekey SSL_PRIVATEKEY
                             Path to SSL private key file [env var:
                             POGOMAP_SSL_PRIVATEKEY]
-      -ps, --print-status   Show a status screen instead of log messages. Can
-                            switch between status and logs by pressing enter. [env
-                            var: POGOMAP_PRINT_STATUS]
+      -ps [logs], --print-status [logs]  
+                            Show a status screen instead of log messages. Can
+                            switch between status and logs by pressing enter. 
+                            Optionally specify 'logs' to enable feature yet
+                            start in log view [env var: POGOMAP_PRINT_STATUS]
       -sn STATUS_NAME, --status-name STATUS_NAME
                             Enable status page database update using STATUS_NAME
                             as main worker name [env var: POGOMAP_STATUS_NAME]
