@@ -234,6 +234,8 @@ def get_args():
                         help='Path to SSL private key file.')
     parser.add_argument('-ps', '--print-status', action='store_true',
                         help='Show a status screen instead of log messages. Can switch between status and logs by pressing enter.', default=False)
+    parser.add_argument('-slt', '--stats-log-timer',
+                        help='In log view, list per hr stats every X seconds', type=int, default=0)
     parser.add_argument('-sn', '--status-name', default=None,
                         help='Enable status page database update using STATUS_NAME as main worker name.')
     parser.add_argument('-spp', '--status-page-password', default=None,

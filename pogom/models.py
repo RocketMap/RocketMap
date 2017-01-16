@@ -35,7 +35,7 @@ args = get_args()
 flaskDb = FlaskDB()
 cache = TTLCache(maxsize=100, ttl=60 * 5)
 
-db_schema_version = 11
+db_schema_version = 12
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -954,7 +954,7 @@ class ScannedLocation(BaseModel):
 
 class MainWorker(BaseModel):
     worker_name = CharField(primary_key=True, max_length=50)
-    message = CharField()
+    message = TextField(null=True, default="")
     method = CharField(max_length=50)
     last_modified = DateTimeField(index=True)
 
@@ -966,6 +966,7 @@ class WorkerStatus(BaseModel):
     fail = IntegerField()
     no_items = IntegerField()
     skip = IntegerField()
+    captcha = IntegerField(default=0)
     last_modified = DateTimeField(index=True)
     message = CharField(max_length=255)
     last_scan_date = DateTimeField(index=True)
@@ -981,6 +982,7 @@ class WorkerStatus(BaseModel):
                 'fail': status['fail'],
                 'no_items': status['noitems'],
                 'skip': status['skip'],
+                'captcha': status['captcha'],
                 'last_modified': datetime.utcnow(),
                 'message': status['message'],
                 'last_scan_date': status.get('last_scan_date', datetime.utcnow()),
@@ -2178,3 +2180,9 @@ def database_migrate(db, old_ver):
     if old_ver < 11:
 
         db.drop_tables([ScanSpawnPoint])
+
+    if old_ver < 12:
+        db.drop_tables([MainWorker])
+        migrate(
+            migrator.add_column('workerstatus', 'captcha', IntegerField(default=0))
+        )

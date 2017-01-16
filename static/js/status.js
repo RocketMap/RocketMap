@@ -76,6 +76,9 @@ function addTable (hash) {
           Skipped
         </div>
         <div class="status_cell">
+          Captchas
+        </div>
+        <div class="status_cell">
           Last Modified
         </div>
         <div class="status_cell">
@@ -112,7 +115,7 @@ function processMainWorker (i, worker) {
 
   $('#name_' + hash).html(worker['worker_name'])
   $('#method_' + hash).html('(' + worker['method'] + ')')
-  $('#message_' + hash).html(worker['message'].replace('\n', '<br>'))
+  $('#message_' + hash).html(worker['message'].replace(/\n/g, '<br>'))
 }
 
 function addWorker (mainWorkerHash, workerHash) {
@@ -123,6 +126,7 @@ function addWorker (mainWorkerHash, workerHash) {
       <div id="fail_${workerHash}"     class="status_cell"/>
       <div id="no_items_${workerHash}"  class="status_cell"/>
       <div id="skip_${workerHash}"     class="status_cell"/>
+      <div id="captchas_${workerHash}" class="status_cell"/>
       <div id="lastmod_${workerHash}"  class="status_cell"/>
       <div id="message_${workerHash}"  class="status_cell"/>
     </div>
@@ -163,6 +167,7 @@ function processWorker (i, worker) {
   $('#fail_' + hash).html(worker['fail'])
   $('#no_items_' + hash).html(worker['no_items'])
   $('#skip_' + hash).html(worker['skip'])
+  $('#captchas_' + hash).html(worker['captcha'])
   $('#lastmod_' + hash).html(lastModified)
   $('#message_' + hash).html(worker['message'])
 }
