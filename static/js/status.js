@@ -185,6 +185,10 @@ function updateStatus (firstRun) {
   })
 }
 
+$(document).ready(function () {
+  $('#password').focus()
+})
+
 $('#password_form').submit(function (event) {
   event.preventDefault()
   statusPagePassword = $('#password').val()
@@ -195,6 +199,7 @@ $('#password_form').submit(function (event) {
       parseResult(result)
     } else {
       $('.status_form').effect('bounce')
+      $('#password').focus()
     }
   })
 })
