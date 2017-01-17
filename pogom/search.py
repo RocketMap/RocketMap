@@ -809,7 +809,7 @@ def search_worker_thread(args, account_queue, account_failures, search_items_que
                     # Captcha check.
                     captcha_url = response_dict['responses'][
                         'CHECK_CHALLENGE']['challenge_url']
-                    if captcha_url:
+                    if len(captcha_url) > 1:
                         status['captcha'] += 1
                         if args.captcha_solving:
                             status['message'] = 'Account {} is encountering a captcha, starting 2captcha sequence.'.format(account[
