@@ -200,8 +200,10 @@ def status_printer(threadStatus, search_items_queue_array, db_updates_queue, wh_
 
                     status_text.append(
                         status.format(item, time.strftime('%H:%M', time.localtime(threadStatus[item]['starttime'])),
-                                      threadStatus[item]['username'], threadStatus[item]['proxy_display'],
-                                      threadStatus[item]['success'], threadStatus[item]['fail'], threadStatus[item]['noitems'],
+                                      threadStatus[item]['username'], threadStatus[
+                                          item]['proxy_display'],
+                                      threadStatus[item]['success'], threadStatus[
+                                          item]['fail'], threadStatus[item]['noitems'],
                                       threadStatus[item]['skip'], threadStatus[item]['captcha'], threadStatus[item]['message']))
 
         elif display_type[0] == 'failedaccounts':
@@ -507,10 +509,13 @@ def update_total_stats(threadStatus, last_account_status):
             current_accounts.add(username)
             last_status = last_account_status.get(username, {})
             overseer['skip_total'] += stat_delta(tstatus, last_status, 'skip')
-            overseer['captcha_total'] += stat_delta(tstatus, last_status, 'captcha')
-            overseer['empty_total'] += stat_delta(tstatus, last_status, 'noitems')
+            overseer[
+                'captcha_total'] += stat_delta(tstatus, last_status, 'captcha')
+            overseer[
+                'empty_total'] += stat_delta(tstatus, last_status, 'noitems')
             overseer['fail_total'] += stat_delta(tstatus, last_status, 'fail')
-            overseer['success_total'] += stat_delta(tstatus, last_status, 'success')
+            overseer[
+                'success_total'] += stat_delta(tstatus, last_status, 'success')
             last_account_status[username] = copy.deepcopy(tstatus)
 
     overseer['active_accounts'] = usercount
@@ -802,11 +807,11 @@ def search_worker_thread(args, account_queue, account_failures, search_items_que
                 # todo's to db/wh queues.
                 try:
                     # Captcha check.
-                    if args.captcha_solving:
-                        captcha_url = response_dict['responses'][
-                            'CHECK_CHALLENGE']['challenge_url']
-                        if len(captcha_url) > 1:
-                            status['captcha'] += 1
+                    captcha_url = response_dict['responses'][
+                        'CHECK_CHALLENGE']['challenge_url']
+                    if captcha_url:
+                        status['captcha'] += 1
+                        if args.captcha_solving:
                             status['message'] = 'Account {} is encountering a captcha, starting 2captcha sequence.'.format(account[
                                                                                                                            'username'])
                             log.warning(status['message'])
@@ -842,6 +847,13 @@ def search_worker_thread(args, account_queue, account_failures, search_items_que
                                     account_failures.append({'account': account, 'last_fail_time': now(
                                     ), 'reason': 'captcha failed to verify'})
                                     break
+                        else:
+                            status['message'] = "Account {} has encountered a captcha, putting away account for now.".format(account[
+                                                                                                                             'username'])
+                            log.info(status['message'])
+                            account_failures.append(
+                                {'account': account, 'last_fail_time': now(), 'reason': 'captcha found'})
+                            break
 
                     parsed = parse_map(args, response_dict,
                                        step_location, dbq, whq, api, scan_date)
