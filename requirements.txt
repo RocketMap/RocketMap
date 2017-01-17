@@ -14,7 +14,7 @@ PyMySQL==0.7.5
 flask-cors==2.1.2
 flask-compress==1.3.0
 LatLon==1.0.1
-git+https://github.com/pogodevorg/pgoapi.git@0b13191a8043d8572647a17326b0f7b384774c63#egg=pgoapi
+git+https://github.com/pogodevorg/pgoapi.git@8f741a89e084de0c11b2458f43964e6e63d04451#egg=pgoapi
 xxhash
 sphinx==1.4.5
 sphinx-autobuild==0.6.0
@@ -23,5 +23,4 @@ sphinx_rtd_theme==0.1.9
 requests==2.10.0
 PySocks==1.5.6
 git+https://github.com/maddhatter/Flask-CacheBust.git@38d940cc4f18b5fcb5687746294e0360640a107e#egg=flask_cachebust
-protobuf_to_dict==0.1.0
 cachetools==2.0.0
