@@ -7,6 +7,19 @@
     "ecmaVersion": 6,
     "sourceType": "module"
   },
+  "rules": {
+    "indent": ["error", 4, {
+        "SwitchCase": 1
+    }],
+    "space-before-function-paren": ["error", {
+        "anonymous": "always",
+        "named": "never",
+        "asyncArrow": "ignore"
+    }],
+    "no-multiple-empty-lines": ["error", {
+        "max": 2
+    }]
+  },
   "env": {
     "browser": true,
     "jquery": true
