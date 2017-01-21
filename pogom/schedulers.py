@@ -641,15 +641,30 @@ class SpeedScan(HexSearch):
         old_q = deepcopy(self.queues[0])
         queue = []
 
+        # Measure the time it takes to refresh the queue
+        start = time.time()
+
+        # prefetch all scanned locations
+        locs = [scan['loc'] for scan in self.scans.values()]
+        scanned_locations = ScannedLocation.get_by_locs(locs)
+
+        # extract all spawnpoints into a dict with spawnpoint id -> spawnpoint for easy access later
+        cell_to_linked_spawn_points = ScannedLocation.get_cell_to_linked_spawn_points(self.scans.keys())
+        sp_by_id = {}
+        for sps in cell_to_linked_spawn_points.itervalues():
+            for sp in sps:
+                sp_by_id[sp['id']] = sp
+
         for cell, scan in self.scans.iteritems():
-            queue += ScannedLocation.get_times(scan, now_date)
-            queue += SpawnPoint.get_times(cell,
-                                          scan, now_date, self.args.spawn_delay)
+            queue += ScannedLocation.get_times(scan, now_date, scanned_locations)
+            queue += SpawnPoint.get_times(cell, scan, now_date, self.args.spawn_delay,
+                                          cell_to_linked_spawn_points, sp_by_id)
+        end = time.time()
 
         queue.sort(key=itemgetter('start'))
         self.queues[0] = queue
         self.ready = True
-        log.info('New queue created with %d entries', len(queue))
+        log.info('New queue created with %d entries in %f seconds', len(queue), (end - start))
         if old_q:
             try:  # Enclosing in try: to avoid divide by zero exceptions from killing overseer
 
