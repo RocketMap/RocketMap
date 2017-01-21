@@ -3,4 +3,5 @@
 **/node_modules/**
 **/server.js
 **/venv/**
+**/static/js/status.js
 Gruntfile.js
