@@ -14,6 +14,7 @@ var $selectSearchIconMarker
 var $selectGymMarkerStyle
 var $selectLocationIconMarker
 var $switchGymSidebar
+var $timeoutDialog
 
 var language = document.documentElement.lang === '' ? 'en' : document.documentElement.lang
 var idToPokemon = {}
@@ -1027,6 +1028,18 @@ function loadRawData() {
                 return false
             } else {
                 rawDataIsLoading = true
+            }
+        },
+        error: function () {
+            if (!$timeoutDialog) {
+                var opts = {
+                    title: 'Reduce marker settings'
+                }
+
+                $timeoutDialog = $('<div>Hmm... we\'re having problems getting data for your criteria. Try reducing what you\'re showing and zooming in to limit what\'s returned.</div>').dialog(opts)
+                $timeoutDialog.dialog('open')
+            } else if (!$timeoutDialog.dialog('isOpen')) {
+                $timeoutDialog.dialog('open')
             }
         },
         complete: function () {
