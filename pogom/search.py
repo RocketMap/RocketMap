@@ -30,7 +30,7 @@ import requests
 import copy
 
 from datetime import datetime
-from threading import Thread
+from threading import Thread, Lock
 from queue import Queue, Empty
 from sets import Set
 
@@ -52,6 +52,8 @@ import terminalsize
 log = logging.getLogger(__name__)
 
 TIMESTAMP = '\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000'
+
+loginDelayLock = Lock()
 
 
 # Apply a location jitter.
@@ -623,7 +625,7 @@ def search_worker_thread(args, account_queue, account_failures, search_items_que
             status['skip'] = 0
             status['captcha'] = 0
 
-            stagger_thread(args, account)
+            stagger_thread(args)
 
             # Sleep when consecutive_fails reaches max_failures, overall fails
             # for stat purposes.
@@ -1102,13 +1104,12 @@ def calc_distance(pos1, pos2):
 
 
 # Delay each thread start time so that logins occur after delay.
-def stagger_thread(args, account):
-    if args.accounts.index(account) == 0:
-        return  # No need to delay the first one.
-    delay = args.accounts.index(
-        account) * args.login_delay + ((random.random() - .5) / 2)
-    log.debug('Delaying thread startup for %.2f seconds...', delay)
+def stagger_thread(args):
+    loginDelayLock.acquire()
+    delay = args.login_delay + ((random.random() - .5) / 2)
+    log.debug('Delaying thread startup for %.2f seconds', delay)
     time.sleep(delay)
+    loginDelayLock.release()
 
 
 # The delta from last stat to current stat
