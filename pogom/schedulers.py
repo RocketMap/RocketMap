@@ -720,8 +720,8 @@ class SpeedScan(HexSearch):
                 for k in sorted(kinds.keys()):
                     log.info('%s kind spawns: %d or %.1f%%', k,
                              kinds[k], kinds[k] * 100.0 / self.active_sp)
-                log.info('Spawns with found TTH: %d or %.1f%%',
-                         self.tth_found, self.tth_found * 100.0 / self.active_sp)
+                log.info('Spawns with found TTH: %d or %.1f%% [%d missing]',
+                         self.tth_found, self.tth_found * 100.0 / self.active_sp, self.active_sp - self.tth_found)
                 for k in sorted(tth_ranges.keys(), key=int):
                     log.info(
                         'Spawnpoints with a %sm range to find TTH: %d', k, tth_ranges[k])
@@ -771,8 +771,8 @@ class SpeedScan(HexSearch):
                     log.warning('Missed scans: %s', Counter(
                         self.scans_missed_list).most_common(3))
                     log.info('History: %s', str(self.scan_percent).strip('[]'))
-                self.status_message = 'Initial scan: {:.2f}%, TTH found: {:.2f}%, '.format(
-                    band_percent, self.tth_found * 100.0 / self.active_sp)
+                self.status_message = 'Initial scan: {:.2f}%, TTH found: {:.2f}% [{} missing], '.format(
+                    band_percent, self.tth_found * 100.0 / self.active_sp, self.active_sp - self.tth_found)
                 self.status_message += 'Spawns reached: {:.2f}%, Spawns found: {:.2f}%, Good scans {:.2f}%'\
                     .format(spawns_reached, found_percent, good_percent)
                 self._stat_init()
