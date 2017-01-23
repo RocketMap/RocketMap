@@ -1984,7 +1984,7 @@ def parse_gyms(args, gym_responses, wh_update_queue, db_update_queue):
 
         if args.webhooks:
             webhook_data = {
-                'id': gym_id,
+                'id': b64encode(str(gym_id)),
                 'latitude': gym_state['fort_data']['latitude'],
                 'longitude': gym_state['fort_data']['longitude'],
                 'team': gym_state['fort_data'].get('owned_by_team', 0),
