@@ -24,7 +24,8 @@ from pogom.app import Pogom
 from pogom.utils import get_args, now
 
 from pogom.search import search_overseer_thread
-from pogom.models import init_database, create_tables, drop_tables, Pokemon, db_updater, clean_db_loop
+from pogom.models import (init_database, create_tables, drop_tables,
+                          Pokemon, db_updater, clean_db_loop)
 from pogom.webhook import wh_updater
 
 from pogom.proxy import check_proxies, proxies_refresher
@@ -34,27 +35,34 @@ pgoapi_version = "1.1.7"
 
 # Moved here so logger is configured at load time.
 logging.basicConfig(
-    format='%(asctime)s [%(threadName)16s][%(module)14s][%(levelname)8s] %(message)s')
+    format='%(asctime)s [%(threadName)16s][%(module)14s][%(levelname)8s] ' +
+    '%(message)s')
 log = logging.getLogger()
 
 # Make sure pogom/pgoapi is actually removed if it is an empty directory.
-# This is a leftover directory from the time pgoapi was embedded in PokemonGo-Map.
-# The empty directory will cause problems with `import pgoapi` so it needs to go.
+# This is a leftover directory from the time pgoapi was embedded in
+# PokemonGo-Map.
+# The empty directory will cause problems with `import pgoapi` so it needs to
+# go.
 # Now also removes the pogom/libencrypt and pokecrypt-pgoapi folders,
 # don't cause issues but aren't needed.
 oldpgoapiPath = os.path.join(os.path.dirname(__file__), "pogom/pgoapi")
 oldlibPath = os.path.join(os.path.dirname(__file__), "pokecrypt-pgoapi")
 oldoldlibPath = os.path.join(os.path.dirname(__file__), "pogom/libencrypt")
 if os.path.isdir(oldpgoapiPath):
-    log.warn("I found a really really old pgoapi thing, but its no longer used. Going to remove it...", oldpgoapiPath)
+    log.warn("I found a really really old pgoapi thing, but its no longer " +
+             "used. Going to remove it...", oldpgoapiPath)
     shutil.rmtree(oldpgoapiPath)
     log.warn("Done!")
 if os.path.isdir(oldlibPath):
-    log.warn("I found the pokecrypt-pgoapi folder/submodule, but its no longer used. Going to remove it...", oldpgoapiPath)
+    log.warn("I found the pokecrypt-pgoapi folder/submodule, but its no " +
+             "longer used. Going to remove it...", oldpgoapiPath)
     shutil.rmtree(oldlibPath)
     log.warn("Done!")
 if os.path.isdir(oldoldlibPath):
-    log.warn("I found the old libencrypt folder, from when we used to bundle encrypt libs, but its no longer used. Going to remove it...", oldpgoapiPath)
+    log.warn("I found the old libencrypt folder, from when we used to " +
+             "bundle encrypt libs, but its no longer used. " +
+             "Going to remove it...", oldpgoapiPath)
     shutil.rmtree(oldoldlibPath)
     log.warn("Done!")
 
@@ -64,13 +72,16 @@ try:
     from pgoapi import utilities as util
 except ImportError:
     log.critical(
-        "It seems `pgoapi` is not installed. Try running pip install --upgrade -r requirements.txt.")
+        "It seems `pgoapi` is not installed. Try running " +
+        "pip install --upgrade -r requirements.txt.")
     sys.exit(1)
 
 # Assert pgoapi >= pgoapi_version.
-if not hasattr(pgoapi, "__version__") or StrictVersion(pgoapi.__version__) < StrictVersion(pgoapi_version):
+if (not hasattr(pgoapi, "__version__") or
+        StrictVersion(pgoapi.__version__) < StrictVersion(pgoapi_version)):
     log.critical(
-        "It seems `pgoapi` is not up-to-date. Try running pip install --upgrade -r requirements.txt again.")
+        "It seems `pgoapi` is not up-to-date. Try running " +
+        "pip install --upgrade -r requirements.txt again.")
     sys.exit(1)
 
 
@@ -119,12 +130,14 @@ def main():
     if args.verbose and args.verbose != 'nofile':
         filelog = logging.FileHandler(args.verbose)
         filelog.setFormatter(logging.Formatter(
-            '%(asctime)s [%(threadName)16s][%(module)14s][%(levelname)8s] %(message)s'))
+            '%(asctime)s [%(threadName)16s][%(module)14s][%(levelname)8s] ' +
+            '%(message)s'))
         logging.getLogger('').addHandler(filelog)
     if args.very_verbose and args.very_verbose != 'nofile':
         filelog = logging.FileHandler(args.very_verbose)
         filelog.setFormatter(logging.Formatter(
-            '%(asctime)s [%(threadName)16s][%(module)14s][%(levelname)8s] %(message)s'))
+            '%(asctime)s [%(threadName)16s][%(module)14s][%(levelname)8s] ' +
+            '%(message)s'))
         logging.getLogger('').addHandler(filelog)
 
     if args.verbose or args.very_verbose:
@@ -134,9 +147,11 @@ def main():
 
     # Let's not forget to run Grunt / Only needed when running with webserver.
     if not args.no_server:
-        if not os.path.exists(os.path.join(os.path.dirname(__file__), 'static/dist')):
+        if not os.path.exists(
+                os.path.join(os.path.dirname(__file__), 'static/dist')):
             log.critical(
-                'Missing front-end assets (static/dist) -- please run "npm install && npm run build" before starting the server.')
+                'Missing front-end assets (static/dist) -- please run ' +
+                '"npm install && npm run build" before starting the server.')
             sys.exit()
 
     # These are very noisy, let's shush them up a bit.
@@ -176,8 +191,8 @@ def main():
         sys.exit()
     # Use the latitude and longitude to get the local altitude from Google.
     try:
-        url = 'https://maps.googleapis.com/maps/api/elevation/json?locations={},{}'.format(
-            str(position[0]), str(position[1]))
+        url = ('https://maps.googleapis.com/maps/api/elevation/json?' +
+               'locations={},{}').format(str(position[0]), str(position[1]))
         altitude = requests.get(url).json()[u'results'][0][u'elevation']
         log.debug('Local altitude is: %sm', altitude)
         position = (position[0], position[1], altitude)
@@ -241,8 +256,8 @@ def main():
         t.start()
 
     # WH updates queue & WH gym/pokéstop unique key LFU cache.
-    # The LFU cache will stop the server from resending the same data an infinite
-    # number of times.
+    # The LFU cache will stop the server from resending the same data an
+    # infinite number of times.
     # TODO: Rework webhooks entirely so a LFU cache isn't necessary.
     wh_updates_queue = Queue()
     wh_key_cache = LFUCache(maxsize=args.wh_lfu_size)
@@ -274,7 +289,9 @@ def main():
 
         # Attempt to dump the spawn points (do this before starting threads of
         # endure the woe).
-        if args.spawnpoint_scanning and args.spawnpoint_scanning != 'nofile' and args.dump_spawnpoints:
+        if (args.spawnpoint_scanning and
+                args.spawnpoint_scanning != 'nofile' and
+                args.dump_spawnpoints):
             with open(args.spawnpoint_scanning, 'w+') as file:
                 log.info('Saving spawn points to %s', args.spawnpoint_scanning)
                 spawns = Pokemon.get_spawnpoints_in_hex(
@@ -311,8 +328,9 @@ def main():
             time.sleep(60)
     else:
         ssl_context = None
-        if args.ssl_certificate and args.ssl_privatekey \
-                and os.path.exists(args.ssl_certificate) and os.path.exists(args.ssl_privatekey):
+        if (args.ssl_certificate and args.ssl_privatekey and
+                os.path.exists(args.ssl_certificate) and
+                os.path.exists(args.ssl_privatekey)):
             ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
             ssl_context.load_cert_chain(
                 args.ssl_certificate, args.ssl_privatekey)

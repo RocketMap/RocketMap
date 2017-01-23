@@ -2,37 +2,46 @@
 # -*- coding: utf-8 -*-
 
 '''
-Schedulers determine how worker's queues get filled. They control which locations get scanned,
-in what order, at what time. This allows further optimizations to be easily added, without
-having to modify the existing overseer and worker thread code.
+Schedulers determine how worker's queues get filled. They control which
+locations get scanned, in what order, at what time. This allows further
+optimizations to be easily added, without having to modify the existing
+overseer and worker thread code.
 
 Schedulers will recieve:
 
-queues - A list of queues for the workers they control. For now, this is a list containing a
-            single queue.
-status - A list of status dicts for the workers. Schedulers can use this information to make
-            more intelligent scheduling decisions. Useful values include:
-            - last_scan_date: unix timestamp of when the last scan was completed
+queues - A list of queues for the workers they control. For now, this is a
+            list containing a single queue.
+status - A list of status dicts for the workers. Schedulers can use this
+            information to make more intelligent scheduling decisions.
+            Useful values include:
+            - last_scan_date: unix timestamp of when the last scan was
+                completed
             - location: [lat,lng,alt] of the last scan
-args - The configuration arguments. This may not include all of the arguments, just ones that are
-            relevant to this scheduler instance (eg. if multiple locations become supported, the args
-            passed to the scheduler will only contain the parameters for the location it handles)
+args - The configuration arguments. This may not include all of the arguments,
+            just ones that are relevant to this scheduler instance (eg. if
+            multiple locations become supported, the args passed to the
+            scheduler will only contain the parameters for the location
+            it handles)
 
 Schedulers must fill the queues with items to search.
 
 Queue items are a list containing:
-    [step, (latitude, longitude, altitude), appears_seconds, disappears_seconds)]
+    [step, (latitude, longitude, altitude),
+     appears_seconds, disappears_seconds)]
 Where:
     - step is the step number. Used only for display purposes.
     - (latitude, longitude, altitude) is the location to be scanned.
     - appears_seconds is the unix timestamp of when the pokemon next appears
-    - disappears_seconds is the unix timestamp of when the pokemon next disappears
+    - disappears_seconds is the unix timestamp of when the
+        pokemon next disappears
 
-    appears_seconds and disappears_seconds are used to skip scans that are too late, and wait for scans the
-    worker is early for.  If a scheduler doesn't have a specific time a location needs to be scanned, it
-    should set both to 0.
+    appears_seconds and disappears_seconds are used to skip scans that are too
+    late, and wait for scans the worker is early for.  If a scheduler doesn't
+    have a specific time a location needs to be scanned, it should set
+    both to 0.
 
-If implementing a new scheduler, place it before SchedulerFactory, and add it to __scheduler_classes
+If implementing a new scheduler, place it before SchedulerFactory, and
+add it to __scheduler_classes
 '''
 
 import itertools
@@ -49,7 +58,8 @@ from queue import Empty
 from operator import itemgetter
 from datetime import datetime, timedelta
 from .transform import get_new_coords
-from .models import hex_bounds, Pokemon, SpawnPoint, ScannedLocation, ScanSpawnPoint
+from .models import (hex_bounds, Pokemon, SpawnPoint,
+                     ScannedLocation, ScanSpawnPoint)
 from .utils import now, cur_sec, cellid, date_secs, equi_rect_distance
 
 log = logging.getLogger(__name__)
@@ -72,7 +82,8 @@ class BaseScheduler(object):
     def schedule(self):
         log.warning('BaseScheduler does not schedule any items')
 
-    # location_changed function is called whenever the location being scanned changes.
+    # location_changed function is called whenever the location being
+    # scanned changes.
     # scan_location = (lat, lng, alt)
     def location_changed(self, scan_location, dbq):
         self.scan_location = scan_location
@@ -89,13 +100,13 @@ class BaseScheduler(object):
 
     def get_overseer_message(self):
         nextitem = self.queues[0].queue[0]
-        message = 'Processing search queue, next item is {:6f},{:6f}'.format(nextitem[
-                                                                             1][0], nextitem[1][1])
+        message = 'Processing search queue, next item is {:6f},{:6f}'.format(
+            nextitem[1][0], nextitem[1][1])
         # If times are specified, print the time of the next queue item, and
         # how many seconds ahead/behind realtime
         if nextitem[2]:
-            message += ' @ {}'.format(time.strftime('%H:%M:%S',
-                                                    time.localtime(nextitem[2])))
+            message += ' @ {}'.format(
+                time.strftime('%H:%M:%S', time.localtime(nextitem[2])))
             if nextitem[2] > now():
                 message += ' ({}s ahead)'.format(nextitem[2] - now())
             else:
@@ -115,10 +126,15 @@ class BaseScheduler(object):
         remain = appears - now() + 10
         messages = {
             'wait': 'Waiting for item from queue.',
-            'early': 'Early for {:6f},{:6f}; waiting {}s...'.format(step_location[0], step_location[1], remain),
-            'late': 'Too late for location {:6f},{:6f}; skipping.'.format(step_location[0], step_location[1]),
-            'search': 'Searching at {:6f},{:6f}.'.format(step_location[0], step_location[1]),
-            'invalid': 'Invalid response at {:6f},{:6f}, abandoning location.'.format(step_location[0], step_location[1])
+            'early': 'Early for {:6f},{:6f}; waiting {}s...'.format(
+                step_location[0], step_location[1], remain),
+            'late': 'Too late for location {:6f},{:6f}; skipping.'.format(
+                step_location[0], step_location[1]),
+            'search': 'Searching at {:6f},{:6f}.'.format(
+                step_location[0], step_location[1]),
+            'invalid': ('Invalid response at {:6f},{:6f}, ' +
+                        'abandoning location.').format(step_location[0],
+                                                       step_location[1])
         }
         return step, step_location, appears, leaves, messages
 
@@ -289,7 +305,9 @@ class HexSearch(BaseScheduler):
 class HexSearchSpawnpoint(HexSearch):
 
     def _any_spawnpoints_in_range(self, coords, spawnpoints):
-        return any(geopy.distance.distance(coords, x).meters <= 70 for x in spawnpoints)
+        return any(
+            geopy.distance.distance(coords, x).meters <= 70
+            for x in spawnpoints)
 
     # Extend the generate_locations function to remove locations with no
     # spawnpoints.
@@ -299,15 +317,16 @@ class HexSearchSpawnpoint(HexSearch):
                           for d in Pokemon.get_spawnpoints(s, w, n, e))
 
         if len(spawnpoints) == 0:
-            log.warning(
-                'No spawnpoints found in the specified area!  (Did you forget to run a normal scan in this area first?)')
+            log.warning('No spawnpoints found in the specified area!  (Did ' +
+                        'you forget to run a normal scan in this area first?)')
 
         # Call the original _generate_locations.
         locations = super(HexSearchSpawnpoint, self)._generate_locations()
 
         # Remove items with no spawnpoints in range.
-        locations = [coords for coords in locations if self._any_spawnpoints_in_range(
-            coords[1], spawnpoints)]
+        locations = [
+            coords for coords in locations
+            if self._any_spawnpoints_in_range(coords[1], spawnpoints)]
         return locations
 
 
@@ -316,8 +335,8 @@ class SpawnScan(BaseScheduler):
 
     def __init__(self, queues, status, args):
         BaseScheduler.__init__(self, queues, status, args)
-        # On the first scan, we want to search the last 15 minutes worth of spawns to get existing
-        # pokemon onto the map.
+        # On the first scan, we want to search the last 15 minutes worth of
+        # spawns to get existing pokemon onto the map.
         self.firstscan = True
 
         # If we are only scanning for pokestops/gyms, the scan radius can be
@@ -345,7 +364,8 @@ class SpawnScan(BaseScheduler):
                 log.error('JSON error: %s; will fallback to database', e)
             except IOError as e:
                 log.error(
-                    'Error opening json file: %s; will fallback to database', e)
+                    'Error opening json file: %s; will fallback to database',
+                    e)
 
         # No locations yet? Try the database!
         if not self.locations:
@@ -358,7 +378,8 @@ class SpawnScan(BaseScheduler):
         #    raise Exception('No availabe spawn points!')
 
         # locations[]:
-        # {"lat": 37.53079079414139, "lng": -122.28811690874117, "spawnpoint_id": "808f9f1601d", "time": 511
+        # {"lat": 37.53079079414139, "lng": -122.28811690874117,
+        #  "spawnpoint_id": "808f9f1601d", "time": 511
 
         log.info('Total of %d spawns to track', len(self.locations))
 
@@ -372,19 +393,21 @@ class SpawnScan(BaseScheduler):
                     minute, sec, i['time'], i['lat'], i['lng'])
                 log.debug(m)
 
-        # 'time' from json and db alike has been munged to appearance time as seconds after the hour.
+        # 'time' from json and db alike has been munged to appearance time as
+        # seconds after the hour.
         # Here we'll convert that to a real timestamp.
         for location in self.locations:
             # For a scan which should cover all CURRENT pokemon, we can offset
             # the comparison time by 15 minutes so that the "appears" time
             # won't be rolled over to the next hour.
 
-            # TODO: Make it work. The original logic (commented out) was producing
-            #       bogus results if your first scan was in the last 15 minute of
-            #       the hour. Wrapping my head around this isn't work right now,
-            #       so I'll just drop the feature for the time being. It does need
-            #       to come back so that repositioning/pausing works more nicely,
-            #       but we can live without it too.
+            # TODO: Make it work. The original logic (commented out) was
+            #       producing bogus results if your first scan was in the last
+            #       15 minute of the hour. Wrapping my head around this isn't
+            #       work right now, so I'll just drop the feature for the time
+            #       being. It does need to come back so that
+            #       repositioning/pausing works more nicely, but we can live
+            #       without it too.
 
             # if sps_scan_current:
             #     cursec = (location['time'] + 900) % 3600
@@ -410,8 +433,10 @@ class SpawnScan(BaseScheduler):
         # locations = [((lat, lng, alt), ts_appears, ts_leaves),...]
         retset = []
         for step, location in enumerate(self.locations, 1):
-            retset.append((step, (location['lat'], location['lng'], 40.32), location[
-                          'appears'], location['leaves']))
+            retset.append((step,
+                           (location['lat'], location['lng'], 40.32),
+                           location['appears'],
+                           location['leaves']))
 
         return retset
 
@@ -438,11 +463,13 @@ class SpawnScan(BaseScheduler):
         self.ready = True
 
 
-# SpeedScan is a complete search method that initially does a spawnpoint search in each scan location by scanning
-# five two-minute bands within an hour and ten minute intervals between bands.
+# SpeedScan is a complete search method that initially does a spawnpoint
+# search in each scan location by scanning five two-minute bands within
+# an hour and ten minute intervals between bands.
 
-# After finishing the spawnpoint search or if timing isn't right for any of the remaining search bands,
-# workers will search the nearest scan location that has a new spawn.
+# After finishing the spawnpoint search or if timing isn't right for any of
+# the remaining search bands, workers will search the nearest scan location
+# that has a new spawn.
 class SpeedScan(HexSearch):
 
     # Call base initialization, set step_distance
@@ -457,7 +484,9 @@ class SpeedScan(HexSearch):
         self.scans_done = 0
         self.scans_missed = 0
         self.scans_missed_list = []
-        self.minutes = 5  # Minutes between queue refreshes. Should be less than 10 to allow for new bands during Initial scan
+        # Minutes between queue refreshes. Should be less than 10 to allow for
+        # new bands during Initial scan
+        self.minutes = 5
         self.found_percent = []
         self.scan_percent = []
         self.spawn_percent = []
@@ -479,7 +508,8 @@ class SpeedScan(HexSearch):
         scans = {}
         initial = {}
         all_scans = {}
-        for sl in ScannedLocation.select_in_hex(self.scan_location, self.args.step_limit):
+        for sl in ScannedLocation.select_in_hex(self.scan_location,
+                                                self.args.step_limit):
             all_scans[cellid((sl['latitude'], sl['longitude']))] = sl
 
         for i, e in enumerate(self.locations):
@@ -498,27 +528,28 @@ class SpeedScan(HexSearch):
         spawnpoints = SpawnPoint.select_in_hex(
             self.scan_location, self.args.step_limit)
         if not spawnpoints:
-            log.info(
-                'No spawnpoints in hex found in SpawnPoint table. Doing initial scan.')
+            log.info('No spawnpoints in hex found in SpawnPoint table. ' +
+                     'Doing initial scan.')
         log.info('Found %d spawn points within hex', len(spawnpoints))
 
         log.info('Doing %s distance calcs to assign spawn points to scans',
                  "{:,}".format(len(spawnpoints) * len(scans)))
         scan_spawn_point = {}
-        ScannedLocation.link_spawn_points(
-            scans, initial, spawnpoints, self.step_distance, scan_spawn_point, force=True)
+        ScannedLocation.link_spawn_points(scans, initial, spawnpoints,
+                                          self.step_distance, scan_spawn_point,
+                                          force=True)
         if len(scan_spawn_point):
-            log.info('%d relations found between the spawn points and steps', len(
-                scan_spawn_point))
+            log.info('%d relations found between the spawn points and steps',
+                     len(scan_spawn_point))
             db_update_queue.put((ScanSpawnPoint, scan_spawn_point))
         else:
             log.info('Spawn points assigned')
 
     # Generates the list of locations to scan
-    # Created a new function, because speed scan requires fixed locations, even when increasing
-    # -st. With HexSearch locations, the location of inner rings would change if -st was increased
-    # requiring rescanning since it didn't recognize the location in the
-    # ScannedLocation table
+    # Created a new function, because speed scan requires fixed locations,
+    # even when increasing -st. With HexSearch locations, the location of
+    # inner rings would change if -st was increased requiring rescanning
+    # since it didn't recognize the location in the ScannedLocation table
     def _generate_locations(self):
 
         NORTH = 0
@@ -568,7 +599,8 @@ class SpeedScan(HexSearch):
                 loc = get_new_coords(loc, xdist, WEST)
                 results.append((loc[0], loc[1], 0))
 
-        return [(step, (location[0], location[1], 0), 0, 0) for step, location in enumerate(results)]
+        return [(step, (location[0], location[1], 0), 0, 0)
+                for step, location in enumerate(results)]
 
     def getsize(self):
         return len(self.queues[0])
@@ -595,8 +627,9 @@ class SpeedScan(HexSearch):
             n += 1
             counter[item['kind']] += 1
 
-        message = 'Scanning status: {} total waiting, {} initial bands, {} TTH searches, and {} new spawns'\
-            .format(n, counter['band'], counter['TTH'], counter['spawn'])
+        message = ('Scanning status: {} total waiting, {} initial bands, ' +
+                   '{} TTH searches, and {} new spawns').format(
+                       n, counter['band'], counter['TTH'], counter['spawn'])
         if self.status_message:
             message += '\n' + self.status_message
 
@@ -605,8 +638,8 @@ class SpeedScan(HexSearch):
     # Refresh queue every 5 minutes
     # the first band of a scan is done
     def time_to_refresh_queue(self):
-        return (datetime.utcnow() - self.refresh_date).total_seconds() > self.minutes * 60 or \
-            self.queues == [[]]
+        return ((datetime.utcnow() - self.refresh_date).total_seconds() >
+                self.minutes * 60 or self.queues == [[]])
 
     # Function to empty all queues in the queues list
     def empty_queues(self):
@@ -614,7 +647,10 @@ class SpeedScan(HexSearch):
 
     # How long to delay since last action
     def delay(self, last_scan_date):
-        return max((last_scan_date - datetime.utcnow()).total_seconds() + self.args.scan_delay, 2)
+        return max(
+            ((last_scan_date - datetime.utcnow()).total_seconds() +
+             self.args.scan_delay),
+            2)
 
     def band_status(self):
         try:
@@ -624,12 +660,14 @@ class SpeedScan(HexSearch):
             if bands_total == bands_filled:
                 log.info('Initial spawnpoint scan is complete')
             else:
-                log.info('Initial spawnpoint scan, %d of %d bands are done or %.1f%% complete',
-                         bands_filled, bands_total, percent)
+                log.info('Initial spawnpoint scan, %d of %d bands are done ' +
+                         'or %.1f%% complete', bands_filled, bands_total,
+                         percent)
             return percent
 
         except Exception as e:
-            log.error('Exception in band_status: Exception message: {}'.format(e))
+            log.error(
+                'Exception in band_status: Exception message: {}'.format(e))
 
     # Update the queue, and provide a report on performance of last minutes
     def schedule(self):
@@ -648,25 +686,33 @@ class SpeedScan(HexSearch):
         locs = [scan['loc'] for scan in self.scans.values()]
         scanned_locations = ScannedLocation.get_by_locs(locs)
 
-        # extract all spawnpoints into a dict with spawnpoint id -> spawnpoint for easy access later
-        cell_to_linked_spawn_points = ScannedLocation.get_cell_to_linked_spawn_points(self.scans.keys())
+        # extract all spawnpoints into a dict with spawnpoint
+        # id -> spawnpoint for easy access later
+        cell_to_linked_spawn_points = (
+            ScannedLocation.get_cell_to_linked_spawn_points(self.scans.keys()))
         sp_by_id = {}
         for sps in cell_to_linked_spawn_points.itervalues():
             for sp in sps:
                 sp_by_id[sp['id']] = sp
 
         for cell, scan in self.scans.iteritems():
-            queue += ScannedLocation.get_times(scan, now_date, scanned_locations)
-            queue += SpawnPoint.get_times(cell, scan, now_date, self.args.spawn_delay,
-                                          cell_to_linked_spawn_points, sp_by_id)
+            queue += ScannedLocation.get_times(scan, now_date,
+                                               scanned_locations)
+            queue += SpawnPoint.get_times(cell, scan, now_date,
+                                          self.args.spawn_delay,
+                                          cell_to_linked_spawn_points,
+                                          sp_by_id)
         end = time.time()
 
         queue.sort(key=itemgetter('start'))
         self.queues[0] = queue
         self.ready = True
-        log.info('New queue created with %d entries in %f seconds', len(queue), (end - start))
+        log.info('New queue created with %d entries in %f seconds', len(queue),
+                 (end - start))
         if old_q:
-            try:  # Enclosing in try: to avoid divide by zero exceptions from killing overseer
+            # Enclosing in try: to avoid divide by zero exceptions from
+            # killing overseer
+            try:
 
                 # Possible 'done' values are 'Missed', 'Scanned', None, or
                 # number
@@ -701,11 +747,13 @@ class SpeedScan(HexSearch):
                     if sp['missed_count'] > 5:
                         continue
                     self.active_sp += 1
-                    self.tth_found += sp['earliest_unseen'] == sp['latest_seen']
+                    self.tth_found += (sp['earliest_unseen'] ==
+                                       sp['latest_seen'])
                     kind = sp['kind']
                     kinds[kind] = kinds.get(kind, 0) + 1
-                    tth_range = str(
-                        int(round(((sp['earliest_unseen'] - sp['latest_seen']) % 3600) / 60.0)))
+                    tth_range = str(int(round(
+                        ((sp['earliest_unseen'] - sp['latest_seen']) % 3600) /
+                        60.0)))
                     tth_ranges[tth_range] = tth_ranges.get(tth_range, 0) + 1
 
                 tth_ranges['0'] = tth_ranges.get('0', 0) - self.tth_found
@@ -713,47 +761,61 @@ class SpeedScan(HexSearch):
                 log.info('Total Spawn Points found in hex: %d',
                          len(spawnpoints))
                 log.info('Inactive Spawn Points found in hex: %d or %.1f%%',
-                         len(spawnpoints) - self.active_sp, (len(spawnpoints) - self.active_sp) * 100.0 / len_spawnpoints)
+                         len(spawnpoints) - self.active_sp,
+                         (len(spawnpoints) -
+                          self.active_sp) * 100.0 / len_spawnpoints)
                 log.info('Active Spawn Points found in hex: %d or %.1f%%',
-                         self.active_sp, self.active_sp * 100.0 / len_spawnpoints)
+                         self.active_sp,
+                         self.active_sp * 100.0 / len_spawnpoints)
                 self.active_sp += self.active_sp == 0
                 for k in sorted(kinds.keys()):
                     log.info('%s kind spawns: %d or %.1f%%', k,
                              kinds[k], kinds[k] * 100.0 / self.active_sp)
                 log.info('Spawns with found TTH: %d or %.1f%% [%d missing]',
-                         self.tth_found, self.tth_found * 100.0 / self.active_sp, self.active_sp - self.tth_found)
+                         self.tth_found,
+                         self.tth_found * 100.0 / self.active_sp,
+                         self.active_sp - self.tth_found)
                 for k in sorted(tth_ranges.keys(), key=int):
-                    log.info(
-                        'Spawnpoints with a %sm range to find TTH: %d', k, tth_ranges[k])
-                log.info('Over last %d minutes: %d new bands, %d Pokemon found',
-                         self.minutes, bands_timed, spawns_all)
-                log.info('Of the %d total spawns, %d were targeted, and %d found scanning for others',
-                         spawns_all, spawns_timed, spawns_all - spawns_timed)
+                    log.info('Spawnpoints with a %sm range to find TTH: %d', k,
+                             tth_ranges[k])
+                log.info('Over last %d minutes: %d new bands, %d Pokemon ' +
+                         'found', self.minutes, bands_timed, spawns_all)
+                log.info('Of the %d total spawns, %d were targeted, and %d ' +
+                         'found scanning for others', spawns_all, spawns_timed,
+                         spawns_all - spawns_timed)
                 scan_total = spawns_timed + bands_timed
                 spm = scan_total / self.minutes
                 seconds_per_scan = self.minutes * 60 * \
                     self.args.workers / scan_total if scan_total else 0
-                log.info('%d scans over %d minutes, %d scans per minute, %d secs per scan per worker',
-                         scan_total, self.minutes, spm, seconds_per_scan)
+                log.info('%d scans over %d minutes, %d scans per minute, %d ' +
+                         'secs per scan per worker', scan_total, self.minutes,
+                         spm, seconds_per_scan)
 
                 sum = spawns_all + spawns_missed
                 if sum:
                     spawns_reached = spawns_all * 100.0 / \
                         (spawns_all + spawns_missed)
-                    log.info('%d Pokemon found, and %d were not reached in time for %.1f%% found',
-                             spawns_all, spawns_missed, spawns_reached)
+                    log.info('%d Pokemon found, and %d were not reached in ' +
+                             'time for %.1f%% found', spawns_all,
+                             spawns_missed, spawns_reached)
 
                 if spawns_timed:
                     average = reduce(
-                        lambda x, y: x + y['done'], spawns_timed_list, 0) / spawns_timed
-                    log.info('%d Pokemon found, %d were targeted, with an average delay of %d sec',
-                             spawns_all, spawns_timed, average)
+                        lambda x, y: x + y['done'],
+                        spawns_timed_list,
+                        0) / spawns_timed
+                    log.info('%d Pokemon found, %d were targeted, with an ' +
+                             'average delay of %d sec', spawns_all,
+                             spawns_timed, average)
 
                     spawns_missed = reduce(
-                        lambda x, y: x + len(y), self.spawns_missed_delay.values(), 0)
+                        lambda x, y: x + len(y),
+                        self.spawns_missed_delay.values(), 0)
                     sum = spawns_missed + self.spawns_found
-                    found_percent = self.spawns_found * 100.0 / sum if sum else 0
-                    log.info('%d spawns scanned and %d spawns were not there when expected for %.1f%%',
+                    found_percent = (
+                        self.spawns_found * 100.0 / sum if sum else 0)
+                    log.info('%d spawns scanned and %d spawns were not ' +
+                             'there when expected for %.1f%%',
                              self.spawns_found, spawns_missed, found_percent)
                     self.spawn_percent.append(round(found_percent, 1))
                     if self.spawns_missed_delay:
@@ -764,17 +826,23 @@ class SpeedScan(HexSearch):
 
                 sum = self.scans_done + len(self.scans_missed_list)
                 good_percent = self.scans_done * 100.0 / sum if sum else 0
-                log.info('%d scans successful and %d scans missed for %.1f%% found',
-                         self.scans_done, len(self.scans_missed_list), good_percent)
+                log.info(
+                    '%d scans successful and %d scans missed for %.1f%% found',
+                    self.scans_done, len(self.scans_missed_list), good_percent)
                 self.scan_percent.append(round(good_percent, 1))
                 if self.scans_missed_list:
                     log.warning('Missed scans: %s', Counter(
                         self.scans_missed_list).most_common(3))
                     log.info('History: %s', str(self.scan_percent).strip('[]'))
-                self.status_message = 'Initial scan: {:.2f}%, TTH found: {:.2f}% [{} missing], '.format(
-                    band_percent, self.tth_found * 100.0 / self.active_sp, self.active_sp - self.tth_found)
-                self.status_message += 'Spawns reached: {:.2f}%, Spawns found: {:.2f}%, Good scans {:.2f}%'\
-                    .format(spawns_reached, found_percent, good_percent)
+                self.status_message = ('Initial scan: {:.2f}%, TTH found: ' +
+                                       '{:.2f}% [{} missing], ').format(
+                    band_percent, self.tth_found * 100.0 / self.active_sp,
+                    self.active_sp - self.tth_found)
+                self.status_message += ('Spawns reached: {:.2f}%, Spawns ' +
+                                        'found: {:.2f}%, Good scans ' +
+                                        '{:.2f}%').format(spawns_reached,
+                                                          found_percent,
+                                                          good_percent)
                 self._stat_init()
 
             except Exception as e:
@@ -852,10 +920,15 @@ class SpeedScan(HexSearch):
         i = best.get('i', 0)
         messages = {
             'wait': 'Nothing to scan.',
-            'early': 'Early for step {}; waiting a few seconds...'.format(step),
-            'late': 'API response on step {} delayed by {} seconds. Possible causes: slow proxies, internet, or Niantic servers.'.format(step, int((now_date - last_action).total_seconds())),
+            'early': 'Early for step {}; waiting a few seconds...'.format(
+                step),
+            'late': ('API response on step {} delayed by {} seconds. ' +
+                     'Possible causes: slow proxies, internet, or ' +
+                     'Niantic servers.').format(
+                         step, int((now_date - last_action).total_seconds())),
             'search': 'Searching at step {}.'.format(step),
-            'invalid': 'Invalid response at step {}, abandoning location.'.format(step)
+            'invalid': ('Invalid response at step {}, abandoning ' +
+                        'location.').format(step)
         }
 
         try:
@@ -866,21 +939,24 @@ class SpeedScan(HexSearch):
 
         if best['score'] == 0:
             if cant_reach:
-                messages[
-                    'wait'] = 'Not able to reach any scan under the speed limit.'
+                messages['wait'] = ('Not able to reach any scan under the ' +
+                                    'speed limit.')
             return -1, 0, 0, 0, messages
 
-        if equi_rect_distance(loc, worker_loc) > (now_date - last_action).total_seconds() * self.args.kph / 3600:
+        if (equi_rect_distance(loc, worker_loc) >
+                (now_date - last_action).total_seconds() *
+                self.args.kph / 3600):
 
             messages['wait'] = 'Moving {}m to step {} for a {}.'.format(
-                int(equi_rect_distance(loc, worker_loc) * 1000), step, best['kind'])
+                int(equi_rect_distance(loc, worker_loc) * 1000), step,
+                best['kind'])
             return -1, 0, 0, 0, messages
 
         prefix += ' Step %d,' % (step)
         # Check again if another worker heading there
         if item.get('done', False):
-            messages[
-                'wait'] = 'Skipping step {}. Other worker already scanned.'.format(step)
+            messages['wait'] = ('Skipping step {}. Other worker already ' +
+                                'scanned.').format(step)
             return -1, 0, 0, 0, messages
 
         if not self.ready:
@@ -889,7 +965,8 @@ class SpeedScan(HexSearch):
 
         # if a new band, set the date to wait until for the next band
         if best['kind'] == 'band' and best['end'] - best['start'] > 5 * 60:
-            self.next_band_date = datetime.utcnow() + timedelta(seconds=self.band_spacing)
+            self.next_band_date = datetime.utcnow() + timedelta(
+                seconds=self.band_spacing)
 
         # Mark scanned
         item['done'] = 'Scanned'
@@ -904,11 +981,12 @@ class SpeedScan(HexSearch):
             # Record delay between spawn time and scanning for statistics
             now_secs = date_secs(datetime.utcnow())
             item = self.queues[0][status['index_of_queue_item']]
-            seconds_within_band = int(
-                (datetime.utcnow() - self.refresh_date).total_seconds()) + self.refresh_ms
-            start_delay = seconds_within_band - \
-                item['start'] - \
-                (self.args.spawn_delay if item['kind'] == 'spawn' else 0)
+            seconds_within_band = (
+                int((datetime.utcnow() - self.refresh_date).total_seconds()) +
+                self.refresh_ms)
+            start_delay = (
+                seconds_within_band - item['start'] -
+                (self.args.spawn_delay if item['kind'] == 'spawn' else 0))
             safety_buffer = item['end'] - seconds_within_band
 
             if safety_buffer < 0:
@@ -923,8 +1001,8 @@ class SpeedScan(HexSearch):
                 if self.args.bad_scan_retry > 0 and (
                         self.scans_missed_list.count(cellid(item['loc'])) >
                         self.args.bad_scan_retry):
-                    log.info('Step %d failed scan for %d times! Giving up...', item[
-                             'step'], self.args.bad_scan_retry + 1)
+                    log.info('Step %d failed scan for %d times! Giving up...',
+                             item['step'], self.args.bad_scan_retry + 1)
                 else:
                     item['done'] = None
                     log.info('Putting back step %d in queue', item['step'])
@@ -940,7 +1018,8 @@ class SpeedScan(HexSearch):
                     # Did we find the spawn?
                     if sp_id in parsed['sp_id_list']:
                         self.spawns_found += 1
-                    elif start_delay > 0:  # not sure why this could be negative, but sometimes it is
+                    elif start_delay > 0:   # not sure why this could be
+                                            # negative, but sometimes it is
 
                         # if not, record ID and put back in queue
                         self.spawns_missed_delay[
@@ -952,8 +1031,10 @@ class SpeedScan(HexSearch):
                 # 'scanned'
                 for sp_id in parsed['sp_id_list']:
                     for item in self.queues[0]:
-                        if (sp_id == item.get('sp', None) and item.get('done', None) is None and
-                                now_secs > item['start'] and now_secs < item['end']):
+                        if (sp_id == item.get('sp', None) and
+                                item.get('done', None) is None and
+                                now_secs > item['start'] and
+                                now_secs < item['end']):
                             item['done'] = 'Scanned'
 
 

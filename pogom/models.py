@@ -401,8 +401,8 @@ class Pokemon(BaseModel):
         filtered = []
 
         for idx, sp in enumerate(s):
-            if geopy.distance.distance(center, (sp['lat'],
-                                                sp['lng'])).meters <= step_distance:
+            if geopy.distance.distance(
+                    center, (sp['lat'], sp['lng'])).meters <= step_distance:
                 filtered.append(s[idx])
 
         # At this point, 'time' is DISAPPEARANCE time, we're going to morph it
@@ -847,9 +847,9 @@ class ScannedLocation(BaseModel):
             for sp in spawn_points:
                 if in_radius((sp['latitude'], sp['longitude']),
                              scan['loc'], distance):
-                    scan_spawn_point[cell + sp[
-                        'id']] = {'spawnpoint': sp['id'],
-                                  'scannedlocation': cell}
+                    scan_spawn_point[cell + sp['id']] = {
+                        'spawnpoint': sp['id'],
+                        'scannedlocation': cell}
 
     # Return list of dicts for upcoming valid band times.
     @classmethod
@@ -1208,10 +1208,12 @@ class SpawnPoint(BaseModel):
 
     # Return a list of dicts with the next spawn times.
     @classmethod
-    def get_times(cls, cell, scan, now_date, scan_delay, cell_to_linked_spawn_points, sp_by_id):
+    def get_times(cls, cell, scan, now_date, scan_delay,
+                  cell_to_linked_spawn_points, sp_by_id):
         l = []
         now_secs = date_secs(now_date)
-        linked_spawn_points = cell_to_linked_spawn_points[cell] if cell in cell_to_linked_spawn_points else []
+        linked_spawn_points = (cell_to_linked_spawn_points[cell]
+                               if cell in cell_to_linked_spawn_points else [])
 
         for sp in linked_spawn_points:
 
@@ -1219,8 +1221,8 @@ class SpawnPoint(BaseModel):
                 continue
 
             endpoints = SpawnPoint.start_end(sp, scan_delay)
-            cls.add_if_not_scanned('spawn', l, sp, scan, endpoints[
-                                   0], endpoints[1], now_date, now_secs, sp_by_id)
+            cls.add_if_not_scanned('spawn', l, sp, scan, endpoints[0],
+                                   endpoints[1], now_date, now_secs, sp_by_id)
 
             # Check to see if still searching for valid TTH.
             if cls.tth_found(sp):
@@ -1684,10 +1686,9 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                     sp['latest_seen'] = d_t_secs
                     sp['earliest_unseen'] = d_t_secs
 
-            scan_spawn_points[scan_loc['cellid'] +
-                              sp['id']] = {'spawnpoint': sp['id'],
-                                           'scannedlocation': scan_loc[
-                                               'cellid']}
+            scan_spawn_points[scan_loc['cellid'] + sp['id']] = {
+                'spawnpoint': sp['id'],
+                'scannedlocation': scan_loc['cellid']}
             if not sp['last_scanned']:
                 log.info('New Spawn Point found.')
                 new_spawn_points.append(sp)
@@ -1735,8 +1736,9 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                 time.sleep(args.encounter_delay)
                 # Setup encounter request envelope.
                 req = api.create_request()
-                encounter_result = req.encounter(encounter_id=p[
-                    'encounter_id'], spawn_point_id=p['spawn_point_id'],
+                encounter_result = req.encounter(
+                    encounter_id=p['encounter_id'],
+                    spawn_point_id=p['spawn_point_id'],
                     player_latitude=step_location[0],
                     player_longitude=step_location[1])
                 encounter_result = req.check_challenge()

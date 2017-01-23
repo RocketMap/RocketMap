@@ -30,7 +30,9 @@ import geopy
 from geopy.distance import VincentyDistance
 from geopy.distance import vincenty
 
-logging.basicConfig(format='%(asctime)s [%(threadName)16s][%(module)14s][%(levelname)8s] %(message)s')
+logging.basicConfig(format=(
+    '%(asctime)s [%(threadName)16s][%(module)14s][%(levelname)8s] ' +
+    '%(message)s'))
 log = logging.getLogger()
 
 # Configish
@@ -78,7 +80,8 @@ def getForts(location):
 
 
 def makeWildPokemon(location):
-    # Cause the randomness to only shift every N minutes (thus new pokes every N minutes)
+    # Cause the randomness to only shift every N minutes (thus new pokes
+    # every N minutes)
     offset = int(time() % 3600) / 10
     seedid = str(location[0]) + str(location[1]) + str(offset)
     seed(seedid)
@@ -159,7 +162,8 @@ def api_login(lat, lng, r):
             'type': 1
         })
 
-    log.info('Login for location %f,%f generated %d gyms, %d pokestop', lat, lng, gymCount, pksCount)
+    log.info('Login for location %f,%f generated %d gyms, %d pokestop', lat,
+             lng, gymCount, pksCount)
     return jsonify(forts)
 
 
@@ -172,7 +176,8 @@ def api_scan(lat, lng):
         cells.append({
             'current_timestamp_ms': int(time() * 1000),
             'forts': getForts(location),
-            's2_cell_id': uuid4(),  # wrong, but also unused so it doesn't matter
+            's2_cell_id': uuid4(),  # wrong, but also unused so it
+                                    # doesn't matter
             'wild_pokemons': makeWildPokemon(location),
             'catchable_pokemons': [],  # unused
             'nearby_pokemons': []  # unused

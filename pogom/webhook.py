@@ -99,13 +99,15 @@ def wh_updater(args, queue, key_cache):
                                   whtype, ident)
             except KeyError as ex:
                 log.debug(
-                    'LFUCache thread unsafe exception: %s. Requeuing.', repr(ex))
+                    'LFUCache thread unsafe exception: %s. Requeuing.',
+                    repr(ex))
                 queue.put((whtype, message))
 
             # Webhook queue moving too slow.
             if queue.qsize() > 50:
-                log.warning(
-                    'Webhook queue is > 50 (@%d); try increasing --wh-threads.', queue.qsize())
+                log.warning('Webhook queue is > 50 (@%d); ' +
+                            'try increasing --wh-threads.',
+                            queue.qsize())
 
             queue.task_done()
         except Exception as e:

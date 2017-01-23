@@ -16,8 +16,11 @@ def transform_from_wgs_to_gcj(latitude, longitude):
         magic = math.sin(rad_lat)
         magic = 1 - ee * magic * magic
         math.sqrt_magic = math.sqrt(magic)
-        adjust_lat = (adjust_lat * 180.0) / ((a * (1 - ee)) / (magic * math.sqrt_magic) * pi)
-        adjust_lon = (adjust_lon * 180.0) / (a / math.sqrt_magic * math.cos(rad_lat) * pi)
+        adjust_lat = (adjust_lat *
+                      180.0) / ((a * (1 - ee)) / (magic *
+                                                  math.sqrt_magic) * pi)
+        adjust_lon = (adjust_lon *
+                      180.0) / (a / math.sqrt_magic * math.cos(rad_lat) * pi)
         adjust_lat += latitude
         adjust_lon += longitude
     #  Print 'transfromed from ', wgs_loc, ' to ', adjust_loc.
@@ -25,24 +28,33 @@ def transform_from_wgs_to_gcj(latitude, longitude):
 
 
 def is_location_out_of_china(latitude, longitude):
-    if longitude < 72.004 or longitude > 137.8347 or latitude < 0.8293 or latitude > 55.8271:
+    if (longitude < 72.004 or longitude > 137.8347 or
+            latitude < 0.8293 or latitude > 55.8271):
         return True
     return False
 
 
 def transform_lat(x, y):
-    lat = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * math.sqrt(abs(x))
-    lat += (20.0 * math.sin(6.0 * x * pi) + 20.0 * math.sin(2.0 * x * pi)) * 2.0 / 3.0
-    lat += (20.0 * math.sin(y * pi) + 40.0 * math.sin(y / 3.0 * pi)) * 2.0 / 3.0
-    lat += (160.0 * math.sin(y / 12.0 * pi) + 320 * math.sin(y * pi / 30.0)) * 2.0 / 3.0
+    lat = (-100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y +
+           0.1 * x * y + 0.2 * math.sqrt(abs(x)))
+    lat += (20.0 * math.sin(6.0 * x * pi) + 20.0 *
+            math.sin(2.0 * x * pi)) * 2.0 / 3.0
+    lat += (20.0 * math.sin(y * pi) + 40.0 *
+            math.sin(y / 3.0 * pi)) * 2.0 / 3.0
+    lat += (160.0 * math.sin(y / 12.0 * pi) + 320 *
+            math.sin(y * pi / 30.0)) * 2.0 / 3.0
     return lat
 
 
 def transform_long(x, y):
-    lon = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * math.sqrt(abs(x))
-    lon += (20.0 * math.sin(6.0 * x * pi) + 20.0 * math.sin(2.0 * x * pi)) * 2.0 / 3.0
-    lon += (20.0 * math.sin(x * pi) + 40.0 * math.sin(x / 3.0 * pi)) * 2.0 / 3.0
-    lon += (150.0 * math.sin(x / 12.0 * pi) + 300.0 * math.sin(x / 30.0 * pi)) * 2.0 / 3.0
+    lon = (300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y +
+           0.1 * math.sqrt(abs(x)))
+    lon += (20.0 * math.sin(6.0 * x * pi) + 20.0 *
+            math.sin(2.0 * x * pi)) * 2.0 / 3.0
+    lon += (20.0 * math.sin(x * pi) + 40.0 *
+            math.sin(x / 3.0 * pi)) * 2.0 / 3.0
+    lon += (150.0 * math.sin(x / 12.0 * pi) + 300.0 *
+            math.sin(x / 30.0 * pi)) * 2.0 / 3.0
     return lon
 
 
@@ -52,5 +64,6 @@ def get_new_coords(init_loc, distance, bearing):
     this will calculate the resulting lat/lng coordinates.
     """
     origin = geopy.Point(init_loc[0], init_loc[1])
-    destination = geopy.distance.distance(kilometers=distance).destination(origin, bearing)
+    destination = geopy.distance.distance(kilometers=distance).destination(
+        origin, bearing)
     return (destination.latitude, destination.longitude)

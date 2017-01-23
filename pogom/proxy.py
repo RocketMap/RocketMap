@@ -26,7 +26,8 @@ check_result_empty = 6
 check_result_max = 6  # Should be equal to maximal return code.
 
 
-# Simple function to do a call to Niantic's system for testing proxy connectivity.
+# Simple function to do a call to Niantic's system for
+# testing proxy connectivity.
 def check_proxy(proxy_queue, timeout, proxies, show_warnings, check_results):
 
     # Url for proxy testing.
@@ -40,7 +41,10 @@ def check_proxy(proxy_queue, timeout, proxies, show_warnings, check_results):
         log.debug('Checking proxy: %s', proxy[1])
 
         try:
-            proxy_response = requests.post(proxy_test_url, '', proxies={'http': proxy[1], 'https': proxy[1]}, timeout=timeout)
+            proxy_response = requests.post(proxy_test_url, '',
+                                           proxies={'http': proxy[1],
+                                                    'https': proxy[1]},
+                                           timeout=timeout)
 
             if proxy_response.status_code == 200:
                 log.debug('Proxy %s is ok.', proxy[1])
@@ -50,15 +54,19 @@ def check_proxy(proxy_queue, timeout, proxies, show_warnings, check_results):
                 return True
 
             elif proxy_response.status_code == 403:
-                proxy_error = "Proxy " + proxy[1] + " is banned - got status code: " + str(proxy_response.status_code)
+                proxy_error = ("Proxy " + proxy[1] +
+                               " is banned - got status code: " +
+                               str(proxy_response.status_code))
                 check_result = check_result_banned
 
             else:
-                proxy_error = "Wrong status code - " + str(proxy_response.status_code)
+                proxy_error = ("Wrong status code - " +
+                               str(proxy_response.status_code))
                 check_result = check_result_wrong
 
         except requests.ConnectTimeout:
-            proxy_error = "Connection timeout (" + str(timeout) + " second(s) ) via proxy " + proxy[1]
+            proxy_error = ("Connection timeout (" + str(timeout) +
+                           " second(s) ) via proxy " + proxy[1])
             check_result = check_result_timeout
 
         except requests.ConnectionError:
@@ -105,7 +113,8 @@ def check_proxies(args):
         log.info('Loaded %d proxies.', len(source_proxies))
 
         if len(source_proxies) == 0:
-            log.error('Proxy file was configured but no proxies were loaded. Aborting.')
+            log.error('Proxy file was configured but ' +
+                      'no proxies were loaded. Aborting.')
             sys.exit(1)
     else:
         source_proxies = args.proxy
@@ -132,22 +141,31 @@ def check_proxies(args):
 
         t = Thread(target=check_proxy,
                    name='check_proxy',
-                   args=(proxy_queue, args.proxy_timeout, proxies, total_proxies <= 10, check_results))
+                   args=(proxy_queue, args.proxy_timeout, proxies,
+                         total_proxies <= 10, check_results))
         t.daemon = True
         t.start()
 
-    # This is painful but we need to wait here until proxy_queue is completed so we have a working list of proxies.
+    # This is painful but we need to wait here until proxy_queue is
+    # completed so we have a working list of proxies.
     proxy_queue.join()
 
     working_proxies = len(proxies)
 
     if working_proxies == 0:
-        log.error('Proxy was configured but no working proxies were found. Aborting.')
+        log.error('Proxy was configured but no working ' +
+                  'proxies were found. Aborting.')
         sys.exit(1)
     else:
-        log.info('Proxy check completed. Working: %d, banned: %d, timeout: %d, other fails: %d of total %d configured.',
-                 working_proxies, check_results[check_result_banned], check_results[check_result_timeout],
-                 check_results[check_result_failed] + check_results[check_result_wrong] + check_results[check_result_exception] + check_results[check_result_empty],
+        other_fails = (check_results[check_result_failed] +
+                       check_results[check_result_wrong] +
+                       check_results[check_result_exception] +
+                       check_results[check_result_empty])
+        log.info('Proxy check completed. Working: %d, banned: %d, ' +
+                 'timeout: %d, other fails: %d of total %d configured.',
+                 working_proxies, check_results[check_result_banned],
+                 check_results[check_result_timeout],
+                 other_fails,
                  total_proxies)
         return proxies
 
@@ -163,7 +181,8 @@ def proxies_refresher(args):
             proxies = check_proxies(args)
 
             if len(proxies) == 0:
-                log.warning('No live proxies found. Using previous ones until next round...')
+                log.warning('No live proxies found. Using previous ones ' +
+                            'until next round...')
                 continue
 
             args.proxy = proxies
@@ -178,7 +197,8 @@ def get_new_proxy(args):
     global last_proxy
 
     # If none/round - simply get next proxy.
-    if (args.proxy_rotation is None) or (args.proxy_rotation == 'none') or (args.proxy_rotation == 'round'):
+    if ((args.proxy_rotation is None) or (args.proxy_rotation == 'none') or
+            (args.proxy_rotation == 'round')):
         if last_proxy >= len(args.proxy) - 1:
             last_proxy = 0
         else:
@@ -188,7 +208,8 @@ def get_new_proxy(args):
     elif (args.proxy_rotation == 'random'):
         lp = randint(0, len(args.proxy) - 1)
     else:
-        log.warning('Parameter -pxo/--proxy-rotation has wrong value. Use only first proxy.')
+        log.warning('Parameter -pxo/--proxy-rotation has wrong value. ' +
+                    'Use only first proxy.')
         lp = 0
 
     return lp, args.proxy[lp]
