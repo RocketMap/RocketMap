@@ -114,11 +114,11 @@ class BaseScheduler(object):
         step, step_location, appears, leaves = self.queues[0].get()
         remain = appears - now() + 10
         messages = {
-            'wait': 'Waiting for item from queue',
+            'wait': 'Waiting for item from queue.',
             'early': 'Early for {:6f},{:6f}; waiting {}s...'.format(step_location[0], step_location[1], remain),
-            'late': 'Too late for location {:6f},{:6f}; skipping'.format(step_location[0], step_location[1]),
-            'search': 'Searching at {:6f},{:6f}'.format(step_location[0], step_location[1]),
-            'invalid': 'Invalid response at {:6f},{:6f}, abandoning location'.format(step_location[0], step_location[1])
+            'late': 'Too late for location {:6f},{:6f}; skipping.'.format(step_location[0], step_location[1]),
+            'search': 'Searching at {:6f},{:6f}.'.format(step_location[0], step_location[1]),
+            'invalid': 'Invalid response at {:6f},{:6f}, abandoning location.'.format(step_location[0], step_location[1])
         }
         return step, step_location, appears, leaves, messages
 
@@ -851,11 +851,11 @@ class SpeedScan(HexSearch):
         step = best.get('step', 0)
         i = best.get('i', 0)
         messages = {
-            'wait': 'Nothing to scan',
+            'wait': 'Nothing to scan.',
             'early': 'Early for step {}; waiting a few seconds...'.format(step),
-            'late': 'API response on step {} delayed by {} seconds. Possible causes: slow proxies, internet, or Niantic servers'.format(step, int((now_date - last_action).total_seconds())),
-            'search': 'Searching at step {}'.format(step),
-            'invalid': 'Invalid response at step {}, abandoning location'.format(step)
+            'late': 'API response on step {} delayed by {} seconds. Possible causes: slow proxies, internet, or Niantic servers.'.format(step, int((now_date - last_action).total_seconds())),
+            'search': 'Searching at step {}.'.format(step),
+            'invalid': 'Invalid response at step {}, abandoning location.'.format(step)
         }
 
         try:
@@ -867,12 +867,12 @@ class SpeedScan(HexSearch):
         if best['score'] == 0:
             if cant_reach:
                 messages[
-                    'wait'] = 'Not able to reach any scan under the speed limit'
+                    'wait'] = 'Not able to reach any scan under the speed limit.'
             return -1, 0, 0, 0, messages
 
         if equi_rect_distance(loc, worker_loc) > (now_date - last_action).total_seconds() * self.args.kph / 3600:
 
-            messages['wait'] = 'Moving {}m to step {} for a {}'.format(
+            messages['wait'] = 'Moving {}m to step {} for a {}.'.format(
                 int(equi_rect_distance(loc, worker_loc) * 1000), step, best['kind'])
             return -1, 0, 0, 0, messages
 
@@ -895,7 +895,7 @@ class SpeedScan(HexSearch):
         item['done'] = 'Scanned'
         status['index_of_queue_item'] = i
 
-        messages['search'] = 'Scanning step {} for a {}'.format(
+        messages['search'] = 'Scanning step {} for a {}.'.format(
             best['step'], best['kind'])
         return best['step'], best['loc'], 0, 0, messages
 

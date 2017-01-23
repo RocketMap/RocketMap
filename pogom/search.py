@@ -320,7 +320,8 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb, db_updat
         'success_total': 0,
         'fail_total': 0,
         'empty_total': 0,
-        'scheduler': args.scheduler
+        'scheduler': args.scheduler,
+        'scheduler_status': {'tth_found': 0}
     }
 
     if(args.print_status):
@@ -464,8 +465,32 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb, db_updat
                 log.info(get_stats_message(threadStatus))
                 stats_timer = 0
 
+        # Send webhook updates when scheduler status changes.
+        if args.webhook_scheduler_updates:
+            wh_status_update(args, threadStatus['Overseer'], wh_queue,
+                             scheduler_array[0])
+
         # Now we just give a little pause here.
         time.sleep(1)
+
+
+def wh_status_update(args, status, wh_queue, scheduler):
+    scheduler_name = status['scheduler']
+    if args.speed_scan:
+        tth_found = getattr(scheduler, 'tth_found', -1)
+        spawns_found = getattr(scheduler, 'spawns_found', 0)
+        if tth_found > -1:
+            # Avoid division by zero. Keep 0.0 default for consistency.
+            active_sp = max(getattr(scheduler, 'active_sp', 0.0), 1.0)
+            tth_found = tth_found * 100.0 / float(active_sp)
+
+        if (tth_found - status['scheduler_status']['tth_found']) > 0.01:
+            log.debug("Scheduler update is due, sending webhook message.")
+            wh_queue.put(('scheduler', {'name': scheduler_name,
+                                        'instance': args.status_name,
+                                        'tth_found': tth_found,
+                                        'spawns_found': spawns_found}))
+            status['scheduler_status']['tth_found'] = tth_found
 
 
 def get_stats_message(threadStatus):
@@ -863,7 +888,7 @@ def search_worker_thread(args, account_queue, account_failures, search_items_que
                             break
 
                     parsed = parse_map(
-                        args, response_dict, step_location, dbq, whq, api, scan_date, scheduler)
+                        args, response_dict, step_location, dbq, whq, api, scan_date)
                     scheduler.task_done(status, parsed)
                     if parsed['count'] > 0:
                         status['success'] += 1
@@ -948,7 +973,7 @@ def search_worker_thread(args, account_queue, account_failures, search_items_que
 
                         if gym_responses:
                             parse_gyms(args, gym_responses,
-                                       whq, dbq, scheduler)
+                                       whq, dbq)
 
                 # Delay the desired amount after "scan" completion.
                 delay = scheduler.delay(status['last_scan_date'])
