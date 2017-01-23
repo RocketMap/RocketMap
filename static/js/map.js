@@ -9,6 +9,11 @@ var $textPerfectionNotify
 var $selectStyle
 var $selectIconResolution
 var $selectIconSize
+var $selectOpenGymsOnly
+var $selectTeamGymsOnly
+var $selectLastUpdateGymsOnly
+var $selectMinGymLevel
+var $selectMaxGymLevel
 var $selectLuredPokestopsOnly
 var $selectSearchIconMarker
 var $selectGymMarkerStyle
@@ -313,6 +318,12 @@ function initSidebar() {
     $('#gyms-switch').prop('checked', Store.get('showGyms'))
     $('#gym-sidebar-switch').prop('checked', Store.get('useGymSidebar'))
     $('#gym-sidebar-wrapper').toggle(Store.get('showGyms'))
+    $('#gyms-filter-wrapper').toggle(Store.get('showGyms'))
+    $('#team-gyms-only-switch').val(Store.get('showTeamGymsOnly'))
+    $('#open-gyms-only-switch').val(Store.get('showOpenGymsOnly'))
+    $('#min-level-gyms-filter-switch').val(Store.get('minGymLevel'))
+    $('#max-level-gyms-filter-switch').val(Store.get('maxGymLevel'))
+    $('#last-update-gyms-switch').val(Store.get('showLastUpdatedGymsOnly'))
     $('#pokemon-switch').prop('checked', Store.get('showPokemon'))
     $('#pokestops-switch').prop('checked', Store.get('showPokestops'))
     $('#lured-pokestops-only-switch').val(Store.get('showLuredPokestopsOnly'))
@@ -1142,6 +1153,71 @@ function processGyms(i, item) {
         return false // in case the checkbox was unchecked in the meantime.
     }
 
+    var gymLevel = getGymLevel(item.gym_points)
+    var removeGymFromMap = function (gymid) {
+        if (mapData.gyms[gymid] && mapData.gyms[gymid].marker) {
+            if (mapData.gyms[gymid].marker.rangeCircle) {
+                mapData.gyms[gymid].marker.rangeCircle.setMap(null)
+            }
+            mapData.gyms[gymid].marker.setMap(null)
+            delete mapData.gyms[gymid]
+        }
+    }
+
+    var gymHasOpenSpot = function (gymLevel, pokemonInGym) {
+        return gymLevel > item.pokemon.length && item.pokemon.length !== 0
+    }
+
+    if (Store.get('showOpenGymsOnly') === 1) {
+        if (!gymHasOpenSpot(gymLevel, item.pokemon.length)) {
+            removeGymFromMap(item['gym_id'])
+            return true
+        }
+    }
+
+    if (Store.get('showOpenGymsOnly') > 1) {
+        var closePrestige = 0
+        switch (Store.get('showOpenGymsOnly')) {
+            case 2:
+                closePrestige = 1000
+                break
+            case 3:
+                closePrestige = 2500
+                break
+            case 4:
+                closePrestige = 5000
+                break
+        }
+
+        if (!gymHasOpenSpot(gymLevel, item.pokemon.length) && (gymPrestige[gymLevel - 1] > closePrestige + item.gym_points || gymLevel === 10)) {
+            removeGymFromMap(item['gym_id'])
+            return true
+        }
+    }
+
+    if (Store.get('showTeamGymsOnly') && Store.get('showTeamGymsOnly') !== item.team_id) {
+        removeGymFromMap(item['gym_id'])
+        return true
+    }
+
+    if (Store.get('showLastUpdatedGymsOnly')) {
+        var now = new Date()
+        if ((Store.get('showLastUpdatedGymsOnly') * 3600 * 1000) + item.last_scanned < now.getTime()) {
+            removeGymFromMap(item['gym_id'])
+            return true
+        }
+    }
+
+    if (gymLevel < Store.get('minGymLevel')) {
+        removeGymFromMap(item['gym_id'])
+        return true
+    }
+
+    if (gymLevel > Store.get('maxGymLevel')) {
+        removeGymFromMap(item['gym_id'])
+        return true
+    }
+
     if (item['gym_id'] in mapData.gyms) {
         item.marker = updateGymMarker(item, mapData.gyms[item['gym_id']].marker)
     } else { // add marker to map and item to dict
@@ -1770,6 +1846,71 @@ $(function () {
         redrawPokemon(mapData.lurePokemons)
     })
 
+    $selectOpenGymsOnly = $('#open-gyms-only-switch')
+
+    $selectOpenGymsOnly.select2({
+        placeholder: 'Only Show Open Gyms',
+        minimumResultsForSearch: Infinity
+    })
+
+    $selectOpenGymsOnly.on('change', function () {
+        Store.set('showOpenGymsOnly', this.value)
+        lastgyms = false
+        updateMap()
+    })
+
+    $selectTeamGymsOnly = $('#team-gyms-only-switch')
+
+    $selectTeamGymsOnly.select2({
+        placeholder: 'Only Show Gyms For Team',
+        minimumResultsForSearch: Infinity
+    })
+
+    $selectTeamGymsOnly.on('change', function () {
+        Store.set('showTeamGymsOnly', this.value)
+        lastgyms = false
+        updateMap()
+    })
+
+    $selectLastUpdateGymsOnly = $('#last-update-gyms-switch')
+
+    $selectLastUpdateGymsOnly.select2({
+        placeholder: 'Only Show Gyms Last Updated',
+        minimumResultsForSearch: Infinity
+    })
+
+    $selectLastUpdateGymsOnly.on('change', function () {
+        Store.set('showLastUpdatedGymsOnly', this.value)
+        lastgyms = false
+        updateMap()
+    })
+
+    $selectMinGymLevel = $('#min-level-gyms-filter-switch')
+
+    $selectMinGymLevel.select2({
+        placeholder: 'Minimum Gym Level',
+        minimumResultsForSearch: Infinity
+    })
+
+    $selectMinGymLevel.on('change', function () {
+        Store.set('minGymLevel', this.value)
+        lastgyms = false
+        updateMap()
+    })
+
+    $selectMaxGymLevel = $('#max-level-gyms-filter-switch')
+
+    $selectMaxGymLevel.select2({
+        placeholder: 'Maximum Gym Level',
+        minimumResultsForSearch: Infinity
+    })
+
+    $selectMaxGymLevel.on('change', function () {
+        Store.set('maxGymLevel', this.value)
+        lastgyms = false
+        updateMap()
+    })
+
     $selectLuredPokestopsOnly = $('#lured-pokestops-only-switch')
 
     $selectLuredPokestopsOnly.select2({
@@ -2024,6 +2165,14 @@ $(function () {
         } else {
             lastgyms = false
             wrapper.hide(options)
+        }
+        var wrapper2 = $('#gyms-filter-wrapper')
+        if (this.checked) {
+            lastgyms = false
+            wrapper2.show(options)
+        } else {
+            lastgyms = false
+            wrapper2.hide(options)
         }
         buildSwitchChangeListener(mapData, ['gyms'], 'showGyms').bind(this)()
     })
