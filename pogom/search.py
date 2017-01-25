@@ -483,7 +483,8 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
                     scheduler_array[i].schedule()
                 except Exception as e:
                     log.error(
-                        'Schedule creation had an Exception: {}.'.format(e))
+                        'Schedule creation had an Exception: {}.'.format(
+                            repr(e)))
                     traceback.print_exc(file=sys.stdout)
                     time.sleep(10)
             else:
@@ -983,8 +984,8 @@ def search_worker_thread(args, account_queue, account_failures,
                     consecutive_fails = 0
                     status['message'] = ('Search at {:6f},{:6f} completed ' +
                                          'with {} finds.').format(
-                                            step_location[0], step_location[1],
-                                            parsed['count'])
+                        step_location[0], step_location[1],
+                        parsed['count'])
                     log.debug(status['message'])
                 except Exception as e:
                     parsed = False
@@ -998,7 +999,7 @@ def search_worker_thread(args, account_queue, account_failures,
                                                            step_location[1],
                                                            account['username'])
                     log.exception('{}. Exception message: {}'.format(
-                        status['message'], e))
+                        status['message'], repr(e)))
 
                 # Get detailed information about gyms.
                 if args.gym_info and parsed:
@@ -1095,7 +1096,7 @@ def search_worker_thread(args, account_queue, account_failures,
         except Exception as e:
             log.error(
                 'Exception in search_worker under account {} Exception ' +
-                'message: {}.'.format(account['username'], e))
+                'message: {}.'.format(account['username'], repr(e)))
             status['message'] = (
                 'Exception in search_worker using account {}. Restarting ' +
                 'with fresh account. See logs for details.').format(
@@ -1179,7 +1180,7 @@ def map_request(api, position, no_jitter=False):
         return response
 
     except Exception as e:
-        log.warning('Exception while downloading map: %s', e)
+        log.warning('Exception while downloading map: %s', repr(e))
         return False
 
 
@@ -1205,7 +1206,7 @@ def gym_request(api, position, gym):
         return x
 
     except Exception as e:
-        log.warning('Exception while downloading gym details: %s', e)
+        log.warning('Exception while downloading gym details: %s', repr(e))
         return False
 
 

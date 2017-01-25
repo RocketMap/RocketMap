@@ -360,12 +360,11 @@ class SpawnScan(BaseScheduler):
                 with open(self.args.spawnpoint_scanning) as file:
                     self.locations = json.load(file)
             except ValueError as e:
-                log.exception(e)
-                log.error('JSON error: %s; will fallback to database', e)
+                log.error('JSON error: %s; will fallback to database', repr(e))
             except IOError as e:
                 log.error(
                     'Error opening json file: %s; will fallback to database',
-                    e)
+                    repr(e))
 
         # No locations yet? Try the database!
         if not self.locations:
@@ -667,7 +666,8 @@ class SpeedScan(HexSearch):
 
         except Exception as e:
             log.error(
-                'Exception in band_status: Exception message: {}'.format(e))
+                'Exception in band_status: Exception message: {}'.format(
+                    repr(e)))
 
     # Update the queue, and provide a report on performance of last minutes
     def schedule(self):
@@ -847,7 +847,8 @@ class SpeedScan(HexSearch):
 
             except Exception as e:
                 log.error(
-                    'Performance statistics had an Exception: {}'.format(e))
+                    'Performance statistics had an Exception: {}'.format(
+                        repr(e)))
                 traceback.print_exc(file=sys.stdout)
 
     # Find the best item to scan next

@@ -83,9 +83,9 @@ def check_proxy(proxy_queue, timeout, proxies, show_warnings, check_results):
 
     # Decrease output amount if there are lot of proxies.
     if show_warnings:
-        log.warning('%s', proxy_error)
+        log.warning('%s', repr(proxy_error))
     else:
-        log.debug('%s', proxy_error)
+        log.debug('%s', repr(proxy_error))
     proxy_queue.task_done()
 
     check_results[check_result] += 1
@@ -188,7 +188,7 @@ def proxies_refresher(args):
             args.proxy = proxies
             log.info('Regular proxy refresh complete.')
         except Exception as e:
-            log.exception('Exception while refresh proxies: %s', e)
+            log.exception('Exception while refresh proxies: %s', repr(e))
 
 
 # Provide new proxy for a search thread.

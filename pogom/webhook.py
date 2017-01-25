@@ -50,7 +50,7 @@ def send_to_webhook(message_type, message):
         except requests.exceptions.ReadTimeout:
             log.exception('Response timeout on webhook endpoint %s.', w)
         except requests.exceptions.RequestException as e:
-            log.exception(e)
+            log.exception(repr(e))
 
 
 def wh_updater(args, queue, key_cache):
@@ -111,7 +111,7 @@ def wh_updater(args, queue, key_cache):
 
             queue.task_done()
         except Exception as e:
-            log.exception('Exception in wh_updater: %s.', e)
+            log.exception('Exception in wh_updater: %s.', repr(e))
 
 
 # Helpers

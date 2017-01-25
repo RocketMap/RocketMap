@@ -1108,7 +1108,7 @@ class WorkerStatus(BaseModel):
                 break
             except Exception as e:
                 log.error('Exception in get_worker under account {}.  '
-                          'Exception message: {}'.format(username, e))
+                          'Exception message: {}'.format(username, repr(e)))
                 traceback.print_exc(file=sys.stdout)
                 time.sleep(1)
 
@@ -2111,7 +2111,7 @@ def db_updater(args, q, db):
                     flaskDb.connect_db()
                     break
                 except Exception as e:
-                    log.warning('%s... Retrying...', e)
+                    log.warning('%s... Retrying...', repr(e))
                     time.sleep(5)
 
             # Loop the queue.
@@ -2130,7 +2130,7 @@ def db_updater(args, q, db):
                         q.qsize())
 
         except Exception as e:
-            log.exception('Exception in db_updater: %s', e)
+            log.exception('Exception in db_updater: %s', repr(e))
             time.sleep(5)
 
 
@@ -2167,7 +2167,7 @@ def clean_db_loop(args):
             log.info('Regular database cleaning complete.')
             time.sleep(60)
         except Exception as e:
-            log.exception('Exception in clean_db_loop: %s', e)
+            log.exception('Exception in clean_db_loop: %s', repr(e))
 
 
 def bulk_upsert(cls, data, db):
@@ -2206,10 +2206,10 @@ def bulk_upsert(cls, data, db):
                              'peewee.IntegerField object at']
             has_unrecoverable = filter(lambda x: x in str(e), unrecoverable)
             if has_unrecoverable:
-                log.warning('%s. Data is:', e)
+                log.warning('%s. Data is:', repr(e))
                 log.warning(data.items())
             else:
-                log.warning('%s... Retrying...', e)
+                log.warning('%s... Retrying...', repr(e))
                 time.sleep(1)
                 continue
 
