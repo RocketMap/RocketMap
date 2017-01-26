@@ -46,3 +46,5 @@ There is an [iOS port](https://github.com/istornz/iPokeGo) in the works. All iOS
 Please submit all pull requests to [develop](https://github.com/PokemonGoMap/PokemonGo-Map/tree/develop) branch.
 
 Building off [tejado's python pgoapi](https://github.com/tejado/pgoapi), [Mila432](https://github.com/Mila432/Pokemon_Go_API)'s API, [leegao's additions](https://github.com/leegao/pokemongo-api-demo/tree/simulation) and [Flask-GoogleMaps](https://github.com/rochacbruno/Flask-GoogleMaps). Current version relies primarily on the pgoapi and Google Maps JS API.
+
+Discord icon: "Rocket" by Flat Icons (flaticon.com)
