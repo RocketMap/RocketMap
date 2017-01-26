@@ -46,6 +46,7 @@
 #wh-timeout:            # Timeout (in seconds) for webhook requests (default: 2).
 #wh-backoff-factor:     # Factor (in seconds) by which the delay until next retry will increase (default: 0.25).
 #wh-lfu-size:           # Webhook LFU cache max size (default: 1000).
+#print-status:          # Enable ENTER to switch between log view and a status view.  Use 'status' to start in status view and 'logs' to start in log view
 
 # Webserver settings
 #host:                  # address to listen on (default 127.0.0.1)
