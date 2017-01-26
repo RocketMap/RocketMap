@@ -156,7 +156,8 @@ def main():
 
     # You need custom image files now.
     if not os.path.isfile(
-            os.path.join(os.path.dirname(__file__), 'static/icons-sprite.png')):
+            os.path.join(os.path.dirname(__file__),
+                         'static/icons-sprite.png')):
         log.critical('Missing sprite files.')
         sys.exit()
 
