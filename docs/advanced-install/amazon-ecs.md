@@ -2,7 +2,7 @@
 
 > **Warning** -- Most cloud providers have been IP blocked from accessing the API
 
-Amazon ECS is essentially managed docker allowed you to run multi-container environments easily with minimal configuration. In this guide we'll create an ECS Task that will run a single pokemongo-map container with a MariaDB container for persisting the data
+Amazon ECS is essentially managed docker allowed you to run multi-container environments easily with minimal configuration. In this guide we'll create an ECS Task that will run a single RocketMap container with a MariaDB container for persisting the data
 
 ## Requirements
 
@@ -97,7 +97,7 @@ In the AWS ECS console create a Task Definition with the JSON below. You will ne
             ],
             "workingDirectory": null,
             "readonlyRootFilesystem": null,
-            "image": "frostthefox/pokemongo-map",
+            "image": "frostthefox/rocketmap",
             "command": null,
             "user": null,
             "dockerLabels": null,
@@ -151,11 +151,11 @@ In the AWS ECS console create a Task Definition with the JSON below. You will ne
         }
     ],
     "volumes": [],
-    "family": "pokemongo-map"
+    "family": "rocketmap"
 }
 ```
 
 
-If you would like to add workers you can easily do so by adding another container with the additional variable `POGOM_NO_SERVER` set to `true`. You have to let one of the pokemongo-map containers start first to create the database, an easy way to control this is to create a link from the worker to the primary one as it will delay the start.
+If you would like to add workers you can easily do so by adding another container with the additional variable `POGOM_NO_SERVER` set to `true`. You have to let one of the RocketMap containers start first to create the database, an easy way to control this is to create a link from the worker to the primary one as it will delay the start.
 
 Once the Task is running you'll be able to access the app via the Instances IP on port 80.

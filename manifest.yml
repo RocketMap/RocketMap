@@ -1,10 +1,10 @@
 # Edit the env and host fields below. Insert your own values.
 # For host you should choose something unique
-# like: "username-pokemongo-map" (without the quotes)
+# like: "username-rocketmap" (without the quotes)
 # auth service can either be "google" or "PTC"
 ---
 applications:
-- name: pokemongo-map
+- name: rocketmap
   memory: 256M
   host: yourchosenservicename
   disk_quota: 200M

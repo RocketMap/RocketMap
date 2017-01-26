@@ -1,10 +1,10 @@
 # Expected Usage:
 #
 #   # Get the repo
-#   git clone git@github.com:PokemonGoMap/PokemonGo-Map.git
+#   git clone git@github.com:RocketMap/RocketMap.git
 #
 #   # Go into it
-#   cd PokemonGo-Map
+#   cd RocketMap
 #
 #   # Build the dev container
 #   docker build -f Dockerfile.dev -t pgodev .

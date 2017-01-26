@@ -1,7 +1,7 @@
-# Basic docker image for PokemonGo-Map
+# Basic docker image for RocketMap
 # Usage:
-#   docker build -t pokemongo-map .
-#   docker run -d -P pokemongo-map -a ptc -u YOURUSERNAME -p YOURPASSWORD -l "Seattle, WA" -st 10 --gmaps-key CHECKTHEWIKI
+#   docker build -t rocketmap .
+#   docker run -d -P rocketmap -a ptc -u YOURUSERNAME -p YOURPASSWORD -l "Seattle, WA" -st 10 --gmaps-key CHECKTHEWIKI
 
 FROM python:2.7
 
@@ -35,7 +35,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends build-essential
  && npm run build \
  && rm -rf node_modules \
  && apt-get purge -y --auto-remove build-essential nodejs \
- && rm -rf /var/lib/apt/lists/* 
+ && rm -rf /var/lib/apt/lists/*
 
 # Copy everything to the working directory (Python files, templates, config) in one go.
 COPY . /usr/src/app/

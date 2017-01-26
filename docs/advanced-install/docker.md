@@ -1,8 +1,8 @@
 # Docker
 
-Docker is a great way to run "containerized" applications easily and without installing tons of stuff into your computer. 
+Docker is a great way to run "containerized" applications easily and without installing tons of stuff into your computer.
 
-If you are not familiar or don't feel confortable with Python, pip or any of the other the other stuff involved in launching a PokemonGo-Map server, Docker is probably the easiest approach for you.
+If you are not familiar or don't feel confortable with Python, pip or any of the other the other stuff involved in launching a RocketMap server, Docker is probably the easiest approach for you.
 
 ## Prerequisites
 
@@ -11,25 +11,25 @@ If you are not familiar or don't feel confortable with Python, pip or any of the
 
 ## Introduction
 
-The quickest way to get PokemonGo-Map up and running with docker is quite simple. However, given the disposable nature of docker containers, and the fact that the default database for PokemonGo-Map is SQLite, your data won't be persistent. In case the container is stopped or crashes, all the collected data will be lost.
+The quickest way to get RocketMap up and running with docker is quite simple. However, given the disposable nature of docker containers, and the fact that the default database for RocketMap is SQLite, your data won't be persistent. In case the container is stopped or crashes, all the collected data will be lost.
 
-If that doesn't bother you, and you just want to give PokemonGo-Map a go, keep on reading. If you prefer a persistent setup, skip to "Advanced Docker Setup"
+If that doesn't bother you, and you just want to give RocketMap a go, keep on reading. If you prefer a persistent setup, skip to "Advanced Docker Setup"
 
 ## Simple Docker Setup
 
-### Starting the server 
+### Starting the server
 
 In order to start the map, you've got to run your docker container with a few arguments, such as authentication type, account, password, desired location and steps. If you don't know which arguments are necessary, you can use the following command to get help:
 
 ```
-docker run --rm frostthefox/pokemongo-map -h
+docker run --rm frostthefox/rocketmap -h
 ```
 
 To be able to access the map in your machine via browser, you've got to bind a port on your host machine to the one wich will be exposed by the container (default is 5000). The following docker run command is an example of to launch a container with a very basic setup of the map, following the instructions above:
 
 ```
 docker run -d --name pogomap -p 5000:5000 \
-  frostthefox/pokemongo-map \
+  frostthefox/rocketmap \
     -a ptc -u username -p password \
     -k 'your-google-maps-key' \
     -l 'lat, lon' \
@@ -40,7 +40,7 @@ If you would like to see what are the server's outputs (console logs), you can r
 
 ```
 docker logs -f pogomap
-``` 
+```
 
 Press `ctrl-c` when you're done.
 
@@ -91,17 +91,17 @@ Open that URL in your browser and you're ready to rock!
 
 ## Updating Versions
 
-In order to update your PokemonGo-Map docker image, you should stop/remove all the containers running with the current (outdated) version (refer to "Stopping the server"), pull the latest docker image version, and restart everything. To pull the latest image, use the following command:
+In order to update your RocketMap docker image, you should stop/remove all the containers running with the current (outdated) version (refer to "Stopping the server"), pull the latest docker image version, and restart everything. To pull the latest image, use the following command:
 
 ```
-docker pull frostthefox/pokemongo-map
+docker pull frostthefox/rocketmap
 ```
 
 If you are running a ngrok container, you've got to stop it as well. To start the server after updating your image, simply use the same commands that were used before, and the containers will be launched with the latest version.
 
-## Running on docker cloud 
+## Running on docker cloud
 
-If you want to run pokemongo-map on a service that doesn't support arguments like docker cloud or ECS, you'll need to pass settings via variables below is an example:
+If you want to run RocketMap on a service that doesn't support arguments like docker cloud or ECS, you'll need to pass settings via variables below is an example:
 
 ```bash
   docker run -d -P \
@@ -110,7 +110,7 @@ If you want to run pokemongo-map on a service that doesn't support arguments lik
     -e "POGOM_PASSWORD=Password" \
     -e "POGOM_LOCATION=Seattle, WA" \
     -e "POGOM_GMAPS_KEY=SUPERSECRET" \
-    frostthefox/pokemongo-map
+    frostthefox/rocketmap
 ```
 
 ## Advanced Docker Setup
@@ -121,7 +121,7 @@ In this session, we are going to approach a docker setup that allows data persis
 
 The first step is very simple, we are going to use the following command to create a docker network called `pogonw`:
 
-``` 
+```
 docker network create pogonw
 ```
 
@@ -139,7 +139,7 @@ After the directory is created, we can lauch the MySQL container. Use the follow
 docker run --name db --net=pogonw -v /path/to/mysql/:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=yourpassword  -d mysql:5.6.32
 ```
 
-The launched MySQL server will have a single user called `root` and its password will be `yourpassword`. However, there is no database/schema that we can use as the server will be empty on the first run, so we've gotta create one for PokemonGo-Map. This will be done by executing a MySQL command in the server. In order to connect to the server, execute this command:
+The launched MySQL server will have a single user called `root` and its password will be `yourpassword`. However, there is no database/schema that we can use as the server will be empty on the first run, so we've gotta create one for RocketMap. This will be done by executing a MySQL command in the server. In order to connect to the server, execute this command:
 
 ```
 docker exec -i db mysql -pyourpassword -e 'CREATE DATABASE pogodb'
@@ -155,13 +155,13 @@ docker exec -i db mysql -pyourpassword -e 'SHOW DATABASES'
 
 If the `db` container is not running, simply execute the same command that was used before to launch the container and the MySQL server will be up and running with all the previously stored data. You won't have to execute any MySQL command to create the database.
 
-### Launching the PokemonGo-map server
+### Launching the RocketMap server
 
-Now that we have a persistent database up and running, we need to launch our PokemonGo-map server. To do so, we are going to use a slightly modified version of the docker run command from the "Simple Docker Setup" session. This time we need to launch our server inside the created network and pass the necessary database infos to it. Here's an example:
+Now that we have a persistent database up and running, we need to launch our RocketMap server. To do so, we are going to use a slightly modified version of the docker run command from the "Simple Docker Setup" session. This time we need to launch our server inside the created network and pass the necessary database infos to it. Here's an example:
 
 ```
 docker run -d --name pogomap --net=pogonw -p 5000:5000 \
-  frostthefox/pokemongo-map \
+  frostthefox/rocketmap \
     -a ptc -u username -p password \
     -k 'your-google-maps-key' \
     -l 'lat, lon' \
@@ -171,10 +171,10 @@ docker run -d --name pogomap --net=pogonw -p 5000:5000 \
     --db-port 3306 \
     --db-name pogodb \
     --db-user root \
-    --db-pass yourpassword 
+    --db-pass yourpassword
 ```
 
-This will launch a container named `pogomap`. Just like before, in order to check the server's logs we can use: 
+This will launch a container named `pogomap`. Just like before, in order to check the server's logs we can use:
 
 ```
 docker logs -f pogomap
@@ -190,7 +190,7 @@ If you would like to launch a different worker sharing the same db, to scan a di
 
 ```
 docker run -d --name pogomap2 --net=pogonw \
-  frostthefox/pokemongo-map \
+  frostthefox/rocketmap \
     -a ptc -u username2 -p password2 \
     -k 'your-google-maps-key' \
     -l 'newlat, newlon' \
@@ -200,11 +200,11 @@ docker run -d --name pogomap2 --net=pogonw \
     --db-port 3306 \
     --db-name pogodb \
     --db-user root \
-    --db-pass yourpassword 
+    --db-pass yourpassword
     -ns
 ```
 
-The difference here being: we are launching with the `-ns` flag, which means that this container will only run the searcher and not the webserver (front-end), because we can use the webserver from the first container. That also means we can get rid of `-p 5000:5000`, as we dont need to bind that port anymore. 
+The difference here being: we are launching with the `-ns` flag, which means that this container will only run the searcher and not the webserver (front-end), because we can use the webserver from the first container. That also means we can get rid of `-p 5000:5000`, as we dont need to bind that port anymore.
 
 If for some reason you would like this container to launch the webserver as well, simply remove the `-ns` flag and add back the `-p`, with a different pairing as your local port 5000 will be already taken, such as `-p 5001:5000`.
 
@@ -246,7 +246,7 @@ If you have a docker image for a notification webhook that you want to be called
 
 ```
 docker run -d --name pogomap --net=pogonw -p 5000:5000 \
-  frostthefox/pokemongo-map \
+  frostthefox/rocketmap \
     -a ptc -u username -p password \
     -k 'your-google-maps-key' \
     -l 'lat, lon' \
@@ -257,7 +257,7 @@ docker run -d --name pogomap --net=pogonw -p 5000:5000 \
     --db-name pogodb \
     --db-user root \
     --db-pass yourpassword \
-    -wh 'http://hook:4000' \ 
+    -wh 'http://hook:4000' \
     --wh-threads 3 \
     --webhook-updates-only
 ```

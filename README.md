@@ -27,7 +27,7 @@ Live visualization of all the pokemon (with option to show gyms and pokestops) i
 
 ## Installation
 
-For instructions on how to setup and run the tool, please refer to the project [documentation](https://pgm.readthedocs.io/en/develop/) or the ~~[video guide](https://www.youtube.com/watch?v=2ACJHCNZ3ow)~~ Video guide to be replaced
+For instructions on how to setup and run the tool, please refer to the project [documentation](https://rocketmap.readthedocs.io) or the ~~[video guide](https://www.youtube.com/watch?v=2ACJHCNZ3ow)~~ Video guide to be replaced
 
 ## Deployment
 
