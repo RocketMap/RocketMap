@@ -54,9 +54,9 @@ source_suffix = ['.rst', '.md']
 master_doc = 'index'
 
 # General information about the project.
-project = u'PokemonGo-Map'
-copyright = u'2016, Pokemon Masters'
-author = u'Pokemon Masters'
+project = u'RocketMap'
+copyright = u'2017, RocketMap Team'
+author = u'RocketMap Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
