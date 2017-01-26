@@ -1094,9 +1094,9 @@ def search_worker_thread(args, account_queue, account_failures,
 
         # Catch any process exceptions, log them, and continue the thread.
         except Exception as e:
-            log.error(
+            log.error((
                 'Exception in search_worker under account {} Exception ' +
-                'message: {}.'.format(account['username'], repr(e)))
+                'message: {}.').format(account['username'], repr(e)))
             status['message'] = (
                 'Exception in search_worker using account {}. Restarting ' +
                 'with fresh account. See logs for details.').format(
