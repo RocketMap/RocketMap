@@ -11,7 +11,7 @@
 
 ## The good stuff
 
-cd into your root PokemonGO Map folder. Then:
+cd into your root RocketMap folder. Then:
 
     cd contrib/supervisord/
     ./install-reinstall.sh
@@ -46,7 +46,7 @@ In this file, change the variables needed to suit your situation. Below is a sni
 
 As you saw above you will need to create a coords.txt (or whatever you decide to name it. I personally use city.stepcount.coords as my naming convention). We are going to use location_generator.py:
     
-    cd (your Pokemon Go Map main folder here)
+    cd (your RocketMap main folder here)
     python Tools/Hex-Beehive-Generator/location_generator.py -lat "yourlat" -lon "yourlon" -st 5 -lp 4 -or "~/supervisor/coords.txt"
 
 Now run the gen-workers.sh script

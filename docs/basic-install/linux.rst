@@ -55,8 +55,8 @@ If your output looks as above, you can proceed with installation:
         
 	cd ~/
 	sudo apt-get install git
-	git clone https://github.com/PokemonGoMap/PokemonGo-Map.git
-	cd PokemonGo-Map
+	git clone https://github.com/RocketMap/RocketMap.git
+	cd RocketMap
 	sudo -H pip install -r requirements.txt
 	npm install
 	sudo npm install -g grunt-cli
@@ -90,7 +90,7 @@ If you're getting the following error:
 
 .. code-block:: bash
 
-	root:~/PokemonGo-Map# ./runserver.py
+	root:~/RocketMap# ./runserver.py
 	Traceback (most recent call last):
   		File "./runserver.py", line 10, in <module>
   		import requests

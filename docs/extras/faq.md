@@ -1,5 +1,8 @@
 # Common Questions and Answers
 
+## Critical Error "Missing sprite files"
+If you're unaware of what sprites are, the friendly users on our Discord are more than willing to explain. [RocketMap Discord](https://discord.gg/PWp2bAm).
+
 ## Can I sign in with Google?
 
 Yes you can! Pass the flag `-a google` (replacing `-a ptc`) to use Google authentication.

@@ -6,7 +6,7 @@
 
 ## Get Ready
 
-The beehive script works by specifying only the parameters that are different for each worker on the command line. All other parameters are taken from [the config file](https://github.com/PokemonGoMap/PokemonGo-Map/blob/develop/config/config.ini.example).
+The beehive script works by specifying only the parameters that are different for each worker on the command line. All other parameters are taken from [the config file](https://github.com/RocketMap/RocketMap/blob/develop/config/config.ini.example).
 
 To ensure that your beehive will run correctly, first make sure that you can run purely from the config file:
 
@@ -21,12 +21,12 @@ If this runs ok, you should be good to go!
 Open a Terminal or Command Window to the Tools / Hex Beehive Generator directory:
 
 ```
-cd PokemonGo-Map/Tools/Hex-Beehive-Generator/
+cd RocketMap/Tools/Hex-Beehive-Generator/
 ```
 
 Now generate coordinates with `location_generator.py`:
 
-***NOTE:*** Carefully read [these instructions](https://github.com/PokemonGoMap/PokemonGo-Map/blob/develop/Tools/Hex-Beehive-Generator/Instructions_for_location_generator.txt) for the proper arguments.
+***NOTE:*** Carefully read [these instructions](https://github.com/RocketMap/RocketMap/blob/develop/Tools/Hex-Beehive-Generator/Instructions_for_location_generator.txt) for the proper arguments.
 
 ```
 python location_generator.py -st stepsize -lp ringsize -lat yourstartinglathere -lon yourstartinglonghere

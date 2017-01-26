@@ -1,10 +1,10 @@
 # Apache2 Reverse Proxy
 
-If you do not want to expose pokemongo-map to the web directly or you want to place it under a prefix, follow this guide:
+If you do not want to expose RocketMap to the web directly or you want to place it under a prefix, follow this guide:
 
 Assuming the following:
 
- * You are running pokemongo-map on the default port 5000
+ * You are running RocketMap on the default port 5000
  * You've already made your machine available externally
 
 1. Install [Apache2](https://httpd.apache.org/docs/current/install.html) -- plenty of tutorials on the web for this.

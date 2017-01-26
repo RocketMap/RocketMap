@@ -25,7 +25,7 @@ To run a copy from the latest ``develop`` branch in ``git`` you can clone the re
 
 .. code-block:: bash
 
-  git clone https://github.com/PokemonGoMap/PokemonGo-Map.git
+  git clone https://github.com/RocketMap/RocketMap.git
 
 Installing Modules
 ******************
@@ -34,9 +34,9 @@ At this point you should have the following:
 
  * Python 2.7
  * pip
- * PokemonGo-Map application folder
+ * RocketMap application folder
 
-First, open up your shell (``cmd.exe``/``terminal.app``) and change to the directory of PokemonGo-Map.
+First, open up your shell (``cmd.exe``/``terminal.app``) and change to the directory of RocketMap.
 
 You can verify your installation like this:
 
@@ -54,7 +54,7 @@ The output should look something like:
   $ pip --version
   pip 8.1.2 from /usr/local/lib/python2.7/site-packages (python 2.7)
 
-Now you can install all the Python dependencies, make sure you're still in the directory of PokemonGo-Map:
+Now you can install all the Python dependencies, make sure you're still in the directory of RocketMap:
 
 Windows:
 
@@ -110,7 +110,7 @@ Once node/npm is installed, you can install the node dependencies and build the 
 Basic Launching
 ***************
 
-Once those have run, you should be able to start using the application, make sure you're in the directory of PokemonGo-Map then:
+Once those have run, you should be able to start using the application, make sure you're in the directory of RocketMap then:
 
 .. code-block:: bash
 
@@ -130,7 +130,7 @@ Open your browser to http://localhost:5000 and your pokemon will begin to show u
 Updating the Application
 ************************
 
-PokemonGo-Map is a very active project and updates often. You can follow the `latest changes <https://github.com/PokemonGoMap/PokemonGo-Map/commits/develop>`_ to see what's changing.
+RocketMap is a very active project and updates often. You can follow the `latest changes <https://github.com/RocketMap/RocketMap/commits/develop>`_ to see what's changing.
 
 If you are running a ``git`` version, you can update with a few quick commands:
 

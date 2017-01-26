@@ -1,6 +1,6 @@
 # Using Multiple Accounts
 
-PokemonGo-Map supports using multiple accounts to run a worker with multiple threads.
+RocketMap supports using multiple accounts to run a worker with multiple threads.
 
 
 ## Using Command Line Arguments:
@@ -10,7 +10,7 @@ To use multiple accounts when running from the command line, you must specify mu
 Example: `python runserver.py -a ptc -u thunderfox01 -u thunderfox02 -p thunderfox01 -p thunderfox02`
 
 
-If you have multiple accounts with the same password, you can specify one -p value. PokemonGo-Map will use the value for all specified accounts.
+If you have multiple accounts with the same password, you can specify one -p value. RocketMap will use the value for all specified accounts.
 
 Example: `python runserver.py -a ptc -u thunderfox01 -u thunderfox02 -p thunderfox`
 

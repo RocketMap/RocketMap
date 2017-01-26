@@ -4,11 +4,9 @@
 **Preliminary Linux (Debian) instructions below (VII)**
 **Preliminary Docker (modern Linux OS w/ Docker & git installed) instructions below (VIII)**
 
-** Updated for commit [775982e](https://github.com/AHAAAAAAA/PokemonGo-Map/commit/775982ea5683ae186124ae96e5561519679ddf1a) **
-
 ## I. Prerequisites
-1. Have already ran/operated the PokemonGo-Map using the default database setup.
-2. Have the "develop" build of PokemonGo-Map. [Available here.](https://github.com/PokemonGoMap/PokemonGo-Map/archive/develop.zip)
+1. Have already ran/operated the RocketMap using the default database setup.
+2. Have the "develop" build of RocketMap. [Available here.](https://github.com/RocketMap/RocketMap/archive/develop.zip)
 3. Downloaded [MariaDB](https://downloads.mariadb.org/)
 
 ## II. Installing MariaDB
@@ -32,40 +30,40 @@
 4. One this command prompt screen you'll want to enter:
 
    ```
-   CREATE DATABASE pokemongomapdb;
-   CREATE USER 'pogomapuser'@'localhost' IDENTIFIED BY 'password';
-   GRANT ALL PRIVILEGES ON pokemongomapdb . * TO 'pogomapuser'@'localhost';
+   CREATE DATABASE rocketmapdb;
+   CREATE USER 'rocketmapuser'@'localhost' IDENTIFIED BY 'password';
+   GRANT ALL PRIVILEGES ON rocketmapdb . * TO 'rocketmapuser'@'localhost';
    exit
    ```
-   You can change `pokemongomapdb` to whatever you want the name of the database to be.
+   You can change `rocketmapdb` to whatever you want the name of the database to be.
 5. If the database creation was successful it will tell you "Query OK, 1 row affected". If it doesn't echo that back at you then you either received an error message, or it just created a blank line. I've detailed how to fix common errors, and the blank line below.
    - **Blank line:**
      You simply missed the ";" in the CREATE DATABASE command. Essentially you didn't close of the line, so the program thinks you still have more information to input. Simply insert a ; onto the blank line and hit enter and it should echo "Query OK" at you.
    - **Error: "ERROR 1064 (42000): You have an error in your SQL syntax"**
-     Double check that you put in the CREATE DATABASE command exactly as it's typed above. If you had the blank line error, and then retyped the CREATE DATABASE line it will spit this at you because you actually typed `CREATE DATABASE pokemongomapdb CREATE DATABASE pokemongomapdb;`. Simply retry the `CREATE DATABASE pokemongomapdb;` and don't forget your `;`.
-   - **Error: "ERROR 1007 (HY000): Can't create database 'pokemongomapdb'; database exists"**
-     The pokemongomapdb database already exists.
-     If you're trying to start a fresh database you'll need to execute `DROP DATABASE pokemongomapdb`, and then run `CREATE DATABASE pokemongomapdb`. If you want to keep the pokemongomapdb but start a new one, change the name.
+     Double check that you put in the CREATE DATABASE command exactly as it's typed above. If you had the blank line error, and then retyped the CREATE DATABASE line it will spit this at you because you actually typed `CREATE DATABASE rocketmapdb CREATE DATABASE rocketmapdb;`. Simply retry the `CREATE DATABASE rocketmapdb;` and don't forget your `;`.
+   - **Error: "ERROR 1007 (HY000): Can't create database 'rocketmapdb'; database exists"**
+     The rocketmapdb database already exists.
+     If you're trying to start a fresh database you'll need to execute `DROP DATABASE rocketmapdb`, and then run `CREATE DATABASE rocketgomapdb`. If you want to keep the rocketmapdb but start a new one, change the name.
 6. Congratulations, your database is now setup and ready to be used.
 
 ## IV. Setting up the Config.ini file & Editing utils.py
 ### Config.ini
-1. Open file explorer to where you've extracted your develop branch of PokemonGo-Map
+1. Open file explorer to where you've extracted your develop branch of RocketMap
 2. Navigate to the "config" folder.
 3. Right-click and open config.ini in your text editor of choice. I used Notepad++.
-4. You're looking to fill in all the values in this file. If you've already ran and used the PokemonGo-Map like was required in step 1 of the prerequisites you should be familiar with most of this information, but I've broken it all down below. On every line that you change/add a value make sure you remove the `#` as that makes the program think it is a comment, which obviously ignores the values you input.
-    - **Authentication Settings:** You'll need to pick between using google, or pokemon trainer club login information. The PokemonGo-Map initial setup recommends ptc.
+4. You're looking to fill in all the values in this file. If you've already ran and used the RocketMap like was required in step 1 of the prerequisites you should be familiar with most of this information, but I've broken it all down below. On every line that you change/add a value make sure you remove the `#` as that makes the program think it is a comment, which obviously ignores the values you input.
+    - **Authentication Settings:** You'll need to pick between using google, or pokemon trainer club login information. The RocketMap initial setup recommends ptc.
         - Change "auth-service" to ptc or google, whichever you choose.
         - Change "username" to your respective username for the selected service.
         - Change "password" to your respective password for the username on the selected service.
     - **Database Settings:** This is the important section you will want to modify.
         - Change the "db-type" to "mysql"
         - Change "db-host" to "127.0.0.1"
-        - Change "db-name:" to "pokemongomapdb"
-        - Change "db-user:" to "pogomapuser"
+        - Change "db-name:" to "rocketmapdb"
+        - Change "db-user:" to "rocketmapuser"
         - Change "db-pass" to the password you chose in section III step 4, or leave it blank if you chose to roll with no password.
     - **Search Settings:** You only need to change this if you want to only run one location, or wish to disable gyms/pokemon/pokestops for all locations, or to have a universal thread count, scan delay, or step limit. I chose to not edit anything in the new config.ini.
-    - **Misc:** This only has one setting and that's the google maps api key. If you don't have one, or don't know what that is please see [this](GoogleMaps.md) wiki page for the PokemonGo-Map project.
+    - **Misc:** This only has one setting and that's the google maps api key. If you don't have one, or don't know what that is please see [this](GoogleMaps.md) wiki page for the RocketMap project.
         - Change "gmaps-key:" to contain your google maps API key.
     - **Webserver Settings:** This is how your server knows where to communicate.
         - Change "host" to the host address you should already have setup.
@@ -95,19 +93,7 @@ python runserver.py
 python runserver.py -st 10 -l "[LOCATION]"
 ```
 
-You should now be up and running. If you've encountered any errors it's most likely due to missing a parameter you commented out when you call runserver.py or you mis-typed something in your `config.ini`. However, if it's neither of those issues and something not covered in this guide hop into the PokemonGoDev discord server, and go to the help channel. People there are great, and gladly assist people with troubleshooting issues.
-
-## VI. Final Notes & Credits
-
-### Final Notes
-
-As just some quick closing notes, if you've encountered any problems or issues with this guide or find it needs to be updated please don't hesitate to let me know. I am normally always in the PokemonGoDev discord channels, or you can contact me by other means. I really hope this guide goes a long way in helping others, because I know I was confused when I tried to get the mysql servers setup and without the help I received I would have never got this setup, or this guide written.
-
-### Credits
-
-I'd just like to credit the PokemonGoDev channel on discord and the many people who have helped me in the past few days. I've learned a lot, and while I used to hobby program I just haven't been able to dig deep into this project. So without the help of the guys in Discord this guide wouldn't have been possible. So shout out to all of them, because well frankly tons of people helped me at various points along my way.
-
-I'd also like to specifically credit Znuff2471 on discord for their great assistance, definitely one of the main contributors to helping me set this all up.
+You should now be up and running. If you've encountered any errors it's most likely due to missing a parameter you commented out when you call runserver.py or you mis-typed something in your `config.ini`. However, if it's neither of those issues and something not covered in this guide hop into the RocketMap discord server, and go to the help channel. People there are great, and gladly assist people with troubleshooting issues.
 
 ## VII. Linux Instructions
 1. Visit https://downloads.mariadb.org/mariadb/repositories/ and download mariaDB
@@ -116,9 +102,9 @@ I'd also like to specifically credit Znuff2471 on discord for their great assist
    - Enter your password if you set one
 3. Create the DB
 
- - CREATE DATABASE pokemongomapdb;
- - CREATE USER 'pogomapuser'@'localhost' IDENTIFIED BY 'password';
- - GRANT ALL PRIVILEGES ON pokemongomapdb . * TO 'pogomapuser'@'localhost';
+ - CREATE DATABASE rocketmapdb;
+ - CREATE USER 'rocketmapuser'@'localhost' IDENTIFIED BY 'password';
+ - GRANT ALL PRIVILEGES ON rocketmapdb . * TO 'rocketmapuser'@'localhost';
 
 4. Quit the MySQL command line tool `quit`
 5. Edit the `config/config.ini` file
@@ -127,8 +113,8 @@ I'd also like to specifically credit Znuff2471 on discord for their great assist
    # Database settings
    db-type: mysql          # sqlite (default) or mysql
    db-host: 127.0.0.1      # required for mysql
-   db-name: pokemongomapdb # required for mysql
-   db-user: pogomapuser    # required for mysql
+   db-name: rocketmapdb # required for mysql
+   db-user: rocketmapuser    # required for mysql
    db-pass: YourPW         # required for mysql
    ```
 
@@ -138,7 +124,7 @@ Note: These are preliminary until better Docker support in the official containe
 Note: These commands require git to be installed
 
 ```
-docker build -t pokemap https://github.com/PokemonGoMap/PokemonGo-Map.git:develop
+docker build -t pokemap https://github.com/RocketMap/RocketMap.git:develop
 docker run --name pokesql -e MYSQL_ROOT_PASSWORD=some-string -e MYSQL_DATABASE pokemap -d mysql:5.6
 ```
 
