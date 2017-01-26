@@ -806,12 +806,12 @@ var StoreTypes = {
     Boolean: {
         parse: function (str) {
             switch (str.toLowerCase()) {
-            case '1':
-            case 'true':
-            case 'yes':
-                return true
-            default:
-                return false
+                case '1':
+                case 'true':
+                case 'yes':
+                    return true
+                default:
+                    return false
             }
         },
         stringify: function (b) {

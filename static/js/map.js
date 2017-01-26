@@ -7,7 +7,6 @@ var $selectPokemonNotify
 var $selectRarityNotify
 var $textPerfectionNotify
 var $selectStyle
-var $selectIconResolution
 var $selectIconSize
 var $selectOpenGymsOnly
 var $selectTeamGymsOnly
@@ -583,18 +582,18 @@ function addRangeCircle(marker, map, type, teamId) {
 
     // handle each type of marker and be explicit about the range circle attributes
     switch (type) {
-    case 'pokemon':
-        circleColor = '#C233F2'
-        range = 40 // pokemon appear at 40m and then you can move away. still have to be 40m close to see it though, so ignore the further disappear distance
-        break
-    case 'pokestop':
-        circleColor = '#3EB0FF'
-        range = 40
-        break
-    case 'gym':
-        circleColor = teamColor
-        range = 40
-        break
+        case 'pokemon':
+            circleColor = '#C233F2'
+            range = 40 // pokemon appear at 40m and then you can move away. still have to be 40m close to see it though, so ignore the further disappear distance
+            break
+        case 'pokestop':
+            circleColor = '#3EB0FF'
+            range = 40
+            break
+        case 'gym':
+            circleColor = teamColor
+            range = 40
+            break
     }
 
     if (map) targetmap = map
@@ -1189,15 +1188,15 @@ function processGyms(i, item) {
     if (Store.get('showOpenGymsOnly') > 1) {
         var closePrestige = 0
         switch (Store.get('showOpenGymsOnly')) {
-        case 2:
-            closePrestige = 1000
-            break
-        case 3:
-            closePrestige = 2500
-            break
-        case 4:
-            closePrestige = 5000
-            break
+            case 2:
+                closePrestige = 1000
+                break
+            case 3:
+                closePrestige = 2500
+                break
+            case 4:
+                closePrestige = 5000
+                break
         }
 
         if (!gymHasOpenSpot(gymLevel, item.pokemon.length) && (gymPrestige[gymLevel - 1] > closePrestige + item.gym_points || gymLevel === 10)) {
@@ -2280,9 +2279,8 @@ $(function () {
         'language': {
             'emptyTable': ''
         },
-        'columns': [{
-                'orderable': false
-            },
+        'columns': [
+            { 'orderable': false },
             null,
             null,
             null
