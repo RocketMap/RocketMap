@@ -3,7 +3,7 @@ Contributing to this Wiki
 
 .. note:: This article is about contributing pages and edits to this wiki. For contributing to the map itself see :doc:`development`.
 
-You can fork this documentation from the main PokemonGo-Map github project and open pull requests for changes.
+You can fork this documentation from the main RocketMap github project and open pull requests for changes.
 
 Adding or Editing Pages
 ************************

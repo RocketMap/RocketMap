@@ -1,12 +1,12 @@
-Welcome to PokemonGo-Map's Documentation!
+Welcome to RocketMap's Documentation!
 =========================================
 
-Pokemon-Go Map gives you a live visualization map of nearby Pokémon, Pokéstops, and gyms in a form of a web-app as well as native phone application
+RocketMap gives you a live visualization map of nearby Pokémon, Pokéstops, and gyms in a form of a web-app as well as native phone application
 
 .. image:: _static/img/cover.png
     :align: center
 
-[ `Official Homepage <https://pokemongomap.github.io/PoGoMapWebsite/>`_ ] [ `Official GitHub <https://github.com/PokemonGoMap/PokemonGo-Map>`_ ] [ `Discord Support <https://discord.gg/PWp2bAm>`_ ] [ `GitHub Issues <https://github.com/PokemonGoMap/PokemonGo-Map/issues>`_ ]
+[ `Official GitHub <https://github.com/RocketMap/RocketMap>`_ ] [ `Discord Support <https://discord.gg/PWp2bAm>`_ ] [ `GitHub Issues <https://github.com/RocketMap/RocketMap/issues>`_ ]
 
 .. toctree::
     :titlesonly:

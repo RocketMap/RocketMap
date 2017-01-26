@@ -20,12 +20,10 @@ Live visualization of all the pokemon (with option to show gyms and pokestops) i
 * Incredibly fast, efficient searching algorithm (compared to everything else available)
 
 ## Information
-* [Twitter](https://twitter.com/PokemapGG) for status updates
-* [Website](https://pgm.readthedocs.io/en/develop/) for general introduction
 * [Discord](https://discord.gg/PWp2bAm) for general support
-* [Documentation](https://pgm.readthedocs.io/en/develop/) for installation and usage docs
+* [Documentation](https://http://rocketmap.readthedocs.io/) for installation and usage docs
 * ~~[feathub](http://feathub.com/PokemonGoMap/PokemonGo-Map) to request new features~~ Use a Github issue, tag with [Feature Request].
-* [Github Issues](https://github.com/PokemonGoMap/PokemonGo-Map/issues) for reporting bugs (not for support!)
+* [Github Issues](https://github.com/RocketMap/RocketMap/issues) for reporting bugs (not for support!)
 
 ## Installation
 
