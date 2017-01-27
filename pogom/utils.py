@@ -884,7 +884,6 @@ def complete_tutorial(api, account, tutorial_state):
     return True
 
 
-
 def dottedQuadToNum(ip):
     return struct.unpack("!L", socket.inet_aton(ip))[0]
 
