@@ -789,13 +789,13 @@ var pGoStyleNight = [{
 }]
 
 var pokemonSprites = {
-    columns: 12,
-    iconWidth: 30,
-    iconHeight: 30,
-    spriteWidth: 360,
-    spriteHeight: 390,
+    columns: 7,
+    iconWidth: 65,
+    iconHeight: 65,
+    spriteWidth: 455,
+    spriteHeight: 1430,
     filename: 'static/icons-sprite.png',
-    name: 'Normal'
+    name: 'High-Res'
 }
 
 //
