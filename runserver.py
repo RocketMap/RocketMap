@@ -222,6 +222,8 @@ def main():
     config['CHINA'] = args.china
 
     app = Pogom(__name__)
+    app.before_request(app.validate_request)
+
     db = init_database(app)
     if args.clear_db:
         log.info('Clearing database')

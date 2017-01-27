@@ -11,6 +11,9 @@ import shutil
 import pprint
 import time
 import random
+import socket
+import struct
+import requests
 from uuid import uuid4
 from s2sphere import CellId, LatLng
 
@@ -353,6 +356,9 @@ def get_args():
                         help=('Pause searching while web UI is inactive ' +
                               'for this timeout(in seconds).'),
                         type=int, default=0)
+    parser.add_argument('--disable-blacklist',
+                        help=('Disable the global anti-scraper IP blacklist.'),
+                        action='store_true', default=False)
     verbosity = parser.add_mutually_exclusive_group()
     verbosity.add_argument('-v', '--verbose',
                            help=('Show debug messages from PokemonGo-Map ' +
@@ -876,6 +882,22 @@ def complete_tutorial(api, account, tutorial_state):
               account['username'])
     time.sleep(random.uniform(2, 4))
     return True
+
+
+
+def dottedQuadToNum(ip):
+    return struct.unpack("!L", socket.inet_aton(ip))[0]
+
+
+def get_blacklist():
+    try:
+        url = 'https://blist.devkat.org/blacklist.json'
+        blacklist = requests.get(url).json()
+        log.debug('Entries in blacklist: %s.', len(blacklist))
+        return blacklist
+    except (requests.exceptions.RequestException, IndexError, KeyError):
+        log.error('Unable to retrieve blacklist, setting to empty.')
+        return []
 
 
 # Generate random device info.
