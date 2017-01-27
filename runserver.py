@@ -154,12 +154,12 @@ def main():
                 '"npm install && npm run build" before starting the server.')
             sys.exit()
 
-    # You need custom image files now.
-    if not os.path.isfile(
-            os.path.join(os.path.dirname(__file__),
-                         'static/icons-sprite.png')):
-        log.critical('Missing sprite files.')
-        sys.exit()
+        # You need custom image files now.
+        if not os.path.isfile(
+                os.path.join(os.path.dirname(__file__),
+                             'static/icons-sprite.png')):
+            log.critical('Missing sprite files.')
+            sys.exit()
 
     # These are very noisy, let's shush them up a bit.
     logging.getLogger('peewee').setLevel(logging.INFO)
