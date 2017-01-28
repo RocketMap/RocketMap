@@ -8,7 +8,7 @@
                         [-st STEP_LIMIT] [-sd SCAN_DELAY]
                         [--spawn-delay SPAWN_DELAY] [-enc] [-cs] [-ck CAPTCHA_KEY]
                         [-cds CAPTCHA_DSK] [-ed ENCOUNTER_DELAY]
-                        [-ewht ENCOUNTER_WHITELIST | -eblk ENCOUNTER_BLACKLIST]
+                        [-ewht ENCOUNTER_WHITELIST | -eblk ENCOUNTER_BLACKLIST | -ewhtf ENCOUNTER_WHITELIST_FILE | -eblkf ENCOUNTER_BLACKLIST_FILE]
                         [-ld LOGIN_DELAY] [-lr LOGIN_RETRIES] [-mf MAX_FAILURES]
                         [-me MAX_EMPTY] [-bsr BAD_SCAN_RETRY]
                         [-msl MIN_SECONDS_LEFT] [-dc] [-H HOST] [-P PORT]
@@ -114,6 +114,14 @@
       -eblk ENCOUNTER_BLACKLIST, --encounter-blacklist ENCOUNTER_BLACKLIST
                             List of Pokemon to NOT encounter for more stats. [env
                             var: POGOMAP_ENCOUNTER_BLACKLIST]
+      -ewhtf ENCOUNTER_WHITELIST_FILE, --encounter-whitelist-file ENCOUNTER_WHITELIST_FILE
+                            File containing a list of Pokemon to NOT encounter for
+                            more stats. [env var:
+                            POGOMAP_ENCOUNTER_WHITELIST_FILE]
+      -eblkf ENCOUNTER_BLACKLIST_FILE, --encounter-blacklist-file ENCOUNTER_BLACKLIST_FILE
+                            File containing a list of Pokemon to NOT encounter for
+                            more stats. [env var:
+                            POGOMAP_ENCOUNTER_BLACKLIST_FILE]
       -ld LOGIN_DELAY, --login-delay LOGIN_DELAY
                             Time delay between each login attempt. [env var:
                             POGOMAP_LOGIN_DELAY]
