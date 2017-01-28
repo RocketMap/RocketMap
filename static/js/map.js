@@ -67,6 +67,24 @@ var gymTypes = ['Uncontested', 'Mystic', 'Valor', 'Instinct']
 var gymPrestige = [2000, 4000, 8000, 12000, 16000, 20000, 30000, 40000, 50000]
 var audio = new Audio('static/sounds/ding.mp3')
 
+/*
+  text place holders:
+  <pkm> - pokemon name
+  <prc> - iv in percent without percent symbol
+  <atk> - attack as number
+  <def> - defense as number
+  <sta> - stamnia as number
+*/
+var notifyIvTitle = '<pkm> <prc>% (<atk>/<def>/<sta>)'
+var notifyNoIvTitle = '<pkm>'
+
+/*
+  text place holders:
+  <dist>  - disappear time
+  <udist> - time until disappear
+*/
+var notifyText = 'disappear at <dist> (<udist>)'
+
 //
 // Functions
 //
@@ -616,6 +634,66 @@ function isRangeActive(map) {
     return Store.get('showRanges')
 }
 
+function getIv(atk, def, stm) {
+    if (atk !== null) {
+        return 100.0 * (atk + def + stm) / 45
+    }
+
+    return false
+}
+
+function lpad(str, len, padstr) {
+    return Array(Math.max(len - String(str).length + 1, 0)).join(padstr) + str
+}
+
+function repArray(text, find, replace) {
+    for (var i = 0; i < find.length; i++) {
+        text = text.replace(find[i], replace[i])
+    }
+
+    return text
+}
+
+function getTimeUntil(time) {
+    var now = +new Date()
+    var tdiff = time - now
+
+    var sec = Math.floor((tdiff / 1000) % 60)
+    var min = Math.floor((tdiff / 1000 / 60) % 60)
+    var hour = Math.floor((tdiff / (1000 * 60 * 60)) % 24)
+
+    return {
+        'total': tdiff,
+        'hour': hour,
+        'min': min,
+        'sec': sec,
+        'now': now,
+        'ttime': time
+    }
+}
+
+function getNotifyText(item) {
+    var iv = getIv(item['individual_attack'], item['individual_defense'], item['individual_stamina'])
+    var find = ['<prc>', '<pkm>', '<atk>', '<def>', '<sta>']
+    var replace = [((iv) ? iv.toFixed(1) : ''), item['pokemon_name'], item['individual_attack'],
+        item['individual_defense'], item['individual_stamina']]
+    var ntitle = repArray(((iv) ? notifyIvTitle : notifyNoIvTitle), find, replace)
+    var dist = (new Date(item['disappear_time'])).toLocaleString([], {
+        hour: '2-digit', minute: '2-digit',
+        second: '2-digit', hour12: false})
+    var until = getTimeUntil(item['disappear_time'])
+    var udist = (until.hour > 0) ? until.hour + ':' : ''
+    udist += lpad(until.min, 2, 0) + 'm' + lpad(until.sec, 2, 0) + 's'
+    find = ['<dist>', '<udist>']
+    replace = [dist, udist]
+    var ntext = repArray(notifyText, find, replace)
+
+    return {
+        'fav_title': ntitle,
+        'fav_text': ntext
+    }
+}
+
 function customizePokemonMarker(marker, item, skipNotification) {
     marker.addListener('click', function () {
         this.setAnimation(null)
@@ -636,7 +714,7 @@ function customizePokemonMarker(marker, item, skipNotification) {
             if (Store.get('playSound')) {
                 audio.play()
             }
-            sendNotification('A wild ' + item['pokemon_name'] + ' appeared!', 'Click to load map', 'static/icons/' + item['pokemon_id'] + '.png', item['latitude'], item['longitude'])
+            sendNotification(getNotifyText(item).fav_title, getNotifyText(item).fav_text, 'static/icons/' + item['pokemon_id'] + '.png', item['latitude'], item['longitude'])
         }
         if (marker.animationDisabled !== true) {
             marker.setAnimation(google.maps.Animation.BOUNCE)
@@ -644,13 +722,13 @@ function customizePokemonMarker(marker, item, skipNotification) {
     }
 
     if (item['individual_attack'] != null) {
-        var perfection = 100.0 * (item['individual_attack'] + item['individual_defense'] + item['individual_stamina']) / 45
+        var perfection = getIv(item['individual_attack'], item['individual_defense'], item['individual_stamina'])
         if (notifiedMinPerfection > 0 && perfection >= notifiedMinPerfection) {
             if (!skipNotification) {
                 if (Store.get('playSound')) {
                     audio.play()
                 }
-                sendNotification('A ' + perfection.toFixed(1) + '% perfect ' + item['pokemon_name'] + ' appeared!', 'Click to load map', 'static/icons/' + item['pokemon_id'] + '.png', item['latitude'], item['longitude'])
+                sendNotification(getNotifyText(item).fav_title, getNotifyText(item).fav_text, 'static/icons/' + item['pokemon_id'] + '.png', item['latitude'], item['longitude'])
             }
             if (marker.animationDisabled !== true) {
                 marker.setAnimation(google.maps.Animation.BOUNCE)
@@ -1382,16 +1460,14 @@ function redrawPokemon(pokemonList) {
 
 var updateLabelDiffTime = function () {
     $('.label-countdown').each(function (index, element) {
-        var disappearsAt = new Date(parseInt(element.getAttribute('disappears-at')))
-        var now = new Date()
+        var disappearsAt = getTimeUntil(parseInt(element.getAttribute('disappears-at')))
 
-        var difference = Math.abs(disappearsAt - now)
-        var hours = Math.floor(difference / 36e5)
-        var minutes = Math.floor((difference - (hours * 36e5)) / 6e4)
-        var seconds = Math.floor((difference - (hours * 36e5) - (minutes * 6e4)) / 1e3)
+        var hours = disappearsAt.hour
+        var minutes = disappearsAt.min
+        var seconds = disappearsAt.sec
         var timestring = ''
 
-        if (disappearsAt < now) {
+        if (disappearsAt.ttime < disappearsAt.now) {
             timestring = '(expired)'
         } else {
             timestring = '('
@@ -1399,8 +1475,8 @@ var updateLabelDiffTime = function () {
                 timestring = hours + 'h'
             }
 
-            timestring += ('0' + minutes).slice(-2) + 'm'
-            timestring += ('0' + seconds).slice(-2) + 's'
+            timestring += lpad(minutes, 2, 0) + 'm'
+            timestring += lpad(seconds, 2, 0) + 's'
             timestring += ')'
         }
 
@@ -1673,7 +1749,7 @@ function showGymDetails(id) { // eslint-disable-line no-unused-vars
 
         if (result.pokemon.length) {
             $.each(result.pokemon, function (i, pokemon) {
-                var perfectPercent = Math.round((pokemon.iv_defense + pokemon.iv_attack + pokemon.iv_stamina) * 100 / 45)
+                var perfectPercent = getIv(pokemon.iv_attack, pokemon.iv_defense, pokemon.iv_stamina)
                 var moveEnergy = Math.round(100 / pokemon.move_2_energy)
 
                 pokemonHtml += `
