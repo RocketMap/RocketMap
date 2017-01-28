@@ -16,6 +16,7 @@ _build
 _build_html
 beehive.*
 static/icons-sprite.png
+static/icons-large-sprite.png
 static/icons/*.png
 static/pixel_icons/*.png
 *.csv
