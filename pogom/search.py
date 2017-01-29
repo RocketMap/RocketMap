@@ -514,15 +514,23 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
         time.sleep(1)
 
 
+def get_scheduler_tth_found_pct(scheduler):
+    tth_found_pct = getattr(scheduler, 'tth_found', 0)
+
+    if tth_found_pct > 0:
+        # Avoid division by zero. Keep 0.0 default for consistency.
+        active_sp = max(getattr(scheduler, 'active_sp', 0.0), 1.0)
+        tth_found_pct = tth_found_pct * 100.0 / float(active_sp)
+
+    return tth_found_pct
+
+
 def wh_status_update(args, status, wh_queue, scheduler):
     scheduler_name = status['scheduler']
+
     if args.speed_scan:
-        tth_found = getattr(scheduler, 'tth_found', -1)
+        tth_found = get_scheduler_tth_found_pct(scheduler)
         spawns_found = getattr(scheduler, 'spawns_found', 0)
-        if tth_found > -1:
-            # Avoid division by zero. Keep 0.0 default for consistency.
-            active_sp = max(getattr(scheduler, 'active_sp', 0.0), 1.0)
-            tth_found = tth_found * 100.0 / float(active_sp)
 
         if (tth_found - status['scheduler_status']['tth_found']) > 0.01:
             log.debug("Scheduler update is due, sending webhook message.")
