@@ -83,7 +83,7 @@ var notifyNoIvTitle = '<pkm>'
   <dist>  - disappear time
   <udist> - time until disappear
 */
-var notifyText = 'disappear at <dist> (<udist>)'
+var notifyText = 'disappears at <dist> (<udist>)'
 
 //
 // Functions
