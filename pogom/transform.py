@@ -1,5 +1,7 @@
 import math
 import geopy
+import geopy.distance
+import random
 
 a = 6378245.0
 ee = 0.00669342162296594323
@@ -67,3 +69,12 @@ def get_new_coords(init_loc, distance, bearing):
     destination = geopy.distance.distance(kilometers=distance).destination(
         origin, bearing)
     return (destination.latitude, destination.longitude)
+
+
+# Apply a location jitter.
+def jitter_location(location=None, maxMeters=10):
+    origin = geopy.Point(location[0], location[1])
+    b = random.randint(0, 360)
+    d = math.sqrt(random.random()) * (float(maxMeters) / 1000)
+    destination = geopy.distance.distance(kilometers=d).destination(origin, b)
+    return (destination.latitude, destination.longitude, location[2])

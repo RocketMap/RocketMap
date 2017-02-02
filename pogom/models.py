@@ -13,7 +13,8 @@ import math
 from peewee import InsertQuery, \
     Check, CompositeKey, ForeignKeyField, \
     IntegerField, CharField, DoubleField, BooleanField, \
-    DateTimeField, fn, DeleteQuery, FloatField, SQL, TextField, JOIN
+    DateTimeField, fn, DeleteQuery, FloatField, SQL, TextField, JOIN, \
+    OperationalError
 from playhouse.flask_utils import FlaskDB
 from playhouse.pool import PooledMySQLDatabase
 from playhouse.shortcuts import RetryOperationalError
@@ -1085,6 +1086,28 @@ class MainWorker(BaseModel):
     message = TextField(null=True, default="")
     method = CharField(max_length=50)
     last_modified = DateTimeField(index=True)
+    accounts_working = IntegerField()
+    accounts_captcha = IntegerField()
+    accounts_failed = IntegerField()
+
+    @staticmethod
+    def get_total_captchas():
+        return MainWorker.select(fn.SUM(MainWorker.accounts_captcha)).scalar()
+
+    @staticmethod
+    def get_account_stats():
+        account_stats = (MainWorker
+                         .select(fn.SUM(MainWorker.accounts_working),
+                                 fn.SUM(MainWorker.accounts_captcha),
+                                 fn.SUM(MainWorker.accounts_failed))
+                         .scalar(as_tuple=True))
+        dict = {'working': 0, 'captcha': 0, 'failed': 0}
+        if account_stats[0] is not None:
+            dict = {'working': int(account_stats[0]),
+                    'captcha': int(account_stats[1]),
+                    'failed': int(account_stats[2])}
+
+        return dict
 
 
 class WorkerStatus(BaseModel):
@@ -1094,7 +1117,7 @@ class WorkerStatus(BaseModel):
     fail = IntegerField()
     no_items = IntegerField()
     skip = IntegerField()
-    captcha = IntegerField(default=0)
+    captcha = IntegerField()
     last_modified = DateTimeField(index=True)
     message = CharField(max_length=255)
     last_scan_date = DateTimeField(index=True)
@@ -1610,6 +1633,39 @@ class GymDetails(BaseModel):
     description = TextField(null=True, default="")
     url = CharField()
     last_scanned = DateTimeField(default=datetime.utcnow)
+
+
+class Token(flaskDb.Model):
+    token = TextField()
+    last_updated = DateTimeField(default=datetime.utcnow)
+
+    @staticmethod
+    def get_valid(limit=15):
+        # Make sure we don't grab more than we can process
+        if limit > 15:
+            limit = 15
+        valid_time = datetime.utcnow() - timedelta(seconds=30)
+        token_ids = []
+        tokens = []
+        try:
+            with flaskDb.database.transaction():
+                query = (Token
+                         .select()
+                         .where(Token.last_updated > valid_time)
+                         .order_by(Token.last_updated.asc())
+                         .limit(limit))
+                for t in query:
+                    token_ids.append(t.id)
+                    tokens.append(t.token)
+                if tokens:
+                    log.debug('Retrived Token IDs: {}'.format(token_ids))
+                    result = DeleteQuery(Token).where(
+                                 Token.id << token_ids).execute()
+                    log.debug('Deleted {} tokens.'.format(result))
+        except OperationalError as e:
+            log.error('Failed captcha token transactional query: {}'.format(e))
+
+        return tokens
 
 
 def hex_bounds(center, steps=None, radius=None):
@@ -2210,6 +2266,13 @@ def clean_db_loop(args):
                      .where(Pokestop.lure_expiration < datetime.utcnow()))
             query.execute()
 
+            # Remove old (unusable) captcha tokens
+            query = (Token
+                     .delete()
+                     .where((Token.last_updated <
+                             (datetime.utcnow() - timedelta(minutes=2)))))
+            query.execute()
+
             # If desired, clear old Pokemon spawns.
             if args.purge_data > 0:
                 query = (Pokemon
@@ -2277,7 +2340,7 @@ def create_tables(db):
     db.create_tables([Pokemon, Pokestop, Gym, ScannedLocation, GymDetails,
                       GymMember, GymPokemon, Trainer, MainWorker, WorkerStatus,
                       SpawnPoint, ScanSpawnPoint, SpawnpointDetectionData,
-                      LocationAltitude], safe=True)
+                      Token, LocationAltitude], safe=True)
     db.close()
 
 
@@ -2286,8 +2349,8 @@ def drop_tables(db):
     db.drop_tables([Pokemon, Pokestop, Gym, ScannedLocation, Versions,
                     GymDetails, GymMember, GymPokemon, Trainer, MainWorker,
                     WorkerStatus, SpawnPoint, ScanSpawnPoint,
-                    SpawnpointDetectionData, LocationAltitude, Versions],
-                   safe=True)
+                    SpawnpointDetectionData, LocationAltitude,
+                    Token, Versions], safe=True)
     db.close()
 
 
@@ -2405,9 +2468,7 @@ def database_migrate(db, old_ver):
 
         db.drop_tables([ScanSpawnPoint])
 
-    if old_ver < 12:
+    if old_ver < 13:
+
+        db.drop_tables([WorkerStatus])
         db.drop_tables([MainWorker])
-        migrate(
-            migrator.add_column('workerstatus', 'captcha',
-                                IntegerField(default=0))
-        )

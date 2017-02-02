@@ -4,7 +4,8 @@
 import calendar
 import logging
 
-from flask import Flask, abort, jsonify, render_template, request
+from flask import Flask, abort, jsonify, render_template, request,\
+    make_response
 from flask.json import JSONEncoder
 from flask_compress import Compress
 from datetime import datetime
@@ -16,7 +17,7 @@ from bisect import bisect_left
 
 from . import config
 from .models import (Pokemon, Gym, Pokestop, ScannedLocation,
-                     MainWorker, WorkerStatus)
+                     MainWorker, WorkerStatus, Token)
 from .utils import now, dottedQuadToNum, get_blacklist
 log = logging.getLogger(__name__)
 compress = Compress()
@@ -58,6 +59,36 @@ class Pogom(Flask):
         self.route("/status", methods=['GET'])(self.get_status)
         self.route("/status", methods=['POST'])(self.post_status)
         self.route("/gym_data", methods=['GET'])(self.get_gymdata)
+        self.route("/bookmarklet", methods=['GET'])(self.get_bookmarklet)
+        self.route("/inject.js", methods=['GET'])(self.render_inject_js)
+        self.route("/submit_token", methods=['POST'])(self.submit_token)
+        self.route("/get_stats", methods=['GET'])(self.get_account_stats)
+
+    def get_bookmarklet(self):
+        return render_template('bookmarklet.html')
+
+    def render_inject_js(self):
+        args = get_args()
+        return render_template("inject.js",
+                               domain=args.manual_captcha_domain,
+                               timer=args.manual_captcha_refresh)
+
+    def submit_token(self):
+        response = 'error'
+        if request.form:
+            token = request.form.get('token')
+            query = Token.insert(token=token, last_updated=datetime.utcnow())
+            query.execute()
+            response = 'ok'
+        r = make_response(response)
+        r.headers.add('Access-Control-Allow-Origin', '*')
+        return r
+
+    def get_account_stats(self):
+        stats = MainWorker.get_account_stats()
+        r = make_response(jsonify(**stats))
+        r.headers.add('Access-Control-Allow-Origin', '*')
+        return r
 
     def validate_request(self):
         if self._ip_is_blacklisted(request.remote_addr):
