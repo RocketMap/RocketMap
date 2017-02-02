@@ -38,6 +38,7 @@ from pgoapi import PGoApi
 from pgoapi.utilities import f2i
 from pgoapi import utilities as util
 from pgoapi.exceptions import AuthException
+from pgoapi.hash_server import HashServer
 
 from .models import parse_map, GymDetails, parse_gyms, MainWorker, WorkerStatus
 from .fakePogoApi import FakePogoApi
@@ -100,11 +101,15 @@ def switch_status_printer(display_type, current_page, mainlog,
         elif command.lower() == 'f':
             mainlog.handlers[0].setLevel(logging.CRITICAL)
             display_type[0] = 'failedaccounts'
+        elif command.lower() == 'h':
+            mainlog.handlers[0].setLevel(logging.CRITICAL)
+            display_type[0] = 'hashstatus'
 
 
 # Thread to print out the status of each worker.
 def status_printer(threadStatus, search_items_queue_array, db_updates_queue,
-                   wh_queue, account_queue, account_failures, logmode):
+                   wh_queue, account_queue, account_failures, logmode,
+                   hash_key, key_scheduler):
 
     if (logmode == 'logs'):
         display_type = ["logs"]
@@ -247,11 +252,36 @@ def status_printer(threadStatus, search_items_queue_array, db_updates_queue,
                                   time.localtime(account['last_fail_time'])),
                     account['reason']))
 
+        elif display_type[0] == 'hashstatus':
+            status_text.append(
+                '----------------------------------------------------------')
+            status_text.append('Hash key status:')
+            status_text.append(
+                '----------------------------------------------------------')
+
+            status = '{:21} | {:9} | {:9} | {:9}'
+            status_text.append(status.format('Key', 'Remaining', 'Maximum',
+                                             'Peak'))
+
+            for key in hash_key:
+                key_instance = key_scheduler.keys[key]
+                key_text = key
+
+                if key_scheduler.current() == key:
+                    key_text += '*'
+
+                status_text.append(status.format(
+                    key_text,
+                    key_instance['remaining'],
+                    key_instance['maximum'],
+                    key_instance['peak']))
+
         # Print the status_text for the current screen.
         status_text.append((
             'Page {}/{}. Page number to switch pages. F to show on hold ' +
-            'accounts. <ENTER> alone to switch between status and log ' +
-            'view').format(current_page[0], total_pages))
+            'accounts. H to show hash status. <ENTER> alone to switch ' +
+            'between status and log view').format(current_page[0],
+                                                  total_pages))
         # Clear the screen.
         os.system('cls' if os.name == 'nt' else 'clear')
         # Print status.
@@ -357,13 +387,19 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
         'scheduler_status': {'tth_found': 0}
     }
 
+    # Create the key scheduler.
+    if args.hash_key:
+        log.info('Enabling hashing key scheduler...')
+        key_scheduler = schedulers.KeyScheduler(args.hash_key)
+
     if(args.print_status):
         log.info('Starting status printer thread...')
         t = Thread(target=status_printer,
                    name='status_printer',
                    args=(threadStatus, search_items_queue_array,
                          db_updates_queue, wh_queue, account_queue,
-                         account_failures, args.print_status))
+                         account_failures, args.print_status, args.hash_key,
+                         key_scheduler))
         t.daemon = True
         t.start()
 
@@ -381,11 +417,6 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
                    args=(threadStatus, args.status_name, db_updates_queue))
         t.daemon = True
         t.start()
-
-    # Create the key scheduler.
-    if args.hash_key:
-        log.info('Enabling hashing key scheduler...')
-        key_scheduler = schedulers.KeyScheduler(args.hash_key).scheduler()
 
     # Create specified number of search_worker_thread.
     log.info('Starting search worker threads...')
@@ -1095,6 +1126,20 @@ def search_worker_thread(args, account_queue, account_failures,
                         if gym_responses:
                             parse_gyms(args, gym_responses,
                                        whq, dbq)
+
+                if args.hash_key:
+                    key_instance = key_scheduler.keys[key_scheduler.current()]
+                    key_instance['remaining'] = HashServer.status.get(
+                        'remaining', 0)
+
+                    if key_instance['maximum'] == 0:
+                        key_instance['maximum'] = HashServer.status.get(
+                            'maximum', 0)
+
+                    peak = key_instance['maximum'] - key_instance['remaining']
+
+                    if key_instance['peak'] < peak:
+                        key_instance['peak'] = peak
 
                 # Delay the desired amount after "scan" completion.
                 delay = scheduler.delay(status['last_scan_date'])

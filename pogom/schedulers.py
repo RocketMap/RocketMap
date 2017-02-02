@@ -1065,8 +1065,23 @@ class SchedulerFactory():
 class KeyScheduler(object):
 
     def __init__(self, keys):
-        self.keys = keys
+        self.keys = {}
+        for key in keys:
+            self.keys[key] = {
+                'remaining': 0,
+                'maximum': 0,
+                'peak': 0
+            }
 
-    def scheduler(self):
-        cycle = itertools.cycle(self.keys)
-        return cycle
+        self.key_cycle = itertools.cycle(keys)
+        self.curr_key = ''
+
+    def keys(self):
+        return self.keys
+
+    def current(self):
+        return self.curr_key
+
+    def next(self):
+        self.curr_key = self.key_cycle.next()
+        return self.curr_key
