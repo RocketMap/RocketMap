@@ -400,11 +400,6 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
         t.daemon = True
         t.start()
 
-    # Create the key scheduler.
-    if args.hash_key:
-        log.info('Enabling hashing key scheduler...')
-        key_scheduler = schedulers.KeyScheduler(args.hash_key).scheduler()
-
     # Create account recycler thread.
     log.info('Starting account recycler thread...')
     t = Thread(target=account_recycler, name='account-recycler',
