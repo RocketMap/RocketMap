@@ -36,7 +36,7 @@ args = get_args()
 flaskDb = FlaskDB()
 cache = TTLCache(maxsize=100, ttl=60 * 5)
 
-db_schema_version = 12
+db_schema_version = 13
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -688,6 +688,51 @@ class Gym(BaseModel):
             result['pokemon'].append(p)
 
         return result
+
+
+class LocationAltitude(BaseModel):
+    cellid = CharField(primary_key=True, max_length=50)
+    latitude = DoubleField()
+    longitude = DoubleField()
+    last_modified = DateTimeField(index=True, default=datetime.utcnow,
+                                  null=True)
+    altitude = DoubleField()
+
+    class Meta:
+        indexes = ((('latitude', 'longitude'), False),)
+
+    # DB format of a new location altitude
+    @staticmethod
+    def new_loc(loc, altitude):
+        return {'cellid': cellid(loc),
+                'latitude': loc[0],
+                'longitude': loc[1],
+                'altitude': altitude}
+
+    # find a nearby altitude from the db
+    # looking for one within 140m
+    @classmethod
+    def get_nearby_altitude(cls, loc):
+        n, e, s, w = hex_bounds(loc, radius=0.14)  # 140m
+
+        # Get all location altitudes in that box.
+        query = (cls
+                 .select()
+                 .where((cls.latitude <= n) &
+                        (cls.latitude >= s) &
+                        (cls.longitude >= w) &
+                        (cls.longitude <= e))
+                 .dicts())
+
+        altitude = None
+        if len(list(query)):
+            altitude = query[0]['altitude']
+
+        return altitude
+
+    @classmethod
+    def save_altitude(cls, loc, altitude):
+        InsertQuery(cls, rows=[cls.new_loc(loc, altitude)]).upsert().execute()
 
 
 class ScannedLocation(BaseModel):
@@ -2231,8 +2276,8 @@ def create_tables(db):
     verify_database_schema(db)
     db.create_tables([Pokemon, Pokestop, Gym, ScannedLocation, GymDetails,
                       GymMember, GymPokemon, Trainer, MainWorker, WorkerStatus,
-                      SpawnPoint, ScanSpawnPoint, SpawnpointDetectionData],
-                     safe=True)
+                      SpawnPoint, ScanSpawnPoint, SpawnpointDetectionData,
+                      LocationAltitude], safe=True)
     db.close()
 
 
@@ -2241,7 +2286,8 @@ def drop_tables(db):
     db.drop_tables([Pokemon, Pokestop, Gym, ScannedLocation, Versions,
                     GymDetails, GymMember, GymPokemon, Trainer, MainWorker,
                     WorkerStatus, SpawnPoint, ScanSpawnPoint,
-                    SpawnpointDetectionData, Versions], safe=True)
+                    SpawnpointDetectionData, LocationAltitude, Versions],
+                   safe=True)
     db.close()
 
 

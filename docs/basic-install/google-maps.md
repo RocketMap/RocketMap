@@ -25,7 +25,7 @@ This project uses Google Maps. Each instance of Google Maps requires an API key 
    ![API Browser Key](../_static/img/csEFWKd.png)
    ![API Browser Key](../_static/img/6upJVIr.png)
 
-5. Enable two Google Maps APIs
+5. Enable three Google Maps APIs
    - Google Maps Javascript API - Enables Displaying of Map
      - Click on 'Library'
      - Click on Google Maps Javascript API
@@ -34,6 +34,11 @@ This project uses Google Maps. Each instance of Google Maps requires an API key 
      - Click on 'Library'
      - Type 'Places' into the search box ' Search all 100+ APIs'
      - Choose Google Places API Web Service
+     - Click 'ENABLE'
+   - Google Maps Elevation API - Enables fetching of altitude
+     - Click on 'Library'
+     - Type 'Elevation' into the search box ' Search all 100+ APIs'
+     - Choose Google Maps Elevation API
      - Click 'ENABLE'
 
 ## Using the API Key
