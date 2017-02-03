@@ -106,7 +106,7 @@ def get_args():
     parser.add_argument('-altv', '--altitude-variance',
                         help='Variance for --altitude in meters',
                         type=int, default=1)
-    parser.add_argument('-ac', '--altitude-cache',
+    parser.add_argument('-uac', '--use-altitude-cache',
                         help=('Query the Elevation API for each step,' +
                               ' rather than only once, and store results in' +
                               ' the database.'),
