@@ -106,10 +106,10 @@ def get_args():
     parser.add_argument('-altv', '--altitude-variance',
                         help='Variance for --altitude in meters',
                         type=int, default=1)
-    parser.add_argument('-nac', '--no-altitude-cache',
-                        help=('Do not cache fetched altitudes in the' +
-                              'database. This implies fetching the altitude ' +
-                              'only once for the running instance.'),
+    parser.add_argument('-ac', '--altitude-cache',
+                        help=('Query the Elevation API for each step,' +
+                              ' rather than only once, and store results in' +
+                              ' the database.'),
                         action='store_true', default=False)
     parser.add_argument('-nj', '--no-jitter',
                         help=("Don't apply random -9m to +9m jitter to " +

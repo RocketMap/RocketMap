@@ -8,7 +8,7 @@ from .models import LocationAltitude
 
 log = logging.getLogger(__name__)
 
-# Altitude used when no_altitude_cache is enabled
+# Altitude used when use_altitude_cache is enabled
 fallback_altitude = None
 
 
@@ -47,9 +47,14 @@ def randomize_altitude(altitude, altitude_variance):
 def get_fallback_altitude(args, loc):
     global fallback_altitude
 
-    if fallback_altitude is None:
+    # Only query if it's not set, and if it didn't fail already.
+    if fallback_altitude is None and fallback_altitude != -1:
         (fallback_altitude, status) = get_gmaps_altitude(loc[0], loc[1],
                                                          args.gmaps_key)
+
+    # Failed, don't try again.
+    if fallback_altitude is None:
+        fallback_altitude = -1
 
     return fallback_altitude
 
@@ -61,7 +66,7 @@ def cached_get_altitude(args, loc):
 
     if altitude is None:
         (altitude, status) = get_gmaps_altitude(loc[0], loc[1], args.gmaps_key)
-        if altitude is not None:
+        if altitude is not None and altitude != -1:
             LocationAltitude.save_altitude(loc, altitude)
 
     return altitude
@@ -69,12 +74,12 @@ def cached_get_altitude(args, loc):
 
 # Get altitude main method
 def get_altitude(args, loc):
-    if args.no_altitude_cache:
+    if not args.use_altitude_cache:
         altitude = get_fallback_altitude(args, loc)
     else:
         altitude = cached_get_altitude(args, loc)
 
-    if altitude is None:
+    if altitude is None or altitude == -1:
         altitude = args.altitude
 
     return randomize_altitude(altitude, args.altitude_variance)
