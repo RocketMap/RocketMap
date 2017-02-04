@@ -34,7 +34,7 @@ First things first. Press `WindowsKey + PAUSE` on your keyboard and select *Adva
 
 All set, head back to the basic install guide.
 
-## Step 2: Install C++ Compiler for Python
+## Step 3: Install C++ Compiler for Python
 
 Download the Visual C++ Compiler for Python from the link above and install it. There is no changes required other than accepting the terms.
 
