@@ -20,7 +20,7 @@ sphinx==1.4.5
 sphinx-autobuild==0.6.0
 recommonmark==0.4.0
 sphinx_rtd_theme==0.1.9
-requests==2.10.0
+requests==2.13.0
 requests-futures==0.9.7
 PySocks==1.5.6
 git+https://github.com/maddhatter/Flask-CacheBust.git@38d940cc4f18b5fcb5687746294e0360640a107e#egg=flask_cachebust
