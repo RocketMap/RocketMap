@@ -299,7 +299,6 @@ def account_recycler(args, accounts_queue, account_failures):
             if a['last_fail_time'] <= ok_time:
                 # Remove the account from the real list, and add to the account
                 # queue.
-                a['status']['on_hold'] = False
                 log.info('Account {} returning to active duty.'.format(
                     a['account']['username']))
                 account_failures.remove(a)
@@ -455,7 +454,6 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
             'username': '',
             'proxy_display': proxy_display,
             'proxy_url': proxy_url,
-            'on_hold': False
         }
 
         t = Thread(target=search_worker_thread,
@@ -722,6 +720,10 @@ def search_worker_thread(args, account_queue, account_failures,
     # This reinitializes the API and grabs a new account from the queue.
     while True:
         try:
+            # Force storing of previous worker info to keep consistency
+            if 'starttime' in status:
+                dbq.put((WorkerStatus, {0: WorkerStatus.db_format(status)}))
+
             status['starttime'] = now()
 
             # Track per loop.
@@ -731,10 +733,9 @@ def search_worker_thread(args, account_queue, account_failures,
             while not scheduler.ready:
                 time.sleep(1)
 
-            if not status['on_hold']:
-                status['message'] = ('Waiting to get new account from the ' +
-                                     'queue...')
-                log.info(status['message'])
+            status['message'] = ('Waiting to get new account from the ' +
+                                 'queue...')
+            log.info(status['message'])
 
             # Get an account.
             account = account_queue.get()
@@ -804,9 +805,7 @@ def search_worker_thread(args, account_queue, account_failures,
                             account['username'],
                             args.max_failures)
                     log.warning(status['message'])
-                    status['on_hold'] = True
-                    account_failures.append({'status': status,
-                                             'account': account,
+                    account_failures.append({'account': account,
                                              'last_fail_time': now(),
                                              'reason': 'failures'})
                     # Exit this loop to get a new account and have the API
@@ -823,9 +822,7 @@ def search_worker_thread(args, account_queue, account_failures,
                         'accounts...').format(account['username'],
                                               args.max_empty)
                     log.warning(status['message'])
-                    status['on_hold'] = True
-                    account_failures.append({'status': status,
-                                             'account': account,
+                    account_failures.append({'account': account,
                                              'last_fail_time': now(),
                                              'reason': 'empty scans'})
                     # Exit this loop to get a new account and have the API
@@ -855,9 +852,7 @@ def search_worker_thread(args, account_queue, account_failures,
                             'Account {} is being rotated out to rest.'.format(
                                 account['username']))
                         log.info(status['message'])
-                        status['on_hold'] = True
-                        account_failures.append({'status': status,
-                                                 'account': account,
+                        account_failures.append({'account': account,
                                                  'last_fail_time': now(),
                                                  'reason': 'rest interval'})
                         break
@@ -967,7 +962,7 @@ def search_worker_thread(args, account_queue, account_failures,
                     captcha = handle_captcha(args, status, api, account,
                                              account_failures,
                                              account_captchas, whq,
-                                             response_dict)
+                                             response_dict, step_location)
                     if captcha is not None and captcha:
                         # Make another request for the same location
                         # since the previous one was captcha'd.
@@ -975,7 +970,6 @@ def search_worker_thread(args, account_queue, account_failures,
                         response_dict = map_request(api, step_location,
                                                     args.no_jitter)
                     elif captcha is not None:
-                        status['on_hold'] = True
                         account_queue.task_done()
                         time.sleep(3)
                         break
@@ -1124,9 +1118,7 @@ def search_worker_thread(args, account_queue, account_failures,
                 'with fresh account. See logs for details.').format(
                     account['username'])
             traceback.print_exc(file=sys.stdout)
-            status['on_hold'] = True
-            account_failures.append({'status': status,
-                                     'account': account,
+            account_failures.append({'account': account,
                                      'last_fail_time': now(),
                                      'reason': 'exception'})
             time.sleep(args.scan_delay)
