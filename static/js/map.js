@@ -387,7 +387,7 @@ function getTypeSpan(type) {
 }
 
 function openMapDirections(lat, lng) { // eslint-disable-line no-unused-vars
-    var url = 'https://www.google.com/maps/dir/Current+Location/' + lat + ',' + lng
+    var url = 'https://www.google.com/maps/?daddr=' + lat + ',' + lng
     window.open(url, '_blank')
 }
 
