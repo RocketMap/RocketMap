@@ -172,8 +172,8 @@ def get_args():
                         help='Time delay between each login attempt.',
                         type=float, default=6)
     parser.add_argument('-lr', '--login-retries',
-                        help=('Number of login attempts before refreshing ' +
-                              'a thread.'),
+                        help=('Number of times to retry the login before ' +
+                              'refreshing a thread.'),
                         type=int, default=3)
     parser.add_argument('-mf', '--max-failures',
                         help=('Maximum number of failures to parse ' +
