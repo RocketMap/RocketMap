@@ -384,12 +384,19 @@ def get_args():
                         help=("Complete ToS and tutorial steps on accounts " +
                               "if they haven't already."),
                         default=False)
+    parser.add_argument('-novc', '--no-version-check', action='store_true',
+                        help='Disable API version check.',
+                        default=False)
+    parser.add_argument('-vci', '--version-check-interval', type=int,
+                        help='Interval to check API version in seconds ' +
+                        '(Default: in [60, 300]).',
+                        default=random.randint(60, 300))
     parser.add_argument('-el', '--encrypt-lib',
                         help=('Path to encrypt lib to be used instead of ' +
                               'the shipped ones.'))
     parser.add_argument('-odt', '--on-demand_timeout',
                         help=('Pause searching while web UI is inactive ' +
-                              'for this timeout(in seconds).'),
+                              'for this timeout (in seconds).'),
                         type=int, default=0)
     parser.add_argument('--disable-blacklist',
                         help=('Disable the global anti-scraper IP blacklist.'),

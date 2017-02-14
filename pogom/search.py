@@ -25,12 +25,15 @@ import traceback
 import random
 import time
 import copy
+import requests
 
 from datetime import datetime
 from threading import Thread, Lock
 from queue import Queue, Empty
 from sets import Set
 from collections import deque
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 from pgoapi import PGoApi
 from pgoapi.utilities import f2i
@@ -350,6 +353,8 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
     account_queue = Queue()
     threadStatus = {}
     key_scheduler = None
+    api_version = '0.55.0'
+    api_check_time = 0
 
     '''
     Create a queue of accounts for workers to pull from. When a worker has
@@ -465,6 +470,9 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
         t.daemon = True
         t.start()
 
+    if not args.no_version_check:
+        log.info('Enabling new API force Watchdog.')
+
     # A place to track the current location.
     current_location = False
 
@@ -549,6 +557,11 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
         if args.webhook_scheduler_updates:
             wh_status_update(args, threadStatus['Overseer'], wh_queue,
                              scheduler_array[0])
+
+        # API Watchdog - Check if Niantic forces a new API.
+        if not args.no_version_check:
+            api_check_time = check_forced_version(args, api_version,
+                                                  api_check_time, pause_bit)
 
         # Now we just give a little pause here.
         time.sleep(1)
@@ -1212,3 +1225,48 @@ def stagger_thread(args):
 # The delta from last stat to current stat
 def stat_delta(current_status, last_status, stat_name):
     return current_status.get(stat_name, 0) - last_status.get(stat_name, 0)
+
+
+def check_forced_version(args, api_version, api_check_time, pause_bit):
+    if int(time.time()) > api_check_time:
+        api_check_time = int(time.time()) + args.version_check_interval
+        forced_api = get_api_version(args)
+
+        if (api_version != forced_api and forced_api != 0):
+            pause_bit.set()
+            log.info(('Started with API: {}, ' +
+                      'Niantic forced to API: {}').format(
+                api_version,
+                forced_api))
+            log.info('Scanner paused due to forced Niantic API update.')
+            log.info('Stop the scanner process until RocketMap ' +
+                     'has updated.')
+
+    return api_check_time
+
+
+def get_api_version(args):
+    proxies = {}
+
+    if args.proxy:
+        num, proxy = get_new_proxy(args)
+        proxies = {
+            'http': proxy,
+            'https': proxy
+        }
+
+    try:
+        s = requests.Session()
+        s.mount('https://',
+                HTTPAdapter(max_retries=Retry(total=3,
+                                              backoff_factor=0.1,
+                                              status_forcelist=[500, 502,
+                                                                503, 504])))
+        r = s.get(
+            'https://pgorelease.nianticlabs.com/plfe/version',
+            proxies=proxies,
+            verify=False)
+        return r.text[2:] if r.status_code == requests.codes.ok else 0
+    except Exception as e:
+        log.warning('error on API check: %s', repr(e))
+        return 0
