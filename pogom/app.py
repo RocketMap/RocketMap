@@ -65,11 +65,13 @@ class Pogom(Flask):
         self.route("/get_stats", methods=['GET'])(self.get_account_stats)
 
     def get_bookmarklet(self):
-        return render_template('bookmarklet.html')
+        args = get_args()
+        return render_template('bookmarklet.html',
+                               domain=args.manual_captcha_domain)
 
     def render_inject_js(self):
         args = get_args()
-        return render_template("inject.js",
+        return render_template('inject.js',
                                domain=args.manual_captcha_domain,
                                timer=args.manual_captcha_refresh)
 

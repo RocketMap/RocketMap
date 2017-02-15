@@ -141,13 +141,13 @@ def captcha_solver_thread(args, account_queue, account_captchas, hash_key,
 
     wh_message = {'status_name': args.status_name,
                   'status': 'error',
-                  'method': 'manual',
+                  'mode': 'manual',
                   'account': account['username'],
                   'captcha': status['captcha'],
                   'time': 0}
     if not token:
         token = token_request(args, status, captcha_url)
-        wh_message['method'] = '2captcha'
+        wh_message['mode'] = '2captcha'
 
     response = api.verify_challenge(token=token)
 

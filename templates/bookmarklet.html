@@ -9,7 +9,7 @@
     <h3>Don't save THIS page in bookmarks!</h3>
     <p>The bookmarklet to solve captchas is the link just below:</p>
     <script>
-    document.write("<a href=\"javascript:(function(){if(window.location.href!='http://pgorelease.nianticlabs.com/'){window.location.href='http://pgorelease.nianticlabs.com/'}else{document.getElementsByTagName('head')[0].appendChild(document.createElement('script')).src='"+window.location.protocol+"//"+window.location.hostname+":"+window.location.port+"/inject.js?'+Math.random();}}());\" style=\"font-size:1.3em\">Solve Recaptcha</a>")
+    document.write("<a href=\"javascript:(function(){if(window.location.href!='http://pgorelease.nianticlabs.com/'){window.location.href='http://pgorelease.nianticlabs.com/'}else{document.getElementsByTagName('head')[0].appendChild(document.createElement('script')).src='{{domain}}/inject.js?'+Math.random();}}());\" style=\"font-size:1.3em\">Solve Recaptcha</a>")
     </script>
     <br /><br />
     <p>You can drag the link directly to bookmarks menu in your browser.</p>

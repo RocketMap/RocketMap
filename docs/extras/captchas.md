@@ -49,15 +49,13 @@ If `-mcd` / `--manual-captcha-domain` is correct, a similar page to the one abov
 
 - **Remaining captchas**: displays the number of accounts waiting for captcha token.
 
- This number can take some time to refresh since the uncaptcha process can take up to a minute to complete.
+When you solve a captcha you won't immediately see a change in "Remaining captchas" because the uncaptcha process can take a couple of minutes to complete.
 
 - **Failed accounts**: total count of disabled accounts (can include captcha'd accounts if `--captcha-solving` is not enabled)
 
 Accounts that were rotated to sleep when `-asi` / `--account-search-interval` is enabled will show as failed accounts.
 
 **Remember**: Status name (`-sn` / `--status-name`) is required for RocketMap to store account statistics in the database, otherwise the captcha page will keep displaying zeros.
-
-**Note**: When you solve a captcha you won't immediately see a change in "Remaining captchas" because the operation takes some time to validate.
 
 ### Extra Parameter: `--manual-captcha-refresh`
 Simply put, this is an easy way of controlling how often you want the captcha solving page to be refreshed.
