@@ -788,7 +788,8 @@ def get_move_energy(move_id):
 
 
 def get_move_type(move_id):
-    return i8ln(get_moves_data(move_id)['type'])
+    move_type = get_moves_data(move_id)['type']
+    return {"type": i8ln(move_type), "type_en": move_type}
 
 
 class Timer():

@@ -1805,7 +1805,7 @@ function showGymDetails(id) { // eslint-disable-line no-unused-vars
                                 <div class="move">
                                     <div class="name">
                                         ${pokemon.move_1_name}
-                                        <div class="type ${pokemon.move_1_type.toLowerCase()}">${pokemon.move_1_type}</div>
+                                        <div class="type ${pokemon.move_1_type['type_en'].toLowerCase()}">${pokemon.move_1_type['type']}</div>
                                     </div>
                                     <div class="damage">
                                         ${pokemon.move_1_damage}
@@ -1815,7 +1815,7 @@ function showGymDetails(id) { // eslint-disable-line no-unused-vars
                                 <div class="move">
                                     <div class="name">
                                         ${pokemon.move_2_name}
-                                        <div class="type ${pokemon.move_2_type.toLowerCase()}">${pokemon.move_2_type}</div>
+                                        <div class="type ${pokemon.move_2_type['type_en'].toLowerCase()}">${pokemon.move_2_type['type']}</div>
                                         <div>
                                             <i class="move-bar-sprite move-bar-sprite-${moveEnergy}"></i>
                                         </div>
