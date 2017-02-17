@@ -8,9 +8,9 @@
   height: 30px;
   width: 30px;
 
-  @for $i from 1 through 151 {
+  @for $i from 1 through 493 {
     &.n#{$i} {
-      background-position: -#{(($i - 1) % 12) * 30}px -#{floor(($i - 1) / 12) * 30}px
+      background-position: -#{(($i - 1) % 28) * 30}px -#{floor(($i - 1) / 28) * 30}px
     }
   }
 }
