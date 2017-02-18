@@ -395,18 +395,21 @@ function pokemonLabel(name, rarity, types, disappearTime, id, latitude, longitud
     var disappearDate = new Date(disappearTime)
     var rarityDisplay = rarity ? '(' + rarity + ')' : ''
     var typesDisplay = ''
+    var pMove1 = (moves[move1] !== undefined) ? i8ln(moves[move1]['name']) : 'gen/unknown'
+    var pMove2 = (moves[move2] !== undefined) ? i8ln(moves[move2]['name']) : 'gen/unknown'
+
     $.each(types, function (index, type) {
         typesDisplay += getTypeSpan(type)
     })
     var details = ''
     if (atk != null) {
-        var iv = (atk + def + sta) / 45 * 100
+        var iv = getIv(atk, def, sta)
         details = `
             <div>
                 IV: ${iv.toFixed(1)}% (${atk}/${def}/${sta})
             </div>
             <div>
-                Moves: ${i8ln(moves[move1]['name'])} / ${i8ln(moves[move2]['name'])}
+                Moves: ${pMove1} / ${pMove2}
             </div>
             `
     }
