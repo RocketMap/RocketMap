@@ -91,9 +91,9 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/PokemonGo-Map.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/RocketMap.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/PokemonGo-Map.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/RocketMap.qhc"
 
 .PHONY: applehelp
 applehelp:
@@ -110,8 +110,8 @@ devhelp:
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/PokemonGo-Map"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/PokemonGo-Map"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/RocketMap"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/RocketMap"
 	@echo "# devhelp"
 
 .PHONY: epub

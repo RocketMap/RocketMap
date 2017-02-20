@@ -41,7 +41,7 @@ log = logging.getLogger()
 
 # Make sure pogom/pgoapi is actually removed if it is an empty directory.
 # This is a leftover directory from the time pgoapi was embedded in
-# PokemonGo-Map.
+# RocketMap.
 # The empty directory will cause problems with `import pgoapi` so it needs to
 # go.
 # Now also removes the pogom/libencrypt and pokecrypt-pgoapi folders,

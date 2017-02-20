@@ -105,7 +105,7 @@
       -ck CAPTCHA_KEY, --captcha-key CAPTCHA_KEY
                             2Captcha API key. [env var: POGOMAP_CAPTCHA_KEY]
       -cds CAPTCHA_DSK, --captcha-dsk CAPTCHA_DSK
-                            PokemonGo captcha data-sitekey. [env var:
+                            Pokemon Go captcha data-sitekey. [env var:
                             POGOMAP_CAPTCHA_DSK]
       -mcd MANUAL-CAPTCHA-DOMAIN --manual-captcha-domain
                             Domain to where captcha tokens will be sent

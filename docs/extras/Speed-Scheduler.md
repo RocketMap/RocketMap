@@ -103,7 +103,7 @@ Can the instances overlap?
 
 How does it find the spawn points without having data from a Hex Scan?
 
-> Magic. This is covered in more detail in my initial [PR#1386](https://github.com/PokemonGoMap/PokemonGo-Map/pull/1386)
+> Magic. This is covered in more detail in my initial [PR#1386](https://github.com/RocketMap/RocketMap/pull/1386)
 
 What happens when it finds a new spawn point after the initial scan is done?
 

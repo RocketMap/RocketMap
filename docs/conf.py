@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# PokemonGo-Map documentation build configuration file, created by
+# RocketMap documentation build configuration file, created by
 # sphinx-quickstart on Tue Aug  2 02:20:19 2016.
 #
 # This file is execfile()d with the current directory set to its
@@ -139,7 +139,7 @@ html_theme = 'sphinx_rtd_theme'
 # The name for this set of Sphinx documents.
 # "<project> v<release> documentation" by default.
 #
-# html_title = u'PokemonGo-Map v3.1.0'
+# html_title = u'RocketMap v3.1.0'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #

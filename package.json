@@ -1,7 +1,7 @@
 {
   "name": "pogomap",
   "version": "0.1.0",
-  "description": "Pokemon Go Map - Live Visualization",
+  "description": "RocketMap - Live Visualization",
   "main": "Gruntfile.js",
   "dependencies": {
     "babel-preset-es2015": "^6.9.0",
@@ -39,7 +39,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PokemonGoMap/PokemonGo-Map.git"
+    "url": "git+https://github.com/RocketMap/RocketMap.git"
   },
   "keywords": [
     "Pokemon",
@@ -48,7 +48,7 @@
   "author": "Carl Taylor",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/PokemonGoMap/PokemonGo-Map/issues"
+    "url": "https://github.com/RocketMap/RocketMap/issues"
   },
-  "homepage": "https://github.com/PokemonGoMap/PokemonGo-Map#readme"
+  "homepage": "https://github.com/RocketMap/RocketMap#readme"
 }

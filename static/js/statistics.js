@@ -332,7 +332,7 @@ function initMap() {
     map.mapTypes.set('style_light2', styleLight2)
 
     var stylePgo = new google.maps.StyledMapType(pGoStyle, {
-        name: 'PokemonGo'
+        name: 'RocketMap'
     })
     map.mapTypes.set('style_pgo', stylePgo)
 
@@ -347,17 +347,17 @@ function initMap() {
     map.mapTypes.set('style_light2_nl', styleLight2Nl)
 
     var stylePgoNl = new google.maps.StyledMapType(pGoStyleNoLabels, {
-        name: 'PokemonGo (No Labels)'
+        name: 'RocketMap (No Labels)'
     })
     map.mapTypes.set('style_pgo_nl', stylePgoNl)
 
     var stylePgoDay = new google.maps.StyledMapType(pGoStyleDay, {
-        name: 'PokemonGo Day'
+        name: 'RocketMap Day'
     })
     map.mapTypes.set('style_pgo_day', stylePgoDay)
 
     var stylePgoNight = new google.maps.StyledMapType(pGoStyleNight, {
-        name: 'PokemonGo Night'
+        name: 'RocketMap Night'
     })
     map.mapTypes.set('style_pgo_night', stylePgoNight)
 

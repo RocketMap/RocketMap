@@ -134,7 +134,7 @@ def get_args():
     parser.add_argument('-ck', '--captcha-key',
                         help='2Captcha API key.')
     parser.add_argument('-cds', '--captcha-dsk',
-                        help='PokemonGo captcha data-sitekey.',
+                        help='Pokemon Go captcha data-sitekey.',
                         default="6LeeTScTAAAAADqvhqVMhPpr_vB9D364Ia-1dSgK")
     parser.add_argument('-mcd', '--manual-captcha-domain',
                         help='Domain to where captcha tokens will be sent.',
@@ -407,7 +407,7 @@ def get_args():
                         action='store_true', default=False)
     verbosity = parser.add_mutually_exclusive_group()
     verbosity.add_argument('-v', '--verbose',
-                           help=('Show debug messages from PokemonGo-Map ' +
+                           help=('Show debug messages from RocketMap ' +
                                  'and pgoapi. Optionally specify file ' +
                                  'to log to.'),
                            nargs='?', const='nofile', default=False,

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 '''
-Fake PokemonGo API
+Fake RocketMap API
 
 This is a simplistic flask app to emulate what a pokemon go api returns.
 
@@ -110,7 +110,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def api_root():
-    return 'This here be a Fake PokemonGo API Endpoint Server'
+    return 'This here be a Fake RocketMap API Endpoint Server'
 
 
 @app.route('/login/<lat>/<lng>/<r>')

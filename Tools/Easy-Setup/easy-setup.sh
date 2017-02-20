@@ -2,7 +2,7 @@
 
 scriptDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-echo "Installing PokemonGo-Map Requirements."
+echo "Installing RocketMap Requirements."
 echo "This script may ask for your sudo/root password to perform the installation."
 echo ""
 
