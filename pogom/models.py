@@ -1921,7 +1921,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                 if 'active_fort_modifier' in f:
                     lure_expiration = (datetime.utcfromtimestamp(
                         f['last_modified_timestamp_ms'] / 1000.0) +
-                        timedelta(minutes=30))
+                        timedelta(minutes=args.lure_duration))
                     active_fort_modifier = f['active_fort_modifier']
                     if args.webhooks and args.webhook_updates_only:
                         wh_update_queue.put(('pokestop', {
