@@ -671,6 +671,7 @@ class Gym(BaseModel):
                    .where(GymMember.gym_id == id)
                    .where(GymMember.last_scanned > Gym.last_modified)
                    .order_by(GymPokemon.cp.desc())
+                   .distinct()
                    .dicts())
 
         for p in pokemon:
