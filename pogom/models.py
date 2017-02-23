@@ -852,16 +852,10 @@ class ScannedLocation(BaseModel):
                 'step': scan['step'], 'sp': sp_id}
 
     @classmethod
-    def get_by_locs(cls, locs):
-        lats, lons = [], []
-        for loc in locs:
-            lats.append(loc[0])
-            lons.append(loc[1])
-
+    def get_by_cellids(cls, cellids):
         query = (cls
                  .select()
-                 .where((ScannedLocation.latitude << lats) &
-                        (ScannedLocation.longitude << lons))
+                 .where(cls.cellid << cellids)
                  .dicts())
 
         d = {}
@@ -881,8 +875,7 @@ class ScannedLocation(BaseModel):
     def get_by_loc(cls, loc):
         query = (cls
                  .select()
-                 .where((ScannedLocation.latitude == loc[0]) &
-                        (ScannedLocation.longitude == loc[1]))
+                 .where(cls.cellid == cellid(loc))
                  .dicts())
 
         return query[0] if len(list(query)) else cls.new_loc(loc)
@@ -922,12 +915,12 @@ class ScannedLocation(BaseModel):
 
     # Return list of dicts for upcoming valid band times.
     @classmethod
-    def get_cell_to_linked_spawn_points(cls, cells):
+    def get_cell_to_linked_spawn_points(cls, cellids):
         query = (SpawnPoint
                  .select(SpawnPoint, cls.cellid)
                  .join(ScanSpawnPoint)
                  .join(cls)
-                 .where(cls.cellid << cells).dicts())
+                 .where(cls.cellid << cellids).dicts())
         l = list(query)
         ret = {}
         for item in l:
@@ -1027,14 +1020,16 @@ class ScannedLocation(BaseModel):
         return scan
 
     @classmethod
-    def bands_filled(cls, locations):
-        filled = 0
-        for e in locations:
-            sl = cls.get_by_loc(e[1])
-            bands = [sl['band' + str(i)] for i in range(1, 6)]
-            filled += reduce(lambda x, y: x + (y > -1), bands, 0)
-
-        return filled
+    def get_bands_filled_by_cellids(cls, cellids):
+        return int(cls
+                   .select(fn.SUM(fn.IF(cls.band1 == -1, 0, 1)
+                                  + fn.IF(cls.band2 == -1, 0, 1)
+                                  + fn.IF(cls.band3 == -1, 0, 1)
+                                  + fn.IF(cls.band4 == -1, 0, 1)
+                                  + fn.IF(cls.band5 == -1, 0, 1))
+                           .alias('band_count'))
+                   .where(cls.cellid << cellids)
+                   .scalar())
 
     @classmethod
     def reset_bands(cls, scan_loc):
@@ -1661,7 +1656,7 @@ class Token(flaskDb.Model):
                 if tokens:
                     log.debug('Retrived Token IDs: {}'.format(token_ids))
                     result = DeleteQuery(Token).where(
-                                 Token.id << token_ids).execute()
+                        Token.id << token_ids).execute()
                     log.debug('Deleted {} tokens.'.format(result))
         except OperationalError as e:
             log.error('Failed captcha token transactional query: {}'.format(e))
