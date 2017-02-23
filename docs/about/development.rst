@@ -7,9 +7,9 @@ App Development
 
 .. warning::
 
-  These instructions will help you get started contributing code to the ``develop`` branch. If you just want to **use the map** you should not use ``develop``, instead follow the :doc:`/basic-install/index` instructions
+  These instructions will help you get started contributing code to the ``develop`` branch. If you just want to **use the map** you should follow the :doc:`/basic-install/index` instructions.
 
-Development requires several tools to get the job done. Python, obviously, needs to be installed. We also utilize NodeJS and Grunt for front-end asset compilation. The :doc:`/basic-install/index` instructions have an extra section about getting node installed. Follow that.
+Development requires several tools to get the job done. Python, obviously, needs to be installed. We also utilize NodeJS and Grunt for front-end asset compilation. The :doc:`/basic-install/index` instructions have the relevant information about getting node installed. Follow that.
 
 Node and Grunt
 **************
