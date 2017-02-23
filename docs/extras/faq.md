@@ -2,7 +2,7 @@
 
 ## Critical Error "Missing sprite files"
 
-If you're unaware of what sprites are, the friendly users on our Discord are more than willing to explain. [RocketMap Discord](https://discord.gg/PWp2bAm).
+Please consult #faq on the [RocketMap Discord](https://discord.gg/PWp2bAm).
 
 ## Can I sign in with Google?
 
