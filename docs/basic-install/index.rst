@@ -1,7 +1,7 @@
 Basic Installation
 ##################
 
-These instructions cover an instation from a **release** as well as from a git clone.
+These instructions cover an installation from the develop branch in git.
 
 Prerequisites
 *************
@@ -68,12 +68,8 @@ Linux/OSX:
 
   sudo -H pip install -r requirements.txt
 
-``git`` Version Extra Steps
+Building Front-End Assets
 ===========================
-
-.. warning::
-
-  This only applies if you are running from a ``git clone``.
 
 In order to run from a git clone, you must compile the front-end assets with node. Make sure you have node installed for your platform:
 
@@ -132,7 +128,7 @@ Updating the Application
 
 RocketMap is a very active project and updates often. You can follow the `latest changes <https://github.com/RocketMap/RocketMap/commits/develop>`_ to see what's changing.
 
-If you are running a ``git`` version, you can update with a few quick commands:
+You can update with a few quick commands:
 
 .. code-block:: bash
 
