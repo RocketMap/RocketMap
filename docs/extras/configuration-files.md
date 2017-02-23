@@ -4,7 +4,7 @@ Configuration files can be used to organize server/scanner deployments.  Any lon
 
 ##  Default file
 
-The default configuration file is *config/config.ini* underneath the project home.   However, this location can be changed by setting the environment variable POGOMAP_CONFIG or using the -cf or --config flag on the command line.   In the event that both the environment variable and the command line argument exists, the command line value will take precedence.  Note that all relative pathnames are relative to the current working directory (often, but not necessarily where runserver.py is located).
+The default configuration file is *config/config.ini* underneath the project home. However, this location can be changed by setting the environment variable POGOMAP_CONFIG or using the -cf or --config flag on the command line. In the event that both the environment variable and the command line argument exists, the command line value will take precedence. Note that all relative pathnames are relative to the current working directory (often, but not necessarily where runserver.py is located).
 
 ## Setting configuration key/value pairs
 
