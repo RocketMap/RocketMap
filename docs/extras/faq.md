@@ -14,7 +14,7 @@ If you happen to have 2-step verification enabled for your Google account you wi
 
 SpeedScan (`-speed`) is the most used scheduler: it's the only scheduler that currently supports finding the proper spawnpoint time and duration, and it also features a built-in speed limiter to avoid speed violations (i.e. softbans).
 
-More information can be found here : [Speed Scheduler] (Speed-Scheduler.md)
+More information can be found here : [Speed Scheduler](Speed-Scheduler.html)
 
 ## But I was happy using the default Hex or Spawnpoint scanning...
 
@@ -36,11 +36,11 @@ You must replace the values for LOCATION/USER/PASS/GOOGLEKEY with your informati
 
 ## Nice, what other stuff can I use in the command line?
 
-There is a list [here](commandline.md) or a more up to date list can be found by running ./runserver.py -h 
+There is a list [here](commandline.html) or a more up to date list can be found by running ./runserver.py -h 
 
 ## Woah I added a ton of cool stuff and now my command line is massive, any way to shorten it?
 
-It is a lot simplier to use a [config file] (configuration-files.md)
+It is a lot simplier to use a [config file](configuration-files.html)
 
 ## Can I scan for free or do I need to pay for a hash key?
 
@@ -65,11 +65,11 @@ RocketMap uses SQLite which doesn't support real concurrency, so you're limited 
 
 Higher threads or extra workers = increased odds of SQLite locking up. sqlite also has a very low limit of number of variables that can be used in a single query, which breaks support for medium or large sized maps.
 
-You need [MySQL] (mysql.md) if you want a proper database.
+You need [MySQL](mysql.html) if you want a proper database.
 
 ## How do I setup port forwarding?
 
-[See this helpful guide](external.md)
+[See this helpful guide](external.html)
 
 ## I edited my files/installed unfinished code and messed up, will you help me fix it?
 
@@ -85,9 +85,9 @@ No, the best course of action is to delete it all and start again, this time don
 pip or python is not recognized as an internal or external command
 ```
 
-[Python/pip has not been added to the environment](https://github.com/Langoor2/PokemonGo-Map-FAQ/blob/master/FAQ/Enviroment_Variables_not_correct.md) or [pip needs to be installed to retrieve all the dependencies](https://github.com/AHAAAAAAA/PokemonGo-Map/wiki/Installation-and-requirements)
+[Python/pip has not been added to the environment](http://rocketmap.readthedocs.io/en/develop/extras/environment-variables-fix.html)
 
-```
+```.md
 Exception, e <- Invalid syntax.
 ```
 
@@ -114,7 +114,7 @@ The account is banned or hasn't completed the tutorial.
 
 ## I have more questions!
 
-Please read the [Wiki](configuration-files.md) for information and then join us on the [RocketMap Discord](https://discord.gg/PWp2bAm). Before asking questions in #help on Discord, make sure you've read #announcements and #faq.
+Please read the [Wiki](configuration-files.html) for information and then join us on the [RocketMap Discord](https://discord.gg/PWp2bAm). Before asking questions in #help on Discord, make sure you've read #announcements and #faq.
 
 # Formulas?
 
