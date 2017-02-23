@@ -16,9 +16,9 @@ Download Git for Windows from the link above and install it. You will be fine wi
 
 ## Step 2: Install Python
 
-**Note**: If you already have another version of Python installed, you probably want to uninstall that version and install 2.7.1.2. I did not test this setup with any other version.
+**Note**: If you already have another version of Python installed, you probably want to uninstall that version and install the latest 2.7.x version.
 
-Download Python 2.7.1.2 either as the 64bit or the 32bit version from the link above. **Make sure** to add Python to PATH during the setup (see screenshot)!
+Download the latest Python 2.7.x version either as the 64 bit or the 32 bit version from the link above. **Make sure** to add Python to PATH during the setup (see screenshot)!
 
 ![Python](../_static/img/BagNkfw.png)
 
@@ -28,14 +28,14 @@ Download Python 2.7.1.2 either as the 64bit or the 32bit version from the link a
 
 > This step is not needed on every system, but it's probably good to check if everything is set up correctly.
 
-First things first. Press `WindowsKey + PAUSE` on your keyboard and select *Advanced System Settings* from the left side menu. At the bottom of that windows click *Environment Variables*. In my case the Python value for the Path variable was set to `C:\Python27\;` which is wrong. You have to remove final backslash if that's the case for you too. If you're having issues with this feel free to open an Issue.
+First things first. Press `Windows Key + PAUSE` on your keyboard and select *Advanced System Settings* from the left side menu. At the bottom of that windows click *Environment Variables*. In my case the Python value for the Path variable was set to `C:\Python27\;` which is wrong. You have to remove final backslash if that's the case for you too. If you're having issues with this feel free to open an Issue.
 
 ![Variable issue](../_static/img/2LeOviQ.png)
-
-All set, head back to the basic install guide.
 
 ## Step 3: Install C++ Compiler for Python
 
 Download the Visual C++ Compiler for Python from the link above and install it. There is no changes required other than accepting the terms.
 
 ![VC Compiler Installing](../_static/img/bf4xZX0o0B.png)
+
+All set, head back to the basic install guide.

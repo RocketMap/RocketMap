@@ -1,7 +1,7 @@
 Linux Install
 ##################
 
-Installation will require Python 2.7 and Pip.
+Installation will require Python 2.7 and pip.
 
 Ubuntu
 *************
