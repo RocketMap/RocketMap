@@ -16,7 +16,7 @@ Luckily for you, this error is easy to solve!
 
 ## What's wrong:
 
-Windows defines commands in something called "environment variables", if a program isn't here, Windows doesn't understand what you mean.
+Windows defines commands in something called "environment variables", if a program isn't here, Windows doesn't know where to find what you're asking for.
 
 ## How to solve this:
 
@@ -24,7 +24,7 @@ If you install python, it can automatically set the correct environment variable
 
 ## How to set them manually:
 
-Step 1]	Press the WindowsKey + Pause/Break (Or right click on "This PC" and select properties)
+Step 1]	Press the Windows Key + Pause/Break (Or right click on "This PC" and select properties)
 
 ![](../_static/img/w77iL4P.png)
 
