@@ -22,7 +22,7 @@ Speed- Scheduler combines both and is more efficient.
 
 ## Should I swap back to spawn point scanning after the speed-scheduler has done its initial scan?
 
-No, it will automatically spawn scanpoints.
+No, it will automatically scan spawnpoints.
 
 ## All pokemon disappear after only 1 minute, the map is broken!
 
@@ -32,9 +32,9 @@ Seeing 1-minute timers during initial scan is perfectly normal.
 ## What's the simplest command to start the map scanning?
 
 ./runserver.py -speed -l LOCATION -u USER -p PASS -k GOOGLEKEY
-Please dont just paste that, replace location, user, pass and google map key
+You must replace the values for LOCATION/USER/PASS/GOOGLEKEY with your information.
 
-## Nice what other stuff can I use in the command line?
+## Nice, what other stuff can I use in the command line?
 
 There is a list [here](commandline.md) or a more up to date list can be found by running ./runserver.py -h 
 
@@ -48,7 +48,7 @@ You can use the the free api but be aware that using an api that is older than t
 
 ## Is there anything I can do to lower captchas on either api version?
 
-Yes, you can level your workers to level two (spin a single pokéstop manually), this reduces captchas a lot. you may also consider scanning a smaller area, using less workers or encountering less pokemon for IV.
+Yes, you can level your workers to level two (spin a single pokéstop manually), this reduces captchas a lot. You may also consider scanning a smaller area, using less workers or encountering less pokemon for IV.
 
 ## How many workers do I need?
 
@@ -58,8 +58,6 @@ For a rough guide you can use the formulas at the bottom of this page.
 ## example.py isn't working right!
 
 10/10 would run again
-
-# Lets get technical!
 
 ## I have problems with my database because......
 
