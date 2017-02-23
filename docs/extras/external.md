@@ -1,4 +1,4 @@
-# External Access to Map
+# External Access to RocketMap
 
 ## Introduction
 
