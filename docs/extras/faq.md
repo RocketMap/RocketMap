@@ -116,7 +116,7 @@ The account is banned or hasn't completed the tutorial.
 
 Please read the [Wiki](http://rocketmap.readthedocs.io/en/develop/extras/configuration-files.html) for information and then join us on the [RocketMap Discord](https://discord.gg/PWp2bAm). Before asking questions in #help on Discord, make sure you've read #announcements and #faq.
 
-# Formulas?
+## Formulas?
 
 st=step distance  
 sd=scan delay [default: 10]  
