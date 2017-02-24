@@ -17,7 +17,7 @@ from peewee import InsertQuery, \
     OperationalError
 from playhouse.flask_utils import FlaskDB
 from playhouse.pool import PooledMySQLDatabase
-from playhouse.shortcuts import RetryOperationalError
+from playhouse.shortcuts import RetryOperationalError, case
 from playhouse.migrate import migrate, MySQLMigrator, SqliteMigrator
 from playhouse.sqlite_ext import SqliteExtDatabase
 from datetime import datetime, timedelta
@@ -1022,14 +1022,14 @@ class ScannedLocation(BaseModel):
     @classmethod
     def get_bands_filled_by_cellids(cls, cellids):
         return int(cls
-                   .select(fn.SUM(fn.IF(cls.band1 == -1, 0, 1)
-                                  + fn.IF(cls.band2 == -1, 0, 1)
-                                  + fn.IF(cls.band3 == -1, 0, 1)
-                                  + fn.IF(cls.band4 == -1, 0, 1)
-                                  + fn.IF(cls.band5 == -1, 0, 1))
+                   .select(fn.SUM(case(cls.band1, ((-1, 0),), 1)
+                                  + case(cls.band2, ((-1, 0),), 1)
+                                  + case(cls.band3, ((-1, 0),), 1)
+                                  + case(cls.band4, ((-1, 0),), 1)
+                                  + case(cls.band5, ((-1, 0),), 1))
                            .alias('band_count'))
                    .where(cls.cellid << cellids)
-                   .scalar())
+                   .scalar() or 0)
 
     @classmethod
     def reset_bands(cls, scan_loc):
