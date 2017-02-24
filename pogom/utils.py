@@ -13,6 +13,7 @@ import random
 import time
 import socket
 import struct
+import zipfile
 import requests
 from uuid import uuid4
 from s2sphere import CellId, LatLng
@@ -874,3 +875,10 @@ def generate_device_info():
         device_info['firmware_type'] = random.choice(ios8 + ios9 + ios10)
 
     return device_info
+
+
+def extract_sprites():
+    log.debug("Extracting sprites...")
+    zip = zipfile('static01.zip', 'r')
+    zip.extractall('static')
+    zip.close()

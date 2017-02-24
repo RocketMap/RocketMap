@@ -20,7 +20,7 @@ from flask_cache_bust import init_cache_busting
 
 from pogom import config
 from pogom.app import Pogom
-from pogom.utils import get_args, now
+from pogom.utils import get_args, now, extract_sprites
 from pogom.altitude import get_gmaps_altitude
 
 from pogom.search import search_overseer_thread
@@ -158,8 +158,9 @@ def main():
         if not os.path.isfile(
                 os.path.join(os.path.dirname(__file__),
                              'static/icons-sprite.png')):
-            log.critical('Missing sprite files.')
-            sys.exit()
+            log.info('Sprite files not present, extracting bundled ones...')
+            extract_sprites()
+            log.info('Done!')
 
     # These are very noisy, let's shush them up a bit.
     logging.getLogger('peewee').setLevel(logging.INFO)
