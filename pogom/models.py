@@ -2235,7 +2235,7 @@ def db_updater(args, q, db):
                           model.__name__,
                           len(data),
                           q.qsize(),
-                          default_timer() - last_upsert, 2)
+                          default_timer() - last_upsert)
 
                 if q.qsize() > 50:
                     log.warning(
