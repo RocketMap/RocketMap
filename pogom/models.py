@@ -38,7 +38,7 @@ args = get_args()
 flaskDb = FlaskDB()
 cache = TTLCache(maxsize=100, ttl=60 * 5)
 
-db_schema_version = 13
+db_schema_version = 14
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -102,6 +102,9 @@ class Pokemon(BaseModel):
     individual_stamina = IntegerField(null=True)
     move_1 = IntegerField(null=True)
     move_2 = IntegerField(null=True)
+    weight = DoubleField(null=True)
+    height = DoubleField(null=True)
+    gender = IntegerField(null=True)
     last_modified = DateTimeField(
         null=True, index=True, default=datetime.utcnow)
 
@@ -1868,7 +1871,10 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                 'individual_defense': None,
                 'individual_stamina': None,
                 'move_1': None,
-                'move_2': None
+                'move_2': None,
+                'height': None,
+                'weight': None,
+                'gender': None
             }
 
             if (encounter_result is not None and 'wild_pokemon'
@@ -1884,6 +1890,9 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                         'individual_stamina', 0),
                     'move_1': pokemon_info['move_1'],
                     'move_2': pokemon_info['move_2'],
+                    'height': pokemon_info['height_m'],
+                    'weight': pokemon_info['weight_kg'],
+                    'gender': pokemon_info['pokemon_display']['gender'],
                 })
 
             if args.webhooks:
@@ -2477,3 +2486,13 @@ def database_migrate(db, old_ver):
 
         db.drop_tables([WorkerStatus])
         db.drop_tables([MainWorker])
+
+    if old_ver < 14:
+        migrate(
+            migrator.add_column('pokemon', 'weight',
+                                DoubleField(null=True, default=0)),
+            migrator.add_column('pokemon', 'height',
+                                DoubleField(null=True, default=0)),
+            migrator.add_column('pokemon', 'gender',
+                                IntegerField(null=True, default=0))
+        )
