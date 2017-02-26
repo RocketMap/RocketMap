@@ -879,6 +879,6 @@ def generate_device_info():
 
 def extract_sprites():
     log.debug("Extracting sprites...")
-    zip = zipfile('static01.zip', 'r')
+    zip = zipfile.ZipFile('static01.zip', 'r')
     zip.extractall('static')
     zip.close()
