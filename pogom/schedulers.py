@@ -896,8 +896,7 @@ class SpeedScan(HexSearch):
                 # pass.
                 our_parked_name = (current_thread().name + '-' +
                                    status['username'])
-                if (item.get('thread_name', False) and
-                        item.get('thread_name') != our_parked_name):
+                if item.get('thread_name', False):
                     # We use 'parked_last_update' to determine when the
                     # last time was since the thread passed the item with the
                     # same thread name & username. If it's been too long, unset
@@ -908,11 +907,12 @@ class SpeedScan(HexSearch):
                     if (now - item.get('parked_last_update', now)
                             > max_parking_idle_seconds):
                         # Unpark & don't skip it.
-                        delattr(item, 'thread_name')
-                        delattr(item, 'parked_last_update')
+                        item.pop('thread_name', None)
+                        item.pop('parked_last_update', None)
                     else:
-                        # Still parked. Skip it.
-                        continue
+                        # Still parked and not our item. Skip it.
+                        if item.get('thread_name') != our_parked_name:
+                            continue
 
                 # If already timed out, mark it as Missed and check next.
                 if ms > item['end']:
