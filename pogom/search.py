@@ -254,19 +254,19 @@ def status_printer(threadStatus, search_items_queue_array, db_updates_queue,
             status = '{:21} | {:9} | {:9} | {:9}'
             status_text.append(status.format('Key', 'Remaining', 'Maximum',
                                              'Peak'))
+            if hash_key is not None:
+                for key in hash_key:
+                    key_instance = key_scheduler.keys[key]
+                    key_text = key
 
-            for key in hash_key:
-                key_instance = key_scheduler.keys[key]
-                key_text = key
+                    if key_scheduler.current() == key:
+                        key_text += '*'
 
-                if key_scheduler.current() == key:
-                    key_text += '*'
-
-                status_text.append(status.format(
-                    key_text,
-                    key_instance['remaining'],
-                    key_instance['maximum'],
-                    key_instance['peak']))
+                    status_text.append(status.format(
+                        key_text,
+                        key_instance['remaining'],
+                        key_instance['maximum'],
+                        key_instance['peak']))
 
         # Print the status_text for the current screen.
         status_text.append((
