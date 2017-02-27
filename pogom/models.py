@@ -12,7 +12,7 @@ import geopy
 import math
 from peewee import InsertQuery, \
     Check, CompositeKey, ForeignKeyField, \
-    IntegerField, CharField, DoubleField, BooleanField, \
+    SmallIntegerField, IntegerField, CharField, DoubleField, BooleanField, \
     DateTimeField, fn, DeleteQuery, FloatField, SQL, TextField, JOIN, \
     OperationalError
 from playhouse.flask_utils import FlaskDB
@@ -38,7 +38,7 @@ args = get_args()
 flaskDb = FlaskDB()
 cache = TTLCache(maxsize=100, ttl=60 * 5)
 
-db_schema_version = 14
+db_schema_version = 15
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -102,9 +102,9 @@ class Pokemon(BaseModel):
     individual_stamina = IntegerField(null=True)
     move_1 = IntegerField(null=True)
     move_2 = IntegerField(null=True)
-    weight = DoubleField(null=True)
-    height = DoubleField(null=True)
-    gender = IntegerField(null=True)
+    weight = FloatField(null=True)
+    height = FloatField(null=True)
+    gender = SmallIntegerField(null=True)
     last_modified = DateTimeField(
         null=True, index=True, default=datetime.utcnow)
 
@@ -2496,3 +2496,12 @@ def database_migrate(db, old_ver):
             migrator.add_column('pokemon', 'gender',
                                 IntegerField(null=True, default=0))
         )
+
+    if old_ver < 15:
+        # we don't have to touch sqlite because it has REAL and INTEGER only
+        if args.db_type == 'mysql':
+            db.execute_sql('ALTER TABLE `pokemon` '
+                           'MODIFY COLUMN `weight` FLOAT NULL DEFAULT NULL,'
+                           'MODIFY COLUMN `height` FLOAT NULL DEFAULT NULL,'
+                           'MODIFY COLUMN `gender` SMALLINT NULL DEFAULT NULL'
+                           ';')
