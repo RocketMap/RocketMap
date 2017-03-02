@@ -35,7 +35,7 @@ pgoapi_version = "1.1.7"
 
 # Moved here so logger is configured at load time.
 logging.basicConfig(
-    format='%(asctime)s [%(threadName)16s][%(module)14s][%(levelname)8s] ' +
+    format='%(asctime)s [%(threadName)18s][%(module)14s][%(levelname)8s] ' +
     '%(message)s')
 log = logging.getLogger()
 
