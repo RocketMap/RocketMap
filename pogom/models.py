@@ -38,7 +38,7 @@ args = get_args()
 flaskDb = FlaskDB()
 cache = TTLCache(maxsize=100, ttl=60 * 5)
 
-db_schema_version = 15
+db_schema_version = 16
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -93,15 +93,15 @@ class Pokemon(BaseModel):
     # because they are too big for sqlite to handle.
     encounter_id = CharField(primary_key=True, max_length=50)
     spawnpoint_id = CharField(index=True)
-    pokemon_id = IntegerField(index=True)
+    pokemon_id = SmallIntegerField(index=True)
     latitude = DoubleField()
     longitude = DoubleField()
     disappear_time = DateTimeField(index=True)
-    individual_attack = IntegerField(null=True)
-    individual_defense = IntegerField(null=True)
-    individual_stamina = IntegerField(null=True)
-    move_1 = IntegerField(null=True)
-    move_2 = IntegerField(null=True)
+    individual_attack = SmallIntegerField(null=True)
+    individual_defense = SmallIntegerField(null=True)
+    individual_stamina = SmallIntegerField(null=True)
+    move_1 = SmallIntegerField(null=True)
+    move_2 = SmallIntegerField(null=True)
     weight = FloatField(null=True)
     height = FloatField(null=True)
     gender = SmallIntegerField(null=True)
@@ -434,7 +434,7 @@ class Pokestop(BaseModel):
     longitude = DoubleField()
     last_modified = DateTimeField(index=True)
     lure_expiration = DateTimeField(null=True, index=True)
-    active_fort_modifier = CharField(max_length=50, null=True)
+    active_fort_modifier = CharField(max_length=50, null=True, index=True)
     last_updated = DateTimeField(
         null=True, index=True, default=datetime.utcnow)
 
@@ -531,14 +531,14 @@ class Gym(BaseModel):
     TEAM_INSTINCT = 3
 
     gym_id = CharField(primary_key=True, max_length=50)
-    team_id = IntegerField()
-    guard_pokemon_id = IntegerField()
+    team_id = SmallIntegerField()
+    guard_pokemon_id = SmallIntegerField()
     gym_points = IntegerField()
     enabled = BooleanField()
     latitude = DoubleField()
     longitude = DoubleField()
     last_modified = DateTimeField(index=True)
-    last_scanned = DateTimeField(default=datetime.utcnow)
+    last_scanned = DateTimeField(default=datetime.utcnow, index=True)
 
     class Meta:
         indexes = ((('latitude', 'longitude'), False),)
@@ -756,22 +756,22 @@ class ScannedLocation(BaseModel):
     # with a 2 minute window during which the scan can be done.
 
     # Default of -1 is for bands not yet scanned.
-    band1 = IntegerField(default=-1)
-    band2 = IntegerField(default=-1)
-    band3 = IntegerField(default=-1)
-    band4 = IntegerField(default=-1)
-    band5 = IntegerField(default=-1)
+    band1 = SmallIntegerField(default=-1)
+    band2 = SmallIntegerField(default=-1)
+    band3 = SmallIntegerField(default=-1)
+    band4 = SmallIntegerField(default=-1)
+    band5 = SmallIntegerField(default=-1)
 
     # midpoint is the center of the bands relative to band 1.
     # If band 1 is 10.4 minutes, and band 4 is 34.0 minutes, midpoint
     # is -0.2 minutes in minsec.  Extra 10 seconds in case of delay in
     # recording now time.
-    midpoint = IntegerField(default=0)
+    midpoint = SmallIntegerField(default=0)
 
     # width is how wide the valid window is. Default is 0, max is 2 minutes.
     # If band 1 is 10.4 minutes, and band 4 is 34.0 minutes, midpoint
     # is 0.4 minutes in minsec.
-    width = IntegerField(default=0)
+    width = SmallIntegerField(default=0)
 
     class Meta:
         indexes = ((('latitude', 'longitude'), False),)
@@ -1217,11 +1217,11 @@ class SpawnPoint(BaseModel):
 
     # Next 2 fields are to narrow down on the valid TTH window.
     # Seconds after the hour of the latest Pokemon seen time within the hour.
-    latest_seen = IntegerField()
+    latest_seen = SmallIntegerField()
 
     # Seconds after the hour of the earliest time Pokemon wasn't seen after an
     # appearance.
-    earliest_unseen = IntegerField()
+    earliest_unseen = SmallIntegerField()
 
     class Meta:
         indexes = ((('latitude', 'longitude'), False),)
@@ -1383,9 +1383,9 @@ class SpawnpointDetectionData(BaseModel):
     # Removed ForeignKeyField since it caused MySQL issues.
     encounter_id = CharField(max_length=54)
     # Removed ForeignKeyField since it caused MySQL issues.
-    spawnpoint_id = CharField(max_length=54)
+    spawnpoint_id = CharField(max_length=54, index=True)
     scan_time = DateTimeField()
-    tth_secs = IntegerField(null=True)
+    tth_secs = SmallIntegerField(null=True)
 
     @staticmethod
     def set_default_earliest_unseen(sp):
@@ -1587,7 +1587,7 @@ class SpawnpointDetectionData(BaseModel):
 
 class Versions(flaskDb.Model):
     key = CharField()
-    val = IntegerField()
+    val = SmallIntegerField()
 
     class Meta:
         primary_key = False
@@ -1595,8 +1595,8 @@ class Versions(flaskDb.Model):
 
 class GymMember(BaseModel):
     gym_id = CharField(index=True)
-    pokemon_uid = CharField()
-    last_scanned = DateTimeField(default=datetime.utcnow)
+    pokemon_uid = CharField(index=True)
+    last_scanned = DateTimeField(default=datetime.utcnow, index=True)
 
     class Meta:
         primary_key = False
@@ -1604,28 +1604,28 @@ class GymMember(BaseModel):
 
 class GymPokemon(BaseModel):
     pokemon_uid = CharField(primary_key=True, max_length=50)
-    pokemon_id = IntegerField()
-    cp = IntegerField()
-    trainer_name = CharField()
-    num_upgrades = IntegerField(null=True)
-    move_1 = IntegerField(null=True)
-    move_2 = IntegerField(null=True)
+    pokemon_id = SmallIntegerField()
+    cp = SmallIntegerField()
+    trainer_name = CharField(index=True)
+    num_upgrades = SmallIntegerField(null=True)
+    move_1 = SmallIntegerField(null=True)
+    move_2 = SmallIntegerField(null=True)
     height = FloatField(null=True)
     weight = FloatField(null=True)
-    stamina = IntegerField(null=True)
-    stamina_max = IntegerField(null=True)
+    stamina = SmallIntegerField(null=True)
+    stamina_max = SmallIntegerField(null=True)
     cp_multiplier = FloatField(null=True)
     additional_cp_multiplier = FloatField(null=True)
-    iv_defense = IntegerField(null=True)
-    iv_stamina = IntegerField(null=True)
-    iv_attack = IntegerField(null=True)
+    iv_defense = SmallIntegerField(null=True)
+    iv_stamina = SmallIntegerField(null=True)
+    iv_attack = SmallIntegerField(null=True)
     last_seen = DateTimeField(default=datetime.utcnow)
 
 
 class Trainer(BaseModel):
     name = CharField(primary_key=True, max_length=50)
-    team = IntegerField()
-    level = IntegerField()
+    team = SmallIntegerField()
+    level = SmallIntegerField()
     last_seen = DateTimeField(default=datetime.utcnow)
 
 
@@ -1639,7 +1639,7 @@ class GymDetails(BaseModel):
 
 class Token(flaskDb.Model):
     token = TextField()
-    last_updated = DateTimeField(default=datetime.utcnow)
+    last_updated = DateTimeField(default=datetime.utcnow, index=True)
 
     @staticmethod
     def get_valid(limit=15):
@@ -2507,3 +2507,93 @@ def database_migrate(db, old_ver):
                            'MODIFY COLUMN `height` FLOAT NULL DEFAULT NULL,'
                            'MODIFY COLUMN `gender` SMALLINT NULL DEFAULT NULL'
                            ';')
+
+    if old_ver < 16:
+        log.info('This DB schema update can take some time. '
+                 'Please be patient.')
+
+        # change some column types from INT to SMALLINT
+        # we don't have to touch sqlite because it has INTEGER only
+        if args.db_type == 'mysql':
+            db.execute_sql(
+                'ALTER TABLE `pokemon` '
+                'MODIFY COLUMN `pokemon_id` SMALLINT NOT NULL,'
+                'MODIFY COLUMN `individual_attack` SMALLINT '
+                'NULL DEFAULT NULL,'
+                'MODIFY COLUMN `individual_defense` SMALLINT '
+                'NULL DEFAULT NULL,'
+                'MODIFY COLUMN `individual_stamina` SMALLINT '
+                'NULL DEFAULT NULL,'
+                'MODIFY COLUMN `move_1` SMALLINT NULL DEFAULT NULL,'
+                'MODIFY COLUMN `move_2` SMALLINT NULL DEFAULT NULL;'
+            )
+            db.execute_sql(
+                'ALTER TABLE `gym` '
+                'MODIFY COLUMN `team_id` SMALLINT NOT NULL,'
+                'MODIFY COLUMN `guard_pokemon_id` SMALLINT NOT NULL;'
+            )
+            db.execute_sql(
+                'ALTER TABLE `scannedlocation` '
+                'MODIFY COLUMN `band1` SMALLINT NOT NULL,'
+                'MODIFY COLUMN `band2` SMALLINT NOT NULL,'
+                'MODIFY COLUMN `band3` SMALLINT NOT NULL,'
+                'MODIFY COLUMN `band4` SMALLINT NOT NULL,'
+                'MODIFY COLUMN `band5` SMALLINT NOT NULL,'
+                'MODIFY COLUMN `midpoint` SMALLINT NOT NULL,'
+                'MODIFY COLUMN `width` SMALLINT NOT NULL;'
+            )
+            db.execute_sql(
+                'ALTER TABLE `spawnpoint` '
+                'MODIFY COLUMN `latest_seen` SMALLINT NOT NULL,'
+                'MODIFY COLUMN `earliest_unseen` SMALLINT NOT NULL;'
+            )
+            db.execute_sql(
+                'ALTER TABLE `spawnpointdetectiondata` '
+                'MODIFY COLUMN `tth_secs` SMALLINT NULL DEFAULT NULL;'
+            )
+            db.execute_sql(
+                'ALTER TABLE `versions` '
+                'MODIFY COLUMN `val` SMALLINT NOT NULL;'
+            )
+            db.execute_sql(
+                'ALTER TABLE `gympokemon` '
+                'MODIFY COLUMN `pokemon_id` SMALLINT NOT NULL,'
+                'MODIFY COLUMN `cp` SMALLINT NOT NULL,'
+                'MODIFY COLUMN `num_upgrades` SMALLINT NULL DEFAULT NULL,'
+                'MODIFY COLUMN `move_1` SMALLINT NULL DEFAULT NULL,'
+                'MODIFY COLUMN `move_2` SMALLINT NULL DEFAULT NULL,'
+                'MODIFY COLUMN `stamina` SMALLINT NULL DEFAULT NULL,'
+                'MODIFY COLUMN `stamina_max` SMALLINT NULL DEFAULT NULL,'
+                'MODIFY COLUMN `iv_defense` SMALLINT NULL DEFAULT NULL,'
+                'MODIFY COLUMN `iv_stamina` SMALLINT NULL DEFAULT NULL,'
+                'MODIFY COLUMN `iv_attack` SMALLINT NULL DEFAULT NULL;'
+            )
+            db.execute_sql(
+                'ALTER TABLE `trainer` '
+                'MODIFY COLUMN `team` SMALLINT NOT NULL,'
+                'MODIFY COLUMN `level` SMALLINT NOT NULL;'
+            )
+
+        # add some missing indexes
+        migrate(
+            migrator.add_index('gym', ('last_scanned',), False),
+            migrator.add_index('gymmember', ('last_scanned',), False),
+            migrator.add_index('gymmember', ('pokemon_uid',), False),
+            migrator.add_index('gympokemon', ('trainer_name',), False),
+            migrator.add_index('pokestop', ('active_fort_modifier',), False),
+            migrator.add_index('spawnpointdetectiondata', ('spawnpoint_id',),
+                               False),
+            migrator.add_index('token', ('last_updated',), False)
+        )
+        # pokestop.last_updated was missing in a previous migration
+        # check whether we have to add it
+        has_last_updated_index = False
+        for index in db.get_indexes('pokestop'):
+            if index.columns[0] == 'last_updated':
+                has_last_updated_index = True
+                break
+        if not has_last_updated_index:
+            log.debug('pokestop.last_updated index is missing. Creating now.')
+            migrate(
+                migrator.add_index('pokestop', ('last_updated',), False)
+            )
