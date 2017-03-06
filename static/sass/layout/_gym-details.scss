@@ -9,7 +9,7 @@
     -webkit-overflow-scrolling: touch;
     background: #F8F8F8;
     box-shadow: none;
-    color: _palette(accent2, fg-bold);
+    color: darken(_palette(accent2, bg), 12);
     height: -webkit-calc(100% - 3.5em);
     height: -moz-calc(100% - 3.5em);
     height: calc(100% - 3.5em);
@@ -155,21 +155,6 @@
 
     .level {
       font-weight: bold;
-    }
-
-    .team-0-text {
-      color: #A9A9A9;
-    }
-    .team-1-text {
-      color: #4A8ACA;
-    }
-
-    .team-2-text {
-      color: #F0443A;
-    }
-
-    .team-3-text {
-      color: #FED928;
     }
 
     td {
