@@ -13,8 +13,8 @@ You can install the required packages on Ubuntu by running the following command
   sudo apt-get install -y python python-pip python-dev build-essential git
   curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
   sudo apt-get install -y nodejs
-  
-  
+
+
 Debian 7/8
 **********
 
@@ -27,7 +27,7 @@ Debian's sources lists are out of date and will not fetch the correct versions o
 	tar xzf Python-2.7.12.tgz && cd Python-2.7.12
 	./configure --prefix=/opt/python
 	make
-	make install
+	sudo make install
 	ln -s /opt/python/bin/python2.7 /usr/local/bin/python2.7
 	ln -s /opt/python/bin/python2.7 /usr/bin/python2.7
 	ln -s /usr/bin/python2.7 /usr/bin/python
@@ -39,7 +39,7 @@ Debian's sources lists are out of date and will not fetch the correct versions o
 	source ~/.profile
 	wget https://bootstrap.pypa.io/get-pip.py
 	python get-pip.py
-	
+
 After install, check that you have the correct versions in your environment variables:
 
 .. code-block:: bash
@@ -48,11 +48,11 @@ After install, check that you have the correct versions in your environment vari
 		Python 2.7.12
 	~$ pip --version
 		pip 8.1.2 from /home/user/.local/lib/python2.7/site-packages (python 2.7)
-		
+
 If your output looks as above, you can proceed with installation:
 
 .. code-block:: bash
-        
+
 	cd ~/
 	sudo apt-get install git
 	git clone https://github.com/RocketMap/RocketMap.git
@@ -64,28 +64,28 @@ If your output looks as above, you can proceed with installation:
 
 Troubleshooting:
 ****************
-	
+
 	If you have preciously installed pip packages before following this guide, you may need to remove them before installing:
-	
+
 .. code-block:: bash
 
 	pip freeze | xargs pip uninstall -y
-	
+
 If you have other pip installed packages, the old requirements.txt and cannot uninstall all then you can use:
 
 .. code-block:: bash
-	
+
 	pip uninstall -r "old requirements.txt"
 	pip install -r "new requirements.txt"
 
 An error resulting from not removing previous packages can be:
 
 .. code-block:: bash
-	
+
 	016-12-29 00:50:37,560 [ search-worker-1][        search][    INFO] Searching at xxxxxxx,xxxxxxx
 	2016-12-29 00:50:37,575 [ search-worker-1][        search][ WARNING] Exception while downloading map:
 	2016-12-29 00:50:37,575 [ search-worker-1][        search][   ERROR] Invalid response at xxxxxxx,xxxxxxx, abandoning location
-	
+
 If you're getting the following error:
 
 .. code-block:: bash
@@ -95,9 +95,9 @@ If you're getting the following error:
   		File "./runserver.py", line 10, in <module>
   		import requests
 	ImportError: No module named requests
-	
+
 	You will need to completely uninstall all of your pip packages, pip, and python, then re-install from source again. Something from your previous installation is still hanging around.
-	
+
 Debian 7
 ********
 
@@ -108,7 +108,7 @@ Edit your ``/etc/apt/sources.list`` file and add the following line:
 .. code-block:: bash
 
 	deb http://ftp.debian.org/debian sid main
-	
+
 Then install the packages for ``eglibc``:
 
 .. code-block:: bash
@@ -128,10 +128,10 @@ You may also need to install the EPEL repository to install ``python-pip`` and `
 
   yum install epel-release
   yum install python python-pip python-devel
-  
+
   Fedora Server:
   dnf install python
   dnf install redhat-rpm-config // fix for error: command 'gcc' failed with exit status 1
-  
+
 
 All set, head back to the basic install guide.
