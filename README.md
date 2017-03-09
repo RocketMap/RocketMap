@@ -27,16 +27,12 @@ Live visualization of all the pokemon (with option to show gyms and pokestops) i
 
 ## Installation
 
-For instructions on how to setup and run the tool, please refer to the project [documentation](https://rocketmap.readthedocs.io) or the ~~[video guide](https://www.youtube.com/watch?v=2ACJHCNZ3ow)~~ Video guide to be replaced
+For instructions on how to setup and run the tool, please refer to the project [documentation](https://rocketmap.readthedocs.io).
 
 ## Deployment
 
-**Please note, deployments are not supported officially.**
+**Please note, deployments are not supported officially. You are using these deployment links at your own risk.**
 [![Deploy](https://raw.githubusercontent.com/RocketMap/PokemonGo-Map-in-Cloud/master/images/deploy-to-jelastic.png)](https://jelastic.com/install-application/?manifest=https://raw.githubusercontent.com/RocketMap/PokemonGo-Map-in-Cloud/master/manifest.jps) [![Deploy on Scalingo](https://cdn.scalingo.com/deploy/button.svg)](https://my.scalingo.com/deploy?source=https://github.com/RocketMap/RocketMap#develop)
-
-## iOS Version
-
-There is an [iOS port](https://github.com/istornz/iPokeGo) in the works. All iOS related prs and issues please refer to this [repo](https://github.com/istornz/iPokeGo).
 
 ## Contributions
 
