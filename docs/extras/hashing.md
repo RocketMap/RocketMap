@@ -14,6 +14,16 @@ Please don't ask *"What if my step size is _x_, and I have encounters for _y_ Po
 We still don't know.  Get a key, turn on your map and see if it works.
 If you are getting rate limited then either get more keys, or lower your calls (disabling/reducing encounters, disabling gym details, and decreasing step size are a few ways to reduce calls)
 
+You can get a more detailed view of how many Hash key calls are being used by enabling the status view `-ps` / `--print-status` and typing `h` followed by the enter key.  
+
+## Where do I enter my hash key?
+Use `-hk YourHashKeyHere` / `--hash-key YourHashKeyHere`.  
+If you use a configuration file, add the line `hash-key: YourHashKeyHere` to that file.
+
+## What if I have more than one hash key?
+Specify `-hk YourHashKeyHere -hk YourSecondHashKeyHere ...`.  
+If you use a configuration file, use `hash-key: [YourHashKeyHere, YourSecondHashKeyHere, ...]` in the file.
+
 ## What does HashingQuotaExceededException('429: Request limited, error: ',) mean?
 Any variant of this means you've exceeded the Requests Per Minute that your key allows.
 

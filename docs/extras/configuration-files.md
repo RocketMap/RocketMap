@@ -32,7 +32,7 @@ The default configuration file is *config/config.ini* underneath the project hom
   location: seattle, wa
   step-limit: 5
   gmaps-key: MyGmapsKeyGoesHereSomeLongString
-  print-status: True
+  print-status: "status"
   -- end of file --
   </pre>
 
