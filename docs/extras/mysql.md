@@ -6,7 +6,7 @@
 
 ## I. Prerequisites
 1. Have already ran/operated the RocketMap using the default database setup.
-2. Have the "develop" build of RocketMap. [Available here.](https://github.com/RocketMap/RocketMap/archive/develop.zip)
+2. Have the "develop" build of RocketMap. [Available here.](https://rocketmap.readthedocs.io/en/develop/basic-install/index.html)
 3. Downloaded [MariaDB](https://downloads.mariadb.org/)
 
 ## II. Installing MariaDB
