@@ -2288,12 +2288,19 @@ def clean_db_loop(args):
 
             # If desired, clear old Pokemon spawns.
             if args.purge_data > 0:
+                log.info("Beginning purge of old Pokemon spawns.")
+                start = datetime.utcnow()
                 query = (Pokemon
                          .delete()
                          .where((Pokemon.disappear_time <
                                  (datetime.utcnow() -
                                   timedelta(hours=args.purge_data)))))
-                query.execute()
+                rows = query.execute()
+                end = datetime.utcnow()
+                diff = end-start
+                log.info("Completed purge of old Pokemon spawns. "
+                         "%i deleted in %f seconds.",
+                         rows, diff.total_seconds())
 
             log.info('Regular database cleaning complete.')
             time.sleep(60)
