@@ -1040,9 +1040,9 @@ class SpeedScan(HexSearch):
             seconds_within_band = (
                 int((datetime.utcnow() - self.refresh_date).total_seconds()) +
                 self.refresh_ms)
-            start_delay = (
-                seconds_within_band - item['start'] -
-                (self.args.spawn_delay if item['kind'] == 'spawn' else 0))
+            enforced_delay = (self.args.spawn_delay if item['kind'] == 'spawn'
+                              else 0)
+            start_delay = seconds_within_band - item['start'] + enforced_delay
             safety_buffer = item['end'] - seconds_within_band
 
             if safety_buffer < 0:
