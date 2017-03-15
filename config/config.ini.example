@@ -1,62 +1,183 @@
-# DO NOT USE NOTEPAD TO EDIT CONFIG FILES!! USE NOTEPAD ++ INSTEAD.
-# Authentication settings
-#auth-service:          # ptc (default) or google
-#username:
-#password:
+# DO NOT USE NOTEPAD TO EDIT CONFIG FILES! USE NOTEPAD++ INSTEAD!
+# Uncomment a line when you want to change its default value (Remove # at the beginning)
+# Please ensure to leave a space after the colon if a value is needed ("example-setting" "example-setting-with: value")
+# At least one account with "username", "password" as well as "location" and "gmaps-key" are required
+# When your configuration is done, rename this file by removing the ".example" extension
+# A different config-files can be included directly in processes by "--config-file" or "-cf" and path
+
+
+# Required settings
+###################
+
+#gmaps-key:                     # Your Google Maps API key
+#auth-service:                  # ptc (default) or google
+#username:                      # Usernames, one per account. (default=[])
+#password:                      # Passwords, either single one for all accounts or one per account. (default=[])
+
+
+# Common settings
+#################
+
+#host:                          # Address to listen on (default='127.0.0.1')
+#port:                          # Port to listen on (default=5000)
+#hash-key:                      # Key for hash server (default=None)
+#accountcsv:                    # Load accounts instead from a CSV file containing "auth-service,username,password" lines.
+#speed-scan                     # Use speed-scan as the search scheduler.
+#location:                      # Location, can be an address or coordinates.
+#step-limit:                    # Steps (default=10)
+#scan-delay:                    # Time delay between requests in scan threads. (default=12)
+#no-gyms                        # Disables gym scanning (default=False)
+#no-pokemon                     # Disables pokemon scanning. (default=False)
+#no-pokestops                   # Disables pokestop scanning. (default=False)
+#print-status                   # Enable ENTER to switch between log view and a status view.
+                                # Optionally add ": status" to start in status view and ": logs" to start in log view. (default=False)
+#status-page-password:          # Enables and protects the /status page to view status of all workers. (default=None)
+#captcha-solving                # Enables captcha solving. (default=False)
+
 
 # Database settings
-#db-type: sqlite        # sqlite (default) or mysql
-#db-host:               # required for mysql
-#db-name:               # required for mysql
-#db-user:               # required for mysql
-#db-pass:               # required for mysql
-#db-port:               # default 3306
+###################
+
+#db-type: sqlite                # sqlite (default) or mysql
+#db:                            # Database filename for SQLite. (default='pogom.db')
+#db-host:                       # Required for mysql ()
+#db-name:                       # Required for mysql
+#db-user:                       # Required for mysql
+#db-pass:                       # Required for mysql
+#db-port:                       # Required for mysql (default=3306)
+#db-max_connections:            # Max connections (per thread) for the database. (default=5)
+#db-threads:                    # Number of db threads; increase if the db queue falls behind. (default=1)
+
+
+# Scan method (speed-scan preferable, (default is hex-scan)
+#############
+
+#beehive                        # Use beehive configuration for multiple accounts, one account per hex.
+                                # Make sure to keep -st under 5, and -w under the totalamount of accounts available.
+#spawnpoint-scanning            # Use spawnpoint scanning (instead of hex grid).
+                                # Scans in a circle based on step_limit when on DB.
+                                # A spawnpoint-file can be added optinal as value for "spawnpoint-scanning".
+#dump-spawnpoints               # Dump the spawnpoints from the db to json (only for use with -ss).
+
 
 # Search settings
-#location:
-#speed-scan             # To use speed-scan as the search scheduler
-#no-gyms:               # disables gym scanning (default false)
-#no-pokemon:            # disables pokemon scanning (default false)
-#no-pokestops:          # disables pokestop scanning (default false)
-#scan-delay:            # default 10
-#step-limit:            # default 12
-#gym-info:              # enables detailed gym info collection (default false)
-#max-failures:          # Maximum number of failures to parse locations before an account will go into a sleep for #account-rest-interval seconds (0 to disable), (default 5)
-#max-empty:             # Maximum number of empty scans before an account will go into a sleep for #account-rest-interval seconds. Reasonable to use with proxies (0 to disable), (default 0)
-#min-seconds-left:      # time that must be left on a spawn before considering it too late and skipping it (default 0)
-#status-name:           # enables writing status updates to the database - if you use multiple processes, each needs a unique value
+#################
 
-# Pokemon IV
-#encounter:             # Set to true to start encounters to pull more info, like IVs or movesets. (default false)
-#encounter-delay:       # delay in seconds before starting an encounter. Must not be zero. (default 1)
-#encounter-whitelist:   # whitelist of pokemon ids to encounter. Syntax [id,id,id,id] (Do not use with blacklist)
-#encounter-blacklist:   # blacklist of pokemon ids to NOT encounter. Syntax [id,id,id,id] (Do not use with whitelist)
+#china                          # Coordinates transformer for China.
+#no-jitter                      # Don't apply random -9m to +9m jitter to location.
+#altitude:                      # Default altitude in meters. Retrieve this value regarding your scan location from the web. (default=507)
+#altitude-variance:             # Variance for --altitude in meters (default=1)
+#use-altitude-cache             # Query the Elevation API for each step, rather than only once, and store results in the database.
+                                # Make sure your Google Elevation API is enabled
+#workers-per-hive:              # Only referenced when using --beehive. Sets number of workers per hive. (default=1)
+#workers:                       # Number of search worker threads to start. (default=#accounts)
+#spawn-delay:                   # Number of seconds after spawn time to wait before scanning to be sure the Pokemon is there. (default=10)
+#kph:                           # Set a maximum speed in km/hour for scanner movement. (default=35)
+#bad-scan-retry:                # Number of bad scans before giving up on a step. (default=2, 0 to disable)
+#skip-empty                     # Enables skipping of empty cells in normal scans - requires previously populated database. (not to be used with -ss)
+#min-seconds-left:              # Time that must be left on a spawn before considering it too late and skipping it. (default=0)
+#gym-info                       # Enables detailed gym info collection. (default=False)
+#complete-tutorial              # Complete ToS and tutorial steps on accounts if they haven't already.
+#on-demand_timeout:             # Pause searching while web UI is inactive for this timeout (in seconds). (default=0)
 
-# Misc
-#gmaps-key:             # Your Google Maps API key
-#proxy:                 # Proxy URL e.g. socks5://127.0.0.1:9050 or a list of proxies e.g. [socks5://127.0.0.1:9050,socks5://127.0.0.1:9050]
-#proxy-timeout:         # Timeout before proceeding with next proxy while checking if the proxy works, (default 5)
-#proxy-display:         # Used with -ps, full = display complete proxy address. Index = displays just the index for that proxy (default index)
-#proxy-file:            # Load proxy list from text file (one proxy per line), overrides #proxy
-#proxy-refresh:         # Period of proxy file reloading, in seconds. Works only with #proxy-file (0 to disable), (default 0)
-#proxy-rotation:        # Enable proxy rotation with account changing for search threads (none/round/random), (default='none')
-#webhook:               # Webhook URL e.g. http://127.0.0.1:12345 or a list for multiple webhooks [http://127.0.0.1:1345,http://127.0.0.1:12346]
-#webhook-updates-only:  # Only send updates to webhooks (excludes gyms & non-lured pokéstops).
-#wh-retries:            # Number of times to retry sending webhook data on failure (default: 5).
-#wh-timeout:            # Timeout (in seconds) for webhook requests (default: 2).
-#wh-backoff-factor:     # Factor (in seconds) by which the delay until next retry will increase (default: 0.25).
-#wh-lfu-size:           # Webhook LFU cache max size (default: 1000).
-#print-status:          # Enable ENTER to switch between log view and a status view.  Use 'status' to start in status view and 'logs' to start in log view
+
+# Account rotation
+##################
+
+#login-delay:                   # Time delay between each login attempt. (default=6)
+#login-retries:                 # Number of times to retry the login before refreshing a thread. (default=3)
+#account-search-interval:       # Seconds for accounts to search before switching to a new account. (default=0)
+#account-rest-interval:        # Seconds for accounts to rest when they fail or are switched out. (default=7200)
+#max-failures:                  # Maximum number of failures to parse locations before an account will go into a sleep for
+                                # account-rest-interval seconds. (default 5, 0 to disable)
+#max-empty:                     # Maximum number of empty scans before an account will go into a sleep for
+                                # account-rest-interval seconds. Reasonable to use with proxies. (default=0)
+
+
+# Pokemon IV (Only use one of the filters below)
+############
+
+#encounter                      # Set to true to start encounters to pull more info, like IVs or movesets. (default=False)
+#encounter-delay:               # Delay in seconds before starting an encounter. Must not be zero. (default=1)
+#encounter-whitelist:           # Whitelist of pokemon ids to encounter. Syntax [id,id,id,id] (Do not use with blacklist)
+#encounter-whitelist-file:      # File containing a list of Pokemon to encounter for more stats. (Do not use with blacklist-file)
+#encounter-blacklist:           # Blacklist of pokemon ids to NOT encounter. Syntax [id,id,id,id] (Do not use with whitelist)
+#encounter-blacklist-file:      # File containing a list of Pokemon to NOT encounter formore stats. (Do not use with whitelist-file)
+
 
 # Webserver settings
-#host:                  # address to listen on (default 127.0.0.1)
-#port:                  # port to listen on (default 5000)
-#locale:                # pokemon translation
-#ssl-certificate:       # path to ssl certificate
-#ssl-privatekey:        # path to ssl private key
-#encrypt-lib:           # path to encrypt lib to be used instead of the shipped ones
-#status-page-password:  # enables and protects the /status page to view status of all workers
+####################
 
-# Uncomment a line when you want to change its default value (Remove # at the beginning)
-# Please ensure to leave a space after the colon (:) (example setting: value)
-# Username, password, location and gmaps-key are required
+#no-server                      # No-Server Mode. Starts the searcher but not the Webserver.
+#only-server                    # Server-Only Mode. Starts only the Webserver without the searcher.
+#locale:                        # Pokemon translation
+#no-search-control              # Disables search control.
+#fixed-location                 # Hides the search bar for use in shared maps.
+#cors                           # Enable CORS on web server.
+#ssl-certificate:               # Path to ssl certificate
+#ssl-privatekey:                # Path to ssl private key
+#encrypt-lib:                   # Path to encrypt lib to be used instead of the shipped ones.
+#display-in-console             # Display Found Pokemon in Console.
+#disable-blacklist              # Disable the global anti-scraper IP blacklist.
+
+
+# Proxy settings
+################
+
+#proxy:                         # Proxy URL e.g. socks5://127.0.0.1:9050 or a list of proxies
+                                # e.g. [socks5://127.0.0.1:9050,socks5://127.0.0.1:9050]
+#proxy-skip-check               # Disable checking of proxies before start.
+#proxy-timeout:                 # Timeout before proceeding with next proxy while checking if the proxy works. (default=5)
+#proxy-display:                 # Used with -ps, full = display complete proxy address. Index = displays just the index for that proxy. (default='index')
+#proxy-file:                    # Load proxy list from text file (one proxy per line), overrides #proxy.
+#proxy-refresh:                 # Period of proxy file reloading, in seconds. Works only with proxy-file. (default=0, 0 to disable)
+#proxy-rotation:                # Enable proxy rotation with account changing for search threads (none/round/random). (default='none')
+
+
+
+# Webhook settings
+##################
+
+#webhook:                       # Webhook URL e.g. http://127.0.0.1:12345 or a list for multiple webhooks
+                                # [http://127.0.0.1:1345,http://127.0.0.1:12346] (default=None)
+#wh-threads:                    # Number of webhook threads; increase if the webhook queue falls behind. (default=1)
+#webhook-updates-only           # Only send updates to webhooks (excludes gyms & non-lured pokéstops). (default=False)
+#webhook-scheduler-updates      # Send webhook updates with scheduler status (use with -wh). (default=True)
+#wh-retries:                    # Number of times to retry sending webhook data on failure (default=5)
+#wh-timeout:                    # Timeout (in seconds) for webhook requests (default=2).
+#wh-concurrency:                # Async requests pool size. (default=25)
+#wh-backoff-factor:             # Factor (in seconds) by which the delay until next retry will increase. (default=0.25).
+#wh-lfu-size:                   # Webhook LFU cache max size (default=1000).
+
+
+# Status and logs
+#################
+
+#stats-log-timer                # In log view, list per hr stats every X seconds
+#status-name:                   # Enables writing status updates to the database - if you use multiple processes, each needs a unique value. (default=None)
+
+
+# Captcha Solving
+#################
+
+#captcha-key:                   # 2Captcha API key.
+#captcha-dsk:                   # PokemonGo captcha data-sitekey. Don't change this if not explicitly needed due to recent changes.
+                                # (default="6LeeTScTAAAAADqvhqVMhPpr_vB9D364Ia-1dSgK")
+#manual-captcha-domain:         # Enables the option to manual solve Captcha.
+                                # Enter domain where captcha tokens will be sent. (default="http://127.0.0.1:5000")
+#manual-captcha-refresh:        # Time available before captcha page refreshes. (default=30)
+#manual-captcha-timeout:        # Maximum time captchas will wait for manual captcha solving.
+                                # On timeout, if enabled, 2Captcha will be used to solve captcha. (default=0)
+
+
+# Misc
+######
+
+#verbose                        # Show debug messages from PokemonGo-Map and pgoapi.
+                                # Optionally specify file to log to by adding ": PATH/FILENAME.log". (default=False)
+#very-verbose                   # Like verbose, but show debug messages from all modules as well.
+                                # Optionally specify file to log to like above mentioned. (default=False)
+#no-version-check               # Disable API version check. (default=False)
+#version-check-interval:        # Interval to check API version in seconds (Default: in range [60, 300]).
+#mock:                          # Mock mode - point to a fpgo endpoint instead of using the real PogoApi,
+                                # ec: http://127.0.0.1:9090 (default='')
