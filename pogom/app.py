@@ -97,8 +97,12 @@ class Pogom(Flask):
         return r
 
     def validate_request(self):
-        if self._ip_is_blacklisted(request.remote_addr):
-            log.debug('Denied access to %s.', request.remote_addr)
+        args = get_args()
+        ip_addr = request.remote_addr
+        if ip_addr in args.trusted_proxies:
+            ip_addr = request.headers.get('X-Forwarded-For', ip_addr)
+        if self._ip_is_blacklisted(ip_addr):
+            log.debug('Denied access to %s.', ip_addr)
             abort(403)
 
     def _ip_is_blacklisted(self, ip):
