@@ -16,7 +16,7 @@ service with the latest API version will avoid accounts being flagged.
 	* Set the account search interval to approx. ``asi: 120``.
 	* Set the account rest interval as high as possible so all accounts get
 	cycled and none return, a safe value is ``ari: 36000``.
-	* Set login delay to at least ``login_delay: 1`` to avoid throttling.
+	* Set login delay to at least ``login-delay: 1`` to avoid throttling.
 * Put the accounts that need to complete the tutorial and need to level up 
 into your ``accounts.csv`` file.
 * Set up an instance with the following flags:
