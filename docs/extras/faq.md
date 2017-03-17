@@ -2,7 +2,7 @@
 
 ## Critical Error "Missing sprite files"
 
-Please consult #faq on the [RocketMap Discord](https://discord.gg/PWp2bAm).
+Please consult #faq on the [RocketMap Discord](https://discord.gg/rocketmap).
 
 ## Can I sign in with Google?
 
@@ -26,7 +26,7 @@ No, it will automatically scan spawnpoints.
 
 ## All pokemon disappear after only 1 minute, the map is broken!
 
-One of Niantic's updates removed spawn timers from Pokémon (until there's little time left until they despawn). SpeedScan does an initial scan to determine all spawn points and their timers and automatically transitions into spawn scanning once it found them all. 
+One of Niantic's updates removed spawn timers from Pokémon (until there's little time left until they despawn). SpeedScan does an initial scan to determine all spawn points and their timers and automatically transitions into spawn scanning once it found them all.
 Seeing 1-minute timers during initial scan is perfectly normal.
 
 ## What's the simplest command to start the map scanning?
@@ -36,7 +36,7 @@ You must replace the values for LOCATION/USER/PASS/GOOGLEKEY with your informati
 
 ## Nice, what other stuff can I use in the command line?
 
-There is a list [here](http://rocketmap.readthedocs.io/en/develop/extras/commandline.html) or a more up to date list can be found by running ./runserver.py -h 
+There is a list [here](http://rocketmap.readthedocs.io/en/develop/extras/commandline.html) or a more up to date list can be found by running ./runserver.py -h
 
 ## Woah I added a ton of cool stuff and now my command line is massive, any way to shorten it?
 
@@ -114,7 +114,7 @@ The account is banned or hasn't completed the tutorial.
 
 ## I have more questions!
 
-Please read the [Wiki](http://rocketmap.readthedocs.io/en/develop/extras/configuration-files.html) for information and then join us on the [RocketMap Discord](https://discord.gg/PWp2bAm). Before asking questions in #help on Discord, make sure you've read #announcements and #faq.
+Please read the [Wiki](http://rocketmap.readthedocs.io/en/develop/extras/configuration-files.html) for information and then join us on the [RocketMap Discord](https://discord.gg/rocketmap). Before asking questions in #help on Discord, make sure you've read #announcements and #faq.
 
 ## Formulas?
 

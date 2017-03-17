@@ -10,7 +10,7 @@ Live visualization of all the pokemon (with option to show gyms and pokestops) i
 ## Features:
 
 * Shows Pokemon, Pokestops, and gyms with a clean GUI.
-* Notifications 
+* Notifications
 * Lure information
 * Multithreaded mode
 * Filters
@@ -20,7 +20,7 @@ Live visualization of all the pokemon (with option to show gyms and pokestops) i
 * Incredibly fast, efficient searching algorithm (compared to everything else available)
 
 ## Information
-* [Discord](https://discord.gg/PWp2bAm) for general support
+* [Discord](https://discord.gg/rocketmap) for general support
 * [Documentation](https://rocketmap.readthedocs.io/) for installation and usage docs
 * ~~[feathub](http://feathub.com/PokemonGoMap/PokemonGo-Map) to request new features~~ Use a Github issue, tag with [Feature Request].
 * [Github Issues](https://github.com/RocketMap/RocketMap/issues) for reporting bugs (not for support!)
