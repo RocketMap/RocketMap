@@ -1,5 +1,11 @@
 # Common Questions and Answers
 
+## What do the spawn point colors mean?
+
+* A **grey** dot represents a spawn point that is more than 5 minutes from spawning.
+* A **light blue** dot represents a spawn point that will spawn in 5 minutes. **Light blue** changes to **dark blue** and finally into **purple** just before spawn time.
+* A **green dot** represents a fresh spawn. This will transition to **yellow**, through **orange** and finally **red** (like a stop light) as it is about to despawn.
+
 ## Critical Error "Missing sprite files"
 
 Please consult #faq on the [RocketMap Discord](https://discord.gg/rocketmap).
