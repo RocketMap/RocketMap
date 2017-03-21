@@ -1,6 +1,3 @@
-/* Shared */
-var monthArray = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
 /* Main stats page */
 var rawDataIsLoading = false
 var statusPagePassword = false
@@ -76,12 +73,14 @@ function processWorker(i, worker) {
     }
 
     var lastModified = new Date(worker['last_modified'])
-    lastModified = lastModified.getHours() + ':' +
+
+    // Use YYYY-MM-DD HH:MM:SS formatted dates to enable simple sorting
+    lastModified = lastModified.getFullYear() + '-' +
+        ('0' + (lastModified.getMonth() + 1)).slice(-2) + '-' +
+        ('0' + lastModified.getDate()).slice(-2) + ' ' +
+        ('0' + lastModified.getHours()).slice(-2) + ':' +
         ('0' + lastModified.getMinutes()).slice(-2) + ':' +
-        ('0' + lastModified.getSeconds()).slice(-2) + ' ' +
-        lastModified.getDate() + ' ' +
-        monthArray[lastModified.getMonth()] + ' ' +
-        lastModified.getFullYear()
+        ('0' + lastModified.getSeconds()).slice(-2)
 
     $('#username_' + hash).html(worker['username'])
     $('#success_' + hash).html(worker['success'])
