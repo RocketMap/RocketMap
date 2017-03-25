@@ -22,7 +22,7 @@ Live visualization of all the pokemon (with option to show gyms and pokestops) i
 ## Information
 * [Discord](https://discord.gg/rocketmap) for general support
 * [Documentation](https://rocketmap.readthedocs.io/) for installation and usage docs
-* ~~[feathub](http://feathub.com/PokemonGoMap/PokemonGo-Map) to request new features~~ Use a Github issue, tag with [Feature Request].
+* [vote.devkat.org](http://vote.devkat.org) to request new features
 * [Github Issues](https://github.com/RocketMap/RocketMap/issues) for reporting bugs (not for support!)
 
 ## Installation
