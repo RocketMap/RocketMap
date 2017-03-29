@@ -12,20 +12,20 @@ Assuming the following:
    ```
    sudo a2enmod proxy proxy_http proxy_connect ssl rewrite
    ```
-3. Create a file /etc/apache2/sites-available/pokemongo-map.conf
+3. Create a file /etc/apache2/sites-available/rocketmap.conf
    ```
-   sudo nano /etc/apache2/sites-available/pokemongo-map.conf`
+   sudo nano /etc/apache2/sites-available/rocketmap.conf`
    ```
    copy pasta:
    ```
    <VirtualHost *:80>
 
-       ServerName pokemongo.yourdomain.com
+       ServerName rocketmap.yourdomain.com
 
        ProxyPass / http://127.0.0.1:5000/
        ProxyPassReverse / http://127.0.0.1:5000/
 
-       RewriteCond %{HTTP_HOST} !^pokemongo\.yourdomain\.com$ [NC]
+       RewriteCond %{HTTP_HOST} !^rocketmap\.yourdomain\.com$ [NC]
        RewriteRule ^/$ http://%{HTTP_HOST}/ [L,R=301]
 
        ErrorLog ${APACHE_LOG_DIR}/error.log
@@ -35,12 +35,12 @@ Assuming the following:
 
    <VirtualHost *:443>
 
-       ServerName pokemongo.yourdomain.com
+       ServerName rocketmap.yourdomain.com
 
        ProxyPass / http://127.0.0.1:5000/
        ProxyPassReverse / http://127.0.0.1:5000/
 
-       RewriteCond %{HTTP_HOST} !^pokemongo\.yourdomain\.com$ [NC]
+       RewriteCond %{HTTP_HOST} !^rocketmap\.yourdomain\.com$ [NC]
        RewriteRule ^/$ http://%{HTTP_HOST}/ [L,R=301]
 
        ErrorLog ${APACHE_LOG_DIR}/error.log
@@ -52,7 +52,7 @@ Assuming the following:
 
    </VirtualHost>
    ```
-   If you want your maps at `pokemongo.yourdomain.com`, keep it just like it is
+   If you want your maps at `rocketmap.yourdomain.com`, keep it just like it is
    If you want your maps at `yourdomain.com/go/` (note the trailing slash!)
    ```
    (take out ServerName)
@@ -63,6 +63,6 @@ Assuming the following:
    RewriteRule ^/go/$ http://%{HTTP_HOST}/go/ [L,R=301]
    ```
 4. Test your Apache2 config: `sudo apachectl configtest`
-5. Enable your new config: `sudo a2ensite pokemongo-map`
+5. Enable your new config: `sudo a2ensite rocketmap`
 6. Reload your Apache2 service: `service apache2 reload`
-7. You can now access it by going to: `http(s)://yourdomain.com/go` or `http(s)://pokemongo.yourdomain.com`
+7. You can now access it by going to: `http(s)://yourdomain.com/go` or `http(s)://rocketmap.yourdomain.com`
