@@ -53,7 +53,7 @@
 #############
 
 #beehive                        # Use beehive configuration for multiple accounts, one account per hex.
-                                # Make sure to keep -st under 5, and -w under the totalamount of accounts available.
+                                # Make sure to keep -st under 5, and -w under the total amount of accounts available.
 #spawnpoint-scanning            # Use spawnpoint scanning (instead of hex grid).
                                 # Scans in a circle based on step_limit when on DB.
                                 # A spawnpoint-file can be added optinal as value for "spawnpoint-scanning".

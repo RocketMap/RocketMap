@@ -184,6 +184,13 @@ def main():
         logging.getLogger('rpc_api').setLevel(logging.DEBUG)
         logging.getLogger('werkzeug').setLevel(logging.DEBUG)
 
+    # Web access logs.
+    if args.access_logs:
+        logger = logging.getLogger('werkzeug')
+        handler = logging.FileHandler('access.log')
+        logger.setLevel(logging.INFO)
+        logger.addHandler(handler)
+
     # Use lat/lng directly if matches such a pattern.
     prog = re.compile("^(\-?\d+\.\d+),?\s?(\-?\d+\.\d+)$")
     res = prog.match(args.location)

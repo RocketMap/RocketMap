@@ -1,46 +1,49 @@
 # Command Line
 
-    usage: runserver.py
-                        [-h] [-cf CONFIG] [-a AUTH_SERVICE] [-u USERNAME]
+    usage: runserver.py [-h] [-cf CONFIG] [-a AUTH_SERVICE] [-u USERNAME]
                         [-p PASSWORD] [-w WORKERS] [-asi ACCOUNT_SEARCH_INTERVAL]
                         [-ari ACCOUNT_REST_INTERVAL] [-ac ACCOUNTCSV] [-bh]
-                        [-wph WORKERS_PER_HIVE] [-l LOCATION] [-nj]
+                        [-wph WORKERS_PER_HIVE] [-l LOCATION] [-alt ALTITUDE]
+                        [-altv ALTITUDE_VARIANCE] [-uac] [-nj] [-al]
                         [-st STEP_LIMIT] [-sd SCAN_DELAY]
                         [--spawn-delay SPAWN_DELAY] [-enc] [-cs] [-ck CAPTCHA_KEY]
-                        [-cds CAPTCHA_DSK] [-mcd MANUAL-CAPTCHA-DOMAIN]
-                        [-mcr MANUAL-CAPTCHA-REFRESH]
-                        [-mct MANUAL-CAPTCHA-TIMEOUT] [-ed ENCOUNTER_DELAY]
+                        [-cds CAPTCHA_DSK] [-mcd MANUAL_CAPTCHA_DOMAIN]
+                        [-mcr MANUAL_CAPTCHA_REFRESH]
+                        [-mct MANUAL_CAPTCHA_TIMEOUT] [-ed ENCOUNTER_DELAY]
                         [-ewht ENCOUNTER_WHITELIST | -eblk ENCOUNTER_BLACKLIST | -ewhtf ENCOUNTER_WHITELIST_FILE | -eblkf ENCOUNTER_BLACKLIST_FILE]
                         [-ld LOGIN_DELAY] [-lr LOGIN_RETRIES] [-mf MAX_FAILURES]
                         [-me MAX_EMPTY] [-bsr BAD_SCAN_RETRY]
                         [-msl MIN_SECONDS_LEFT] [-dc] [-H HOST] [-P PORT]
                         [-L LOCALE] [-c] [-m MOCK] [-ns] [-os] [-nsc] [-fl] -k
                         GMAPS_KEY [--skip-empty] [-C] [-D DB] [-cd] [-np] [-ng]
-                        [-nk] [-ss [SPAWNPOINT_SCANNING]] [-speed] [-kph KPH] [-ldur DURATION]
-                        [--dump-spawnpoints] [-pd PURGE_DATA] [-px PROXY] [-pxsc]
-                        [-pxt PROXY_TIMEOUT] [-pxd PROXY_DISPLAY]
-                        [-pxf PROXY_FILE] [-pxr PROXY_REFRESH]
-                        [-pxo PROXY_ROTATION] [--db-type DB_TYPE]
-                        [--db-name DB_NAME] [--db-user DB_USER]
-                        [--db-pass DB_PASS] [--db-host DB_HOST]
-                        [--db-port DB_PORT]
+                        [-nk] [-ss [SPAWNPOINT_SCANNING]] [-speed] [-kph KPH]
+                        [-ldur LURE_DURATION] [--dump-spawnpoints]
+                        [-pd PURGE_DATA] [-px PROXY] [-pxsc] [-pxt PROXY_TIMEOUT]
+                        [-pxd PROXY_DISPLAY] [-pxf PROXY_FILE]
+                        [-pxr PROXY_REFRESH] [-pxo PROXY_ROTATION]
+                        [--db-type DB_TYPE] [--db-name DB_NAME]
+                        [--db-user DB_USER] [--db-pass DB_PASS]
+                        [--db-host DB_HOST] [--db-port DB_PORT]
                         [--db-max_connections DB_MAX_CONNECTIONS]
                         [--db-threads DB_THREADS] [-wh WEBHOOKS] [-gi]
                         [--disable-clean] [--webhook-updates-only]
-                        [--wh-threads WH_THREADS] [-whr WH_RETRIES]
-                        [-wht WH_TIMEOUT] [-whbf WH_BACKOFF_FACTOR]
-                        [-whlfu WH_LFU_SIZE] [--ssl-certificate SSL_CERTIFICATE]
+                        [--wh-threads WH_THREADS] [-whc WH_CONCURRENCY]
+                        [-whr WH_RETRIES] [-wht WH_TIMEOUT]
+                        [-whbf WH_BACKOFF_FACTOR] [-whlfu WH_LFU_SIZE] [-whsu]
+                        [--ssl-certificate SSL_CERTIFICATE]
                         [--ssl-privatekey SSL_PRIVATEKEY] [-ps [logs]]
                         [-slt STATS_LOG_TIMER] [-sn STATUS_NAME]
-                        [-spp STATUS_PAGE_PASSWORD] [-hk HASH_KEY] [-tut]
-                        [-el ENCRYPT_LIB] [-odt ON_DEMAND_TIMEOUT]
-                        [-v [filename.log] | -vv [filename.log]]
+                        [-spp STATUS_PAGE_PASSWORD] [-hk HASH_KEY] [-tut] [-novc]
+                        [-vci VERSION_CHECK_INTERVAL] [-el ENCRYPT_LIB]
+                        [-odt ON_DEMAND_TIMEOUT] [--disable-blacklist]
+                        [-tp TRUSTED_PROXIES] [-v [filename.log] | -vv
+                        [filename.log]]
 
     Args that start with '--' (eg. -a) can also be set in a config file
-    (default: <RocketMap Project Root>/config/config.ini or specified
-    via -cf). The recognized syntax for setting (key, value) pairs is based on the
-    INI and YAML formats (e.g. key=value or foo=TRUE). For full documentation of
-    the differences from the standards please refer to the ConfigArgParse
+    (/config/config.ini or specified via -cf). The
+    recognized syntax for setting (key, value) pairs is based on the INI and YAML
+    formats (e.g. key=value or foo=TRUE). For full documentation of the
+    differences from the standards please refer to the ConfigArgParse
     documentation. If an arg is specified in more than one place, then commandline
     values override environment variables which override config file values which
     override defaults.
@@ -49,7 +52,7 @@
       -h, --help            show this help message and exit [env var:
                             POGOMAP_HELP]
       -cf CONFIG, --config CONFIG
-                            Configuration file.  See docs/extras/configuration-files.md
+                            Configuration file
       -a AUTH_SERVICE, --auth-service AUTH_SERVICE
                             Auth Services, either one for all accounts or one per
                             account: ptc or google. Defaults all to ptc. [env var:
@@ -70,24 +73,36 @@
                             POGOMAP_ACCOUNT_SEARCH_INTERVAL]
       -ari ACCOUNT_REST_INTERVAL, --account-rest-interval ACCOUNT_REST_INTERVAL
                             Seconds for accounts to rest when they fail or are
-                            switched out [env var: POGOMAP_ACCOUNT_REST_INTERVAL]
+                            switched out. [env var: POGOMAP_ACCOUNT_REST_INTERVAL]
       -ac ACCOUNTCSV, --accountcsv ACCOUNTCSV
                             Load accounts from CSV file containing
-                            "auth_service,username,passwd" lines [env var:
+                            "auth_service,username,passwd" lines. [env var:
                             POGOMAP_ACCOUNTCSV]
       -bh, --beehive        Use beehive configuration for multiple accounts, one
                             account per hex. Make sure to keep -st under 5, and -w
-                            under the total amount of accounts available. [env
-                            var: POGOMAP_BEEHIVE]
+                            under the total amount of accounts available. [env var:
+                            POGOMAP_BEEHIVE]
       -wph WORKERS_PER_HIVE, --workers-per-hive WORKERS_PER_HIVE
                             Only referenced when using --beehive. Sets number of
                             workers per hive. Default value is 1. [env var:
                             POGOMAP_WORKERS_PER_HIVE]
       -l LOCATION, --location LOCATION
-                            Location, can be an address or coordinates [env var:
+                            Location, can be an address or coordinates. [env var:
                             POGOMAP_LOCATION]
+      -alt ALTITUDE, --altitude ALTITUDE
+                            Default altitude in meters. [env var:
+                            POGOMAP_ALTITUDE]
+      -altv ALTITUDE_VARIANCE, --altitude-variance ALTITUDE_VARIANCE
+                            Variance for --altitude in meters [env var:
+                            POGOMAP_ALTITUDE_VARIANCE]
+      -uac, --use-altitude-cache
+                            Query the Elevation API for each step, rather than
+                            only once, and store results in the database. [env
+                            var: POGOMAP_USE_ALTITUDE_CACHE]
       -nj, --no-jitter      Don't apply random -9m to +9m jitter to location. [env
                             var: POGOMAP_NO_JITTER]
+      -al, --access-logs    Write web logs to access.log. [env var:
+                            POGOMAP_ACCESS_LOGS]
       -st STEP_LIMIT, --step-limit STEP_LIMIT
                             Steps. [env var: POGOMAP_STEP_LIMIT]
       -sd SCAN_DELAY, --scan-delay SCAN_DELAY
@@ -107,16 +122,17 @@
       -cds CAPTCHA_DSK, --captcha-dsk CAPTCHA_DSK
                             Pokemon Go captcha data-sitekey. [env var:
                             POGOMAP_CAPTCHA_DSK]
-      -mcd MANUAL-CAPTCHA-DOMAIN --manual-captcha-domain
-                            Domain to where captcha tokens will be sent
-                            (default: http://127.0.0.1:5000)
-      -mcr MANUAL-CAPTCHA-REFRESH --manual-captcha-refresh
-                            Time available before captcha page refreshes
-                            (default: 30 seconds)
-      -mct MANUAL-CAPTCHA-TIMEOUT -manual-captcha-timeout
+      -mcd MANUAL_CAPTCHA_DOMAIN, --manual-captcha-domain MANUAL_CAPTCHA_DOMAIN
+                            Domain to where captcha tokens will be sent. [env var:
+                            POGOMAP_MANUAL_CAPTCHA_DOMAIN]
+      -mcr MANUAL_CAPTCHA_REFRESH, --manual-captcha-refresh MANUAL_CAPTCHA_REFRESH
+                            Time available before captcha page refreshes. [env
+                            var: POGOMAP_MANUAL_CAPTCHA_REFRESH]
+      -mct MANUAL_CAPTCHA_TIMEOUT, --manual-captcha-timeout MANUAL_CAPTCHA_TIMEOUT
                             Maximum time captchas will wait for manual captcha
-                            solving. On timeout, if enabled, 2Captcha will be
-                            used to solve captcha. (default: 0 - disabled)
+                            solving. On timeout, if enabled, 2Captcha will be used
+                            to solve captcha. Default is 0. [env var:
+                            POGOMAP_MANUAL_CAPTCHA_TIMEOUT]
       -ed ENCOUNTER_DELAY, --encounter-delay ENCOUNTER_DELAY
                             Time delay between encounter pokemon in scan threads.
                             [env var: POGOMAP_ENCOUNTER_DELAY]
@@ -138,8 +154,8 @@
                             Time delay between each login attempt. [env var:
                             POGOMAP_LOGIN_DELAY]
       -lr LOGIN_RETRIES, --login-retries LOGIN_RETRIES
-                            Number of login attempts before refreshing a thread.
-                            [env var: POGOMAP_LOGIN_RETRIES]
+                            Number of times to retry the login before refreshing a
+                            thread. [env var: POGOMAP_LOGIN_RETRIES]
       -mf MAX_FAILURES, --max-failures MAX_FAILURES
                             Maximum number of failures to parse locations before
                             an account will go into a sleep for -ari/--account-
@@ -147,7 +163,7 @@
       -me MAX_EMPTY, --max-empty MAX_EMPTY
                             Maximum number of empty scans before an account will
                             go into a sleep for -ari/--account-rest-interval
-                            seconds. Reasonable to use with proxies. [env var:
+                            seconds.Reasonable to use with proxies. [env var:
                             POGOMAP_MAX_EMPTY]
       -bsr BAD_SCAN_RETRY, --bad-scan-retry BAD_SCAN_RETRY
                             Number of bad scans before giving up on a step.
@@ -161,8 +177,8 @@
       -dc, --display-in-console
                             Display Found Pokemon in Console. [env var:
                             POGOMAP_DISPLAY_IN_CONSOLE]
-      -H HOST, --host HOST Set web server listening host. [env var: POGOMAP_HOST]
-      -P PORT, --port PORT Set web server listening port. [env var: POGOMAP_PORT]
+      -H HOST, --host HOST  Set web server listening host. [env var: POGOMAP_HOST]
+      -P PORT, --port PORT  Set web server listening port. [env var: POGOMAP_PORT]
       -L LOCALE, --locale LOCALE
                             Locale for Pokemon names (default: en, check
                             static/dist/locales for more). [env var:
@@ -206,10 +222,10 @@
                             scan closest spawns. [env var: POGOMAP_SPEED_SCAN]
       -kph KPH, --kph KPH   Set a maximum speed in km/hour for scanner movement.
                             [env var: POGOMAP_KPH]
-      -ldur DURATION, --lure-duration DURATION
+      -ldur LURE_DURATION, --lure-duration LURE_DURATION
                             Change duration for lures set on pokestops. This is
-                            useful for events that extend lure duration.
-                            [env var: POGOMAP_LURE_DURATION]
+                            useful for events that extend lure duration. [env var:
+                            POGOMAP_LURE_DURATION]
       --dump-spawnpoints    Dump the spawnpoints from the db to json (only for use
                             with -ss). [env var: POGOMAP_DUMP_SPAWNPOINTS]
       -pd PURGE_DATA, --purge-data PURGE_DATA
@@ -268,6 +284,9 @@
       --wh-threads WH_THREADS
                             Number of webhook threads; increase if the webhook
                             queue falls behind. [env var: POGOMAP_WH_THREADS]
+      -whc WH_CONCURRENCY, --wh-concurrency WH_CONCURRENCY
+                            Async requests pool size. [env var:
+                            POGOMAP_WH_CONCURRENCY]
       -whr WH_RETRIES, --wh-retries WH_RETRIES
                             Number of times to retry sending webhook data on
                             failure. [env var: POGOMAP_WH_RETRIES]
@@ -281,6 +300,9 @@
       -whlfu WH_LFU_SIZE, --wh-lfu-size WH_LFU_SIZE
                             Webhook LFU cache max size. [env var:
                             POGOMAP_WH_LFU_SIZE]
+      -whsu, --webhook-scheduler-updates
+                            Send webhook updates with scheduler status (use with
+                            -wh). [env var: POGOMAP_WEBHOOK_SCHEDULER_UPDATES]
       --ssl-certificate SSL_CERTIFICATE
                             Path to SSL certificate file. [env var:
                             POGOMAP_SSL_CERTIFICATE]
@@ -306,13 +328,25 @@
       -tut, --complete-tutorial
                             Complete ToS and tutorial steps on accounts if they
                             haven't already. [env var: POGOMAP_COMPLETE_TUTORIAL]
+      -novc, --no-version-check
+                            Disable API version check. [env var:
+                            POGOMAP_NO_VERSION_CHECK]
+      -vci VERSION_CHECK_INTERVAL, --version-check-interval VERSION_CHECK_INTERVAL
+                            Interval to check API version in seconds (Default: in
+                            [60, 300]). [env var: POGOMAP_VERSION_CHECK_INTERVAL]
       -el ENCRYPT_LIB, --encrypt-lib ENCRYPT_LIB
                             Path to encrypt lib to be used instead of the shipped
                             ones. [env var: POGOMAP_ENCRYPT_LIB]
       -odt ON_DEMAND_TIMEOUT, --on-demand_timeout ON_DEMAND_TIMEOUT
                             Pause searching while web UI is inactive for this
-                            timeout(in seconds). [env var:
+                            timeout (in seconds). [env var:
                             POGOMAP_ON_DEMAND_TIMEOUT]
+      --disable-blacklist   Disable the global anti-scraper IP blacklist. [env
+                            var: POGOMAP_DISABLE_BLACKLIST]
+      -tp TRUSTED_PROXIES, --trusted-proxies TRUSTED_PROXIES
+                            Enables the use of X-FORWARDED-FOR headers to identify
+                            the IP of clients connecting through these trusted
+                            proxies. [env var: POGOMAP_TRUSTED_PROXIES]
       -v [filename.log], --verbose [filename.log]
                             Show debug messages from RocketMap and pgoapi.
                             Optionally specify file to log to. [env var:
