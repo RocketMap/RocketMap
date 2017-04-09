@@ -62,7 +62,7 @@ from datetime import datetime, timedelta
 from .transform import get_new_coords
 from .models import (hex_bounds, Pokemon, SpawnPoint, ScannedLocation,
                      ScanSpawnPoint)
-from .utils import now, cur_sec, cellid, date_secs, equi_rect_distance
+from .utils import now, cur_sec, cellid, equi_rect_distance
 from .altitude import get_altitude
 
 log = logging.getLogger(__name__)
@@ -139,7 +139,7 @@ class BaseScheduler(object):
                         'abandoning location.').format(step_location[0],
                                                        step_location[1])
         }
-        return step, step_location, appears, leaves, messages
+        return step, step_location, appears, leaves, messages, 0
 
     # How long to delay since last action
     def delay(self, *args):
@@ -480,8 +480,11 @@ class SpeedScan(HexSearch):
         super(SpeedScan, self).__init__(queues, status, args)
         self.refresh_date = datetime.utcnow() - timedelta(days=1)
         self.next_band_date = self.refresh_date
+        self.location_change_date = datetime.utcnow()
         self.queues = [[]]
+        self.queue_version = 0
         self.ready = False
+        self.empty_hive = False
         self.spawns_found = 0
         self.spawns_missed_delay = {}
         self.scans_done = 0
@@ -512,12 +515,12 @@ class SpeedScan(HexSearch):
     # On location change, empty the current queue and the locations list
     def location_changed(self, scan_location, db_update_queue):
         super(SpeedScan, self).location_changed(scan_location, db_update_queue)
+        self.location_change_date = datetime.utcnow()
         self.locations = self._generate_locations()
         scans = {}
         initial = {}
         all_scans = {}
-        for sl in ScannedLocation.select_in_hex(self.scan_location,
-                                                self.args.step_limit):
+        for sl in ScannedLocation.select_in_hex(self.locations):
             all_scans[cellid((sl['latitude'], sl['longitude']))] = sl
 
         for i, e in enumerate(self.locations):
@@ -533,7 +536,7 @@ class SpeedScan(HexSearch):
         log.info('%d steps created', len(scans))
         self.band_spacing = int(10 * 60 / len(scans))
         self.band_status()
-        spawnpoints = SpawnPoint.select_in_hex(
+        spawnpoints = SpawnPoint.select_in_hex_by_location(
             self.scan_location, self.args.step_limit)
         if not spawnpoints:
             log.info('No spawnpoints in hex found in SpawnPoint table. ' +
@@ -560,52 +563,27 @@ class SpeedScan(HexSearch):
     # since it didn't recognize the location in the ScannedLocation table
     def _generate_locations(self):
 
-        NORTH = 0
-        EAST = 90
-        SOUTH = 180
-        WEST = 270
-
         # dist between column centers
         xdist = math.sqrt(3) * self.step_distance
-        ydist = 3 * (self.step_distance / 2)       # dist between row centers
 
         results = []
-
         loc = self.scan_location
         results.append((loc[0], loc[1], 0))
-
-        # upper part
+        # This will loop thorugh all the rings in the hex from the centre
+        # moving outwards
         for ring in range(1, self.step_limit):
-
-            for i in range(max(ring - 1, 1)):
-                if ring > 1:
-                    loc = get_new_coords(loc, ydist, NORTH)
-
-                loc = get_new_coords(loc, xdist / (1 + (ring > 1)), WEST)
-                results.append((loc[0], loc[1], 0))
-
-            for i in range(ring):
-                loc = get_new_coords(loc, ydist, NORTH)
-                loc = get_new_coords(loc, xdist / 2, EAST)
-                results.append((loc[0], loc[1], 0))
-
-            for i in range(ring):
-                loc = get_new_coords(loc, xdist, EAST)
-                results.append((loc[0], loc[1], 0))
-
-            for i in range(ring):
-                loc = get_new_coords(loc, ydist, SOUTH)
-                loc = get_new_coords(loc, xdist / 2, EAST)
-                results.append((loc[0], loc[1], 0))
-
-            for i in range(ring):
-                loc = get_new_coords(loc, ydist, SOUTH)
-                loc = get_new_coords(loc, xdist / 2, WEST)
-                results.append((loc[0], loc[1], 0))
-
-            for i in range(ring + (ring + 1 < self.step_limit)):
-                loc = get_new_coords(loc, xdist, WEST)
-                results.append((loc[0], loc[1], 0))
+            for i in range(0, 6):
+                # Star_locs will contain the locations of the 6 vertices of
+                # the current ring (90,150,210,270,330 and 30 degrees from
+                # origin) to form a star
+                star_loc = get_new_coords(self.scan_location, xdist * ring,
+                                          90 + 60*i)
+                for j in range(0, ring):
+                    # Then from each point on the star, create locations
+                    # towards the next point of star along the edge of the
+                    # current ring
+                    loc = get_new_coords(star_loc, xdist * (j), 210 + 60*i)
+                    results.append((loc[0], loc[1], 0))
 
         generated_locations = []
         for step, location in enumerate(results):
@@ -651,7 +629,8 @@ class SpeedScan(HexSearch):
     # the first band of a scan is done
     def time_to_refresh_queue(self):
         return ((datetime.utcnow() - self.refresh_date).total_seconds() >
-                self.minutes * 60 or self.queues == [[]])
+                self.minutes * 60 or
+                (self.queues == [[]] and not self.empty_hive))
 
     # Function to empty all queues in the queues list
     def empty_queues(self):
@@ -690,6 +669,7 @@ class SpeedScan(HexSearch):
         now_date = datetime.utcnow()
         self.refresh_date = now_date
         self.refresh_ms = now_date.minute * 60 + now_date.second
+        self.queue_version += 1
         old_q = deepcopy(self.queues[0])
         queue = []
 
@@ -702,7 +682,8 @@ class SpeedScan(HexSearch):
         # extract all spawnpoints into a dict with spawnpoint
         # id -> spawnpoint for easy access later
         cell_to_linked_spawn_points = (
-            ScannedLocation.get_cell_to_linked_spawn_points(self.scans.keys()))
+            ScannedLocation.get_cell_to_linked_spawn_points(
+                self.scans.keys(), self.location_change_date))
         sp_by_id = {}
         for sps in cell_to_linked_spawn_points.itervalues():
             for sp in sps:
@@ -722,6 +703,10 @@ class SpeedScan(HexSearch):
         self.ready = True
         log.info('New queue created with %d entries in %f seconds', len(queue),
                  (end - start))
+        # Avoiding refreshing the Queue when the initial scan is complete, and
+        # there are no spawnpoints in the hive.
+        if len(queue) == 0:
+            self.empty_hive = True
         if old_q:
             # Enclosing in try: to avoid divide by zero exceptions from
             # killing overseer
@@ -754,8 +739,8 @@ class SpeedScan(HexSearch):
                 found_percent = 100.0
                 good_percent = 100.0
                 spawns_reached = 100.0
-                spawnpoints = SpawnPoint.select_in_hex(
-                    self.scan_location, self.args.step_limit)
+                spawnpoints = SpawnPoint.select_in_hex_by_cellids(
+                    self.scans.keys(), self.location_change_date)
                 for sp in spawnpoints:
                     if sp['missed_count'] > 5:
                         continue
@@ -924,14 +909,14 @@ class SpeedScan(HexSearch):
                 if now_date < self.next_band_date:
                     continue
 
-                # If the start time isn't yet, don't bother looking further,
-                # since queue sorted by start time.
-                if ms < item['start']:
-                    break
-
+                # If we are going to get there before it starts then ignore
                 loc = item['loc']
                 distance = equi_rect_distance(loc, worker_loc)
                 secs_to_arrival = distance / self.args.kph * 3600
+                secs_waited = (now_date - last_action).total_seconds()
+                secs_to_arrival = max(secs_to_arrival - secs_waited, 0)
+                if ms + secs_to_arrival < item['start']:
+                    continue
 
                 # If we can't make it there before it disappears, don't bother
                 # trying.
@@ -950,13 +935,19 @@ class SpeedScan(HexSearch):
                 score = score / (distance + .01)
 
                 if score > best['score']:
-                    best = {'score': score, 'i': i}
+                    best = {'score': score, 'i': i,
+                            'secs_to_arrival': secs_to_arrival}
                     best.update(item)
 
             prefix = 'Calc %.2f for %d scans:' % (time.time() - now_time, n)
             loc = best.get('loc', [])
             step = best.get('step', 0)
+            secs_to_arrival = best.get('secs_to_arrival', 0)
             i = best.get('i', 0)
+            st = best.get('start', 0)
+            end = best.get('end', 0)
+            log.debug('step {} start {} end {} secs to arrival {}'.format(
+                step, st, end, secs_to_arrival))
             messages = {
                 'wait': 'Nothing to scan.',
                 'early': 'Early for step {}; waiting a few seconds...'.format(
@@ -976,13 +967,13 @@ class SpeedScan(HexSearch):
             except IndexError:
                 messages['wait'] = ('Search aborting.'
                                     + ' Overseer refreshing queue.')
-                return -1, 0, 0, 0, messages
+                return -1, 0, 0, 0, messages, 0
 
             if best['score'] == 0:
                 if cant_reach:
                     messages['wait'] = ('Not able to reach any scan'
                                         + ' under the speed limit.')
-                return -1, 0, 0, 0, messages
+                return -1, 0, 0, 0, messages, 0
 
             distance = equi_rect_distance(loc, worker_loc)
             if (distance >
@@ -1000,7 +991,12 @@ class SpeedScan(HexSearch):
                 messages['wait'] = 'Moving {}m to step {} for a {}.'.format(
                     int(distance * 1000), step,
                     best['kind'])
-                return -1, 0, 0, 0, messages
+                # So we wait while the worker arrives at the destination
+                # But we don't want to sleep too long or the item might get
+                # taken by another worker
+                if secs_to_arrival > 179 - self.args.scan_delay:
+                    secs_to_arrival = 179 - self.args.scan_delay
+                return -1, 0, 0, 0, messages, max(secs_to_arrival, 0)
 
             prefix += ' Step %d,' % (step)
 
@@ -1012,12 +1008,12 @@ class SpeedScan(HexSearch):
             if item.get('done', False):
                 messages['wait'] = ('Skipping step {}. Other worker already ' +
                                     'scanned.').format(step)
-                return -1, 0, 0, 0, messages
+                return -1, 0, 0, 0, messages, 0
 
             if not self.ready:
                 messages['wait'] = ('Search aborting.'
                                     + ' Overseer refreshing queue.')
-                return -1, 0, 0, 0, messages
+                return -1, 0, 0, 0, messages, 0
 
             # If a new band, set the date to wait until for the next band.
             if best['kind'] == 'band' and best['end'] - best['start'] > 5 * 60:
@@ -1027,24 +1023,30 @@ class SpeedScan(HexSearch):
             # Mark scanned
             item['done'] = 'Scanned'
             status['index_of_queue_item'] = i
+            status['queue_version'] = self.queue_version
 
             messages['search'] = 'Scanning step {} for a {}.'.format(
                 best['step'], best['kind'])
-            return best['step'], best['loc'], 0, 0, messages
+            return best['step'], best['loc'], 0, 0, messages, 0
 
     def task_done(self, status, parsed=False):
         if parsed:
             # Record delay between spawn time and scanning for statistics
-            now_secs = date_secs(datetime.utcnow())
-            item = self.queues[0][status['index_of_queue_item']]
-            seconds_within_band = (
-                int((datetime.utcnow() - self.refresh_date).total_seconds()) +
-                self.refresh_ms)
-            enforced_delay = (self.args.spawn_delay if item['kind'] == 'spawn'
-                              else 0)
-            start_delay = seconds_within_band - item['start'] + enforced_delay
-            safety_buffer = item['end'] - seconds_within_band
+            # This now holds the actual time of scan in seconds
+            scan_secs = parsed['scan_secs']
 
+            # It seems that the best solution is not to interfere with the
+            # item if the queue has been refreshed since scanning
+            if status['queue_version'] != self.queue_version:
+                log.info('Step item has changed since queue refresh')
+                return
+            item = self.queues[0][status['index_of_queue_item']]
+            safety_buffer = item['end'] - scan_secs
+            start_secs = item['start']
+            if item['kind'] == 'spawn':
+                start_secs -= self.args.spawn_delay
+            start_delay = (scan_secs - start_secs) % 3600
+            safety_buffer = item['end'] - scan_secs
             if safety_buffer < 0:
                 log.warning('Too late by %d sec for a %s at step %d', -
                             safety_buffer, item['kind'], item['step'])
@@ -1089,8 +1091,8 @@ class SpeedScan(HexSearch):
                     for item in self.queues[0]:
                         if (sp_id == item.get('sp', None) and
                                 item.get('done', None) is None and
-                                now_secs > item['start'] and
-                                now_secs < item['end']):
+                                scan_secs > item['start'] and
+                                scan_secs < item['end']):
                             item['done'] = 'Scanned'
 
 
