@@ -2447,20 +2447,28 @@ def bulk_upsert(cls, data, db):
 def create_tables(db):
     db.connect()
     verify_database_schema(db)
-    db.create_tables([Pokemon, Pokestop, Gym, ScannedLocation, GymDetails,
-                      GymMember, GymPokemon, Trainer, MainWorker, WorkerStatus,
-                      SpawnPoint, ScanSpawnPoint, SpawnpointDetectionData,
-                      Token, LocationAltitude], safe=True)
-    db.close()
+    tables = [Pokemon, Pokestop, Gym, ScannedLocation, GymDetails,
+              GymMember, GymPokemon, Trainer, MainWorker, WorkerStatus,
+              SpawnPoint, ScanSpawnPoint, SpawnpointDetectionData,
+              Token, LocationAltitude]
+    for table in tables:
+        log.info("Creating table: %s", table.__name__)
+        db.create_tables([table], safe=True)
+        db.close()
 
 
 def drop_tables(db):
+    tables = [Pokemon, Pokestop, Gym, ScannedLocation, Versions,
+              GymDetails, GymMember, GymPokemon, Trainer, MainWorker,
+              WorkerStatus, SpawnPoint, ScanSpawnPoint,
+              SpawnpointDetectionData, LocationAltitude,
+              Token]
     db.connect()
-    db.drop_tables([Pokemon, Pokestop, Gym, ScannedLocation, Versions,
-                    GymDetails, GymMember, GymPokemon, Trainer, MainWorker,
-                    WorkerStatus, SpawnPoint, ScanSpawnPoint,
-                    SpawnpointDetectionData, LocationAltitude,
-                    Token, Versions], safe=True)
+    db.execute_sql('SET FOREIGN_KEY_CHECKS=0;')
+    for table in tables:
+        log.info("Dropping table: %s", table.__name__)
+        db.drop_tables([table], safe=True)
+    db.execute_sql('SET FOREIGN_KEY_CHECKS=1;')
     db.close()
 
 
