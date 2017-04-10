@@ -54,18 +54,19 @@ def wh_updater(args, queue, key_cache):
     # connection, giving a performance increase.
     session = __get_requests_session(args)
 
+    # Extract the proper identifier.
+    ident_fields = {
+        'pokestop': 'pokestop_id',
+        'pokemon': 'encounter_id',
+        'gym': 'gym_id'
+    }
+
     # The forever loop.
     while True:
         try:
             # Loop the queue.
             whtype, message = queue.get()
 
-            # Extract the proper identifier.
-            ident_fields = {
-                'pokestop': 'pokestop_id',
-                'pokemon': 'encounter_id',
-                'gym': 'gym_id'
-            }
             ident = message.get(ident_fields.get(whtype), None)
 
             # cachetools in Python2.7 isn't thread safe, so we add a lock.
@@ -95,6 +96,10 @@ def wh_updater(args, queue, key_cache):
                     else:
                         log.debug('Not resending %s to webhook: %s.',
                                   whtype, ident)
+
+            del whtype
+            del message
+            del ident
 
             # Webhook queue moving too slow.
             if (not wh_over_threshold) and (

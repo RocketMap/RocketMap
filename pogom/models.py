@@ -29,10 +29,11 @@ from timeit import default_timer
 from . import config
 from .utils import get_pokemon_name, get_pokemon_rarity, get_pokemon_types, \
     get_args, cellid, in_radius, date_secs, clock_between, secs_between, \
-    get_move_name, get_move_damage, get_move_energy, get_move_type
+    get_move_name, get_move_damage, get_move_energy, get_move_type, \
+    clear_dict_response
 from .transform import transform_from_wgs_to_gcj, get_new_coords
 from .customLog import printPokemon
-from .account import tutorial_pokestop_spin
+from .account import tutorial_pokestop_spin, get_player_level
 log = logging.getLogger(__name__)
 
 args = get_args()
@@ -1765,8 +1766,10 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
     skipped = 0
     stopsskipped = 0
     forts = []
+    forts_count = 0
     wild_pokemon = []
-    nearby_pokemon = []
+    wild_pokemon_count = 0
+    nearby_pokemon = 0
     spawn_points = {}
     scan_spawn_points = {}
     sightings = {}
@@ -1778,21 +1781,38 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
     # Consolidate the individual lists in each cell into two lists of Pokemon
     # and a list of forts.
     cells = map_dict['responses']['GET_MAP_OBJECTS']['map_cells']
+    # Get the level for the pokestop spin in any case delete inventory
+    if args.complete_tutorial and config['parse_pokestops']:
+        level = get_player_level(map_dict)
+    if 'GET_INVENTORY' in map_dict['responses']:
+        del map_dict['responses']['GET_INVENTORY']
     for i, cell in enumerate(cells):
         # If we have map responses then use the time from the request
         if i == 0:
             now_date = datetime.utcfromtimestamp(
                                 cell['current_timestamp_ms'] / 1000)
-        nearby_pokemon += cell.get('nearby_pokemons', [])
+        nearby_pokemon += len(cell.get('nearby_pokemons', []))
         # Parse everything for stats (counts).  Future enhancement -- we don't
         # necessarily need to know *how many* forts/wild/nearby were found but
         # we'd like to know whether or not *any* were found to help determine
         # if a scan was actually bad.
-        wild_pokemon += cell.get('wild_pokemons', [])
+        if config['parse_pokemon']:
+            wild_pokemon += cell.get('wild_pokemons', [])
+        else:
+            wild_pokemon_count += len(cell.get('wild_pokemons', []))
 
-        forts += cell.get('forts', [])
+        if config['parse_pokestops'] or config['parse_gyms']:
+            forts += cell.get('forts', [])
+        else:
+            forts_count += len(cell.get('forts', []))
 
-    now_secs = date_secs(now_date)
+    if wild_pokemon:
+        wild_pokemon_count = len(wild_pokemon)
+    if forts:
+        forts_count = len(forts)
+
+    del map_dict['responses']['GET_MAP_OBJECTS']
+
     # If there are no wild or nearby Pokemon . . .
     if not wild_pokemon and not nearby_pokemon:
         # . . . and there are no gyms/pokestops then it's unusable/bad.
@@ -1917,13 +1937,14 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                     spawn_point_id=p['spawn_point_id'],
                     player_latitude=step_location[0],
                     player_longitude=step_location[1])
-                encounter_result = req.check_challenge()
-                encounter_result = req.get_hatched_eggs()
-                encounter_result = req.get_inventory()
-                encounter_result = req.check_awarded_badges()
-                encounter_result = req.download_settings()
-                encounter_result = req.get_buddy_walked()
+                req.check_challenge()
+                req.get_hatched_eggs()
+                req.get_inventory()
+                req.check_awarded_badges()
+                req.download_settings()
+                req.get_buddy_walked()
                 encounter_result = req.call()
+                encounter_result = clear_dict_response(encounter_result)
 
                 captcha_url = encounter_result['responses']['CHECK_CHALLENGE'][
                         'challenge_url']  # Check for captcha
@@ -1980,6 +2001,8 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                 })
                 wh_update_queue.put(('pokemon', wh_poke))
 
+        del wild_pokemon
+
     if forts and (config['parse_pokestops'] or config['parse_gyms']):
         if config['parse_pokestops']:
             stop_ids = [f['id'] for f in forts if f.get('type') == 1]
@@ -1996,7 +2019,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
         if args.complete_tutorial and not (len(captcha_url) > 1):
             if config['parse_pokestops']:
                 tutorial_pokestop_spin(
-                    api, map_dict, forts, step_location, account)
+                    api, level, forts, step_location, account)
             else:
                 log.error(
                     'Pokestop can not be spun since parsing Pokestops is ' +
@@ -2092,9 +2115,11 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                         f['last_modified_timestamp_ms'] / 1000.0),
                 }
 
+        del forts
+
     log.info('Parsing found Pokemon: %d, nearby: %d, pokestops: %d, gyms: %d.',
              len(pokemon) + skipped,
-             len(nearby_pokemon),
+             nearby_pokemon,
              len(pokestops) + stopsskipped,
              len(gyms))
 
@@ -2158,7 +2183,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
         # After parsing the forts, we'll mark this scan as bad due to
         # a possible speed violation.
         return {
-            'count': len(wild_pokemon) + len(forts),
+            'count': wild_pokemon_count + forts_count,
             'gyms': gyms,
             'sp_id_list': sp_id_list,
             'bad_scan': True,
@@ -2166,7 +2191,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
         }
 
     return {
-        'count': len(wild_pokemon) + len(forts),
+        'count': wild_pokemon_count + forts_count,
         'gyms': gyms,
         'sp_id_list': sp_id_list,
         'bad_scan': False,
@@ -2334,6 +2359,8 @@ def db_updater(args, q, db):
                           len(data),
                           q.qsize(),
                           default_timer() - last_upsert)
+                del model
+                del data
 
                 if q.qsize() > 50:
                     log.warning(

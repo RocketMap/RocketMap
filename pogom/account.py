@@ -207,8 +207,7 @@ def complete_tutorial(api, account, tutorial_state):
 # Complete tutorial with a level up by a Pokestop spin.
 # API argument needs to be a logged in API instance.
 # Called during fort parsing in models.py
-def tutorial_pokestop_spin(api, map_dict, forts, step_location, account):
-    player_level = get_player_level(map_dict)
+def tutorial_pokestop_spin(api, player_level, forts, step_location, account):
     if player_level > 1:
         log.debug(
             'No need to spin a Pokestop. ' +

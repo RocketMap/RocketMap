@@ -42,7 +42,7 @@ from pgoapi.hash_server import HashServer
 
 from .models import parse_map, GymDetails, parse_gyms, MainWorker, WorkerStatus
 from .fakePogoApi import FakePogoApi
-from .utils import now, generate_device_info
+from .utils import now, generate_device_info, clear_dict_response
 from .transform import get_new_coords, jitter_location
 from .account import check_login, get_tutorial_state, complete_tutorial
 from .captcha import captcha_overseer_thread, handle_captcha
@@ -1000,6 +1000,7 @@ def search_worker_thread(args, account_queue, account_failures,
 
                     parsed = parse_map(args, response_dict, step_location,
                                        dbq, whq, api, scan_date, account)
+                    del response_dict
                     scheduler.task_done(status, parsed)
                     if parsed['count'] > 0:
                         status['success'] += 1
@@ -1026,6 +1027,8 @@ def search_worker_thread(args, account_queue, account_failures,
                                                            account['username'])
                     log.exception('{}. Exception message: {}'.format(
                         status['message'], repr(e)))
+                    if response_dict is not None:
+                        del response_dict
 
                 # Get detailed information about gyms.
                 if args.gym_info and parsed:
@@ -1093,7 +1096,7 @@ def search_worker_thread(args, account_queue, account_failures,
                             else:
                                 gym_responses[gym['gym_id']] = response[
                                     'responses']['GET_GYM_DETAILS']
-
+                            del response
                             # Increment which gym we're on for status messages.
                             current_gym += 1
 
@@ -1107,6 +1110,7 @@ def search_worker_thread(args, account_queue, account_failures,
                         if gym_responses:
                             parse_gyms(args, gym_responses,
                                        whq, dbq)
+                            del gym_responses
 
                 if args.hash_key:
                     key_instance = key_scheduler.keys[key_scheduler.current()]
@@ -1165,17 +1169,18 @@ def map_request(api, position, no_jitter=False):
         cell_ids = util.get_cell_ids(scan_location[0], scan_location[1])
         timestamps = [0, ] * len(cell_ids)
         req = api.create_request()
-        response = req.get_map_objects(latitude=f2i(scan_location[0]),
-                                       longitude=f2i(scan_location[1]),
-                                       since_timestamp_ms=timestamps,
-                                       cell_id=cell_ids)
-        response = req.check_challenge()
-        response = req.get_hatched_eggs()
-        response = req.get_inventory()
-        response = req.check_awarded_badges()
-        response = req.download_settings()
-        response = req.get_buddy_walked()
+        req.get_map_objects(latitude=f2i(scan_location[0]),
+                            longitude=f2i(scan_location[1]),
+                            since_timestamp_ms=timestamps,
+                            cell_id=cell_ids)
+        req.check_challenge()
+        req.get_hatched_eggs()
+        req.get_inventory()
+        req.check_awarded_badges()
+        req.download_settings()
+        req.get_buddy_walked()
         response = req.call()
+        response = clear_dict_response(response, True)
         return response
 
     except Exception as e:
@@ -1189,18 +1194,19 @@ def gym_request(api, position, gym):
                   gym['latitude'], gym['longitude'],
                   calc_distance(position, [gym['latitude'], gym['longitude']]))
         req = api.create_request()
-        x = req.get_gym_details(gym_id=gym['gym_id'],
-                                player_latitude=f2i(position[0]),
-                                player_longitude=f2i(position[1]),
-                                gym_latitude=gym['latitude'],
-                                gym_longitude=gym['longitude'])
-        x = req.check_challenge()
-        x = req.get_hatched_eggs()
-        x = req.get_inventory()
-        x = req.check_awarded_badges()
-        x = req.download_settings()
-        x = req.get_buddy_walked()
+        req.get_gym_details(gym_id=gym['gym_id'],
+                            player_latitude=f2i(position[0]),
+                            player_longitude=f2i(position[1]),
+                            gym_latitude=gym['latitude'],
+                            gym_longitude=gym['longitude'])
+        req.check_challenge()
+        req.get_hatched_eggs()
+        req.get_inventory()
+        req.check_awarded_badges()
+        req.download_settings()
+        req.get_buddy_walked()
         x = req.call()
+        x = clear_dict_response(x)
         # Print pretty(x).
         return x
 
