@@ -1775,7 +1775,6 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
     sightings = {}
     new_spawn_points = []
     sp_id_list = []
-    now_secs = date_secs(now_date)
     captcha_url = ''
 
     # Consolidate the individual lists in each cell into two lists of Pokemon
@@ -1806,6 +1805,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
         else:
             forts_count += len(cell.get('forts', []))
 
+    now_secs = date_secs(now_date)
     if wild_pokemon:
         wild_pokemon_count = len(wild_pokemon)
     if forts:
