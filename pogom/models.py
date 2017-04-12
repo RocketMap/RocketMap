@@ -2076,7 +2076,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
 
                 pokestops[f['id']] = {
                     'pokestop_id': f['id'],
-                    'enabled': f['enabled'],
+                    'enabled': f.get('enabled', 0),
                     'latitude': f['latitude'],
                     'longitude': f['longitude'],
                     'last_modified': datetime.utcfromtimestamp(
