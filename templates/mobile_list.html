@@ -11,11 +11,13 @@
 	<ol>
 {% for pokemon in pokemon_list[:20] %}
 {% set img = 'icons/' ~ pokemon.id ~ '.png' -%}
-		<li style="background-image: url('{{ url_for('static', filename=img).lstrip('/') }}')"
-			href='geo:0,0?q={{pokemon.latitude}},{{pokemon.longitude}}({{pokemon.name}})'>
-			<div class="name">{{pokemon.name}}</div>
-			<div class="dir"> - {{pokemon.distance}}m ({{pokemon.card_dir}}) - </div>
-			<div class="remain" disappear="{{pokemon.disappear_sec}}">{{pokemon.time_to_disappear}}</div>
+		<li style="list-style-type: none; background-image: url('{{ url_for('static', filename=img).lstrip('/') }}');"
+				href='https://maps.google.com/?q={{pokemon.latitude}},{{pokemon.longitude}}&amp;ll={{pokemon.latitude}},{{pokemon.longitude}}'>
+				<p>
+						<span class="name">{{pokemon.name}}</span><span class="dir"> - {{pokemon.distance}}m ({{pokemon.card_dir}})</span>
+						<br>
+						<span class="remain" disappear="{{pokemon.disappear_sec}}">{{pokemon.time_to_disappear}}</span>
+				</p>
 		</li>
 {% endfor %}
 	</ol>
@@ -26,8 +28,6 @@
 			<label><input type="checkbox" id="use-loc">Use device location</label>
 		</div>
 	</div>
-
-	<a class="origin" href='geo:0,0?q={{origin_lat}},{{origin_lng}}(origin)'>origin location</a>
 
 	<script src="{{ url_for('static', filename='dist/js/mobile.min.js').lstrip('/') }}"></script>
 </body>

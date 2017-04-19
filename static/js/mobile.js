@@ -38,7 +38,7 @@ function updateTimes() {
     // Yes, this could be a smidge innaccurate, but not by
     // more than 1 second or so which doesn't matter.
     // And now we don't have to deal with timestamps and dates!
-    var remains = document.querySelectorAll('div.remain')
+    var remains = document.querySelectorAll('span.remain')
     for (var i = 0; i < remains.length; ++i) {
         var element = remains[i]
         var now = new Date().getTime()
