@@ -2377,13 +2377,13 @@ def clean_db_loop(args):
         try:
             query = (MainWorker
                      .delete()
-                     .where((ScannedLocation.last_modified <
+                     .where((MainWorker.last_modified <
                              (datetime.utcnow() - timedelta(minutes=30)))))
             query.execute()
 
             query = (WorkerStatus
                      .delete()
-                     .where((ScannedLocation.last_modified <
+                     .where((WorkerStatus.last_modified <
                              (datetime.utcnow() - timedelta(minutes=30)))))
             query.execute()
 
