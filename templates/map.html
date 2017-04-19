@@ -32,6 +32,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.0/jquery-ui.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.css">
     <script src="{{ url_for('static', filename='js/vendor/modernizr.custom.js').lstrip('/') }}"></script>
+    <!-- Toastr -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
   </head>
   <body id="top">
     <div class="wrapper">
@@ -410,6 +412,7 @@
       var centerLat = {{lat}};
       var centerLng = {{lng}};
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="{{ url_for('static', filename='dist/js/map.common.min.js').lstrip('/') }}"></script>
     <script src="{{ url_for('static', filename='dist/js/map.min.js').lstrip('/') }}"></script>
     <script src="{{ url_for('static', filename='dist/js/stats.min.js').lstrip('/') }}"></script>

@@ -25,6 +25,7 @@
     "jquery": true
   },
   "globals": {
+    "toastr": true,
     "google": true,
     "mapData": true,
     "Store": true,
