@@ -229,13 +229,15 @@ def get_args():
                         help=('Server-Only Mode. Starts only the Webserver ' +
                               'without the searcher.'),
                         action='store_true', default=False)
-    parser.add_argument('-nsc', '--no-search-control',
-                        help='Disables search control.',
-                        action='store_false', dest='search_control',
+    parser.add_argument('-sc', '--search-control',
+                        help='Enables search control.',
+                        action='store_true', dest='search_control',
+                        default=False)
+    parser.add_argument('-nfl', '--no-fixed-location',
+                        help='Disables a fixed map location and shows the ' +
+                        'search bar for use in shared maps.',
+                        action='store_false', dest='fixed_location',
                         default=True)
-    parser.add_argument('-fl', '--fixed-location',
-                        help='Hides the search bar for use in shared maps.',
-                        action='store_true', default=False)
     parser.add_argument('-k', '--gmaps-key',
                         help='Google Maps Javascript API Key.',
                         required=True)
