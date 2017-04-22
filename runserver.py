@@ -39,33 +39,6 @@ logging.basicConfig(
     '%(message)s')
 log = logging.getLogger()
 
-# Make sure pogom/pgoapi is actually removed if it is an empty directory.
-# This is a leftover directory from the time pgoapi was embedded in
-# RocketMap.
-# The empty directory will cause problems with `import pgoapi` so it needs to
-# go.
-# Now also removes the pogom/libencrypt and pokecrypt-pgoapi folders,
-# don't cause issues but aren't needed.
-oldpgoapiPath = os.path.join(os.path.dirname(__file__), "pogom/pgoapi")
-oldlibPath = os.path.join(os.path.dirname(__file__), "pokecrypt-pgoapi")
-oldoldlibPath = os.path.join(os.path.dirname(__file__), "pogom/libencrypt")
-if os.path.isdir(oldpgoapiPath):
-    log.warn("I found a really really old pgoapi thing, but its no longer " +
-             "used. Going to remove it...", oldpgoapiPath)
-    shutil.rmtree(oldpgoapiPath)
-    log.warn("Done!")
-if os.path.isdir(oldlibPath):
-    log.warn("I found the pokecrypt-pgoapi folder/submodule, but its no " +
-             "longer used. Going to remove it...", oldpgoapiPath)
-    shutil.rmtree(oldlibPath)
-    log.warn("Done!")
-if os.path.isdir(oldoldlibPath):
-    log.warn("I found the old libencrypt folder, from when we used to " +
-             "bundle encrypt libs, but its no longer used. " +
-             "Going to remove it...", oldpgoapiPath)
-    shutil.rmtree(oldoldlibPath)
-    log.warn("Done!")
-
 # Assert pgoapi is installed.
 try:
     import pgoapi
