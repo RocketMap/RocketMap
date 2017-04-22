@@ -3,7 +3,7 @@
 ## Prerequisites
 
   - A domain name (free ones can be had from places like Freenom)
-  - Your server [port forwarded](external.md) and **running on Port 80**
+  - Your server [port forwarded](http://rocketmap.readthedocs.io/en/develop/extras/external.html) and **running on Port 80**
 
 ## Getting Started
 

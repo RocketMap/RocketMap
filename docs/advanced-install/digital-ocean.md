@@ -5,7 +5,7 @@
 ## Prerequisites
 
 - [A DigitalOcean account](https://m.do.co/c/fb6730f5bb99) - Using this link will grant $10 in credit, enough for running your server for up to 2 months.
-- [A Google Maps API key](GoogleMaps.md)
+- [A Google Maps API key](http://rocketmap.readthedocs.io/en/develop/basic-install/google-maps.html)
 - [A new Pokemon Club account](https://club.pokemon.com/us/pokemon-trainer-club/sign-up/)
 
 ## Installation
