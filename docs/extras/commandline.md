@@ -11,10 +11,11 @@
                         [-mcr MANUAL_CAPTCHA_REFRESH]
                         [-mct MANUAL_CAPTCHA_TIMEOUT] [-ed ENCOUNTER_DELAY]
                         [-ewht ENCOUNTER_WHITELIST | -eblk ENCOUNTER_BLACKLIST | -ewhtf ENCOUNTER_WHITELIST_FILE | -eblkf ENCOUNTER_BLACKLIST_FILE]
+                        [-wwht WEBHOOK_WHITELIST | -wblk WEBHOOK_BLACKLIST | -wwhtf WEBHOOK_WHITELIST_FILE | -wblkf WEBHOOK_BLACKLIST_FILE]
                         [-ld LOGIN_DELAY] [-lr LOGIN_RETRIES] [-mf MAX_FAILURES]
                         [-me MAX_EMPTY] [-bsr BAD_SCAN_RETRY]
                         [-msl MIN_SECONDS_LEFT] [-dc] [-H HOST] [-P PORT]
-                        [-L LOCALE] [-c] [-m MOCK] [-ns] [-os] [-nsc] [-fl] -k
+                        [-L LOCALE] [-c] [-m MOCK] [-ns] [-os] [-sc] [-nfl] -k
                         GMAPS_KEY [--skip-empty] [-C] [-D DB] [-cd] [-np] [-ng]
                         [-nk] [-ss [SPAWNPOINT_SCANNING]] [-speed] [-kph KPH]
                         [-ldur LURE_DURATION] [--dump-spawnpoints]
@@ -38,21 +39,21 @@
                         [-odt ON_DEMAND_TIMEOUT] [--disable-blacklist]
                         [-tp TRUSTED_PROXIES] [-v [filename.log] | -vv
                         [filename.log]]
-
+    
     Args that start with '--' (eg. -a) can also be set in a config file
-    (/config/config.ini or specified via -cf). The
-    recognized syntax for setting (key, value) pairs is based on the INI and YAML
-    formats (e.g. key=value or foo=TRUE). For full documentation of the
+    (./config/config.ini or specified via -cf). 
+	The recognized syntax for setting (key, value) pairs is based on the INI and
+    YAML formats (e.g. key=value or foo=TRUE). For full documentation of the
     differences from the standards please refer to the ConfigArgParse
     documentation. If an arg is specified in more than one place, then commandline
     values override environment variables which override config file values which
     override defaults.
-
+    
     optional arguments:
       -h, --help            show this help message and exit [env var:
                             POGOMAP_HELP]
       -cf CONFIG, --config CONFIG
-                            Configuration file
+                            Set configuration file
       -a AUTH_SERVICE, --auth-service AUTH_SERVICE
                             Auth Services, either one for all accounts or one per
                             account: ptc or google. Defaults all to ptc. [env var:
@@ -80,8 +81,8 @@
                             POGOMAP_ACCOUNTCSV]
       -bh, --beehive        Use beehive configuration for multiple accounts, one
                             account per hex. Make sure to keep -st under 5, and -w
-                            under the total amount of accounts available. [env var:
-                            POGOMAP_BEEHIVE]
+                            under the total amount of accounts available. [env
+                            var: POGOMAP_BEEHIVE]
       -wph WORKERS_PER_HIVE, --workers-per-hive WORKERS_PER_HIVE
                             Only referenced when using --beehive. Sets number of
                             workers per hive. Default value is 1. [env var:
@@ -150,6 +151,21 @@
                             File containing a list of Pokemon to NOT encounter for
                             more stats. [env var:
                             POGOMAP_ENCOUNTER_BLACKLIST_FILE]
+      -wwht WEBHOOK_WHITELIST, --webhook-whitelist WEBHOOK_WHITELIST
+                            List of Pokemon to send to webhooks. Specified as
+                            Pokemon ID. [env var: POGOMAP_WEBHOOK_WHITELIST]
+      -wblk WEBHOOK_BLACKLIST, --webhook-blacklist WEBHOOK_BLACKLIST
+                            List of Pokemon NOT to send to webhooks. Specified as
+                            Pokemon ID. [env var: POGOMAP_WEBHOOK_BLACKLIST]
+      -wwhtf WEBHOOK_WHITELIST_FILE, --webhook-whitelist-file WEBHOOK_WHITELIST_FILE
+                            File containing a list of Pokemon to send to webhooks.
+                            Pokemon are specified by their name, one on each line.
+                            [env var: POGOMAP_WEBHOOK_WHITELIST_FILE]
+      -wblkf WEBHOOK_BLACKLIST_FILE, --webhook-blacklist-file WEBHOOK_BLACKLIST_FILE
+                            File containing a list of Pokemon NOT to send
+                            towebhooks. Pokemon are specified by their name, one
+                            on each line. [env var:
+                            POGOMAP_WEBHOOK_BLACKLIST_FILE]
       -ld LOGIN_DELAY, --login-delay LOGIN_DELAY
                             Time delay between each login attempt. [env var:
                             POGOMAP_LOGIN_DELAY]
@@ -192,12 +208,13 @@
                             Webserver. [env var: POGOMAP_NO_SERVER]
       -os, --only-server    Server-Only Mode. Starts only the Webserver without
                             the searcher. [env var: POGOMAP_ONLY_SERVER]
-      -nsc, --no-search-control
-                            Disables search control. [env var:
-                            POGOMAP_NO_SEARCH_CONTROL]
-      -fl, --fixed-location
-                            Hides the search bar for use in shared maps. [env var:
-                            POGOMAP_FIXED_LOCATION]
+      -sc, --search-control
+                            Enables search control. [env var:
+                            POGOMAP_SEARCH_CONTROL]
+      -nfl, --no-fixed-location
+                            Disables a fixed map location and shows the search bar
+                            for use in shared maps. [env var:
+                            POGOMAP_NO_FIXED_LOCATION]
       -k GMAPS_KEY, --gmaps-key GMAPS_KEY
                             Google Maps Javascript API Key. [env var:
                             POGOMAP_GMAPS_KEY]

@@ -1992,21 +1992,23 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                 })
 
             if args.webhooks:
-
-                wh_poke = pokemon[p['encounter_id']].copy()
-                wh_poke.update({
-                    'disappear_time': calendar.timegm(
-                        disappear_time.timetuple()),
-                    'last_modified_time': p['last_modified_timestamp_ms'],
-                    'time_until_hidden_ms': p['time_till_hidden_ms'],
-                    'verified': SpawnPoint.tth_found(sp),
-                    'seconds_until_despawn': seconds_until_despawn,
-                    'spawn_start': start_end[0],
-                    'spawn_end': start_end[1],
-                    'player_level': level
-                })
-                wh_update_queue.put(('pokemon', wh_poke))
-
+                pokemon_id = p['pokemon_data']['pokemon_id']
+                if (pokemon_id in args.webhook_whitelist or
+                    (not args.webhook_whitelist and pokemon_id
+                     not in args.webhook_blacklist)):
+                    wh_poke = pokemon[p['encounter_id']].copy()
+                    wh_poke.update({
+                        'disappear_time': calendar.timegm(
+                                          disappear_time.timetuple()),
+                        'last_modified_time': p['last_modified_timestamp_ms'],
+                        'time_until_hidden_ms': p['time_till_hidden_ms'],
+                        'verified': SpawnPoint.tth_found(sp),
+                        'seconds_until_despawn': seconds_until_despawn,
+                        'spawn_start': start_end[0],
+                        'spawn_end': start_end[1],
+                        'player_level': level
+                        })
+                    wh_update_queue.put(('pokemon', wh_poke))
         # Helping out the GC.
         del wild_pokemon
 
