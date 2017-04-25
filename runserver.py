@@ -13,7 +13,6 @@ from distutils.version import StrictVersion
 
 from threading import Thread, Event
 from queue import Queue
-from cachetools import LFUCache
 from flask_cors import CORS
 from flask_cache_bust import init_cache_busting
 
@@ -258,12 +257,12 @@ def main():
         t.daemon = True
         t.start()
 
-    # WH updates queue & WH gym/pokéstop unique key LFU cache.
-    # The LFU cache will stop the server from resending the same data an
-    # infinite number of times.
-    # TODO: Rework webhooks entirely so a LFU cache isn't necessary.
+    # WH updates queue & WH unique key LFU caches.
+    # The LFU caches will stop the server from resending the same data an
+    # infinite number of times. The caches will be instantiated in the
+    # webhook's startup code.
     wh_updates_queue = Queue()
-    wh_key_cache = LFUCache(maxsize=args.wh_lfu_size)
+    wh_key_cache = {}
 
     # Thread to process webhook updates.
     for i in range(args.wh_threads):

@@ -385,7 +385,7 @@ def get_args():
                         type=float, default=0.25)
     parser.add_argument('-whlfu', '--wh-lfu-size',
                         help='Webhook LFU cache max size.', type=int,
-                        default=1000)
+                        default=2500)
     parser.add_argument('-whsu', '--webhook-scheduler-updates',
                         help=('Send webhook updates with scheduler status ' +
                               '(use with -wh).'),

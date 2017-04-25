@@ -4,6 +4,7 @@
 import logging
 import requests
 from datetime import datetime
+from cachetools import LFUCache
 from requests_futures.sessions import FuturesSession
 import threading
 from .utils import get_args
@@ -45,7 +46,7 @@ def send_to_webhook(session, message_type, message):
             log.exception(repr(e))
 
 
-def wh_updater(args, queue, key_cache):
+def wh_updater(args, queue, key_caches):
     wh_threshold_timer = datetime.now()
     wh_over_threshold = False
 
@@ -54,12 +55,20 @@ def wh_updater(args, queue, key_cache):
     # connection, giving a performance increase.
     session = __get_requests_session(args)
 
-    # Extract the proper identifier.
+    # Extract the proper identifier. This list also controls which message
+    # types are getting cached.
     ident_fields = {
         'pokestop': 'pokestop_id',
         'pokemon': 'encounter_id',
-        'gym': 'gym_id'
+        'gym': 'gym_id',
+        'gym_details': 'gym_id'
     }
+
+    # Instantiate WH LFU caches for all cached types. We separate the caches
+    # by ident_field types, because different ident_field (message) types can
+    # use the same name for their ident field.
+    for key in ident_fields:
+        key_caches[key] = LFUCache(maxsize=args.wh_lfu_size)
 
     # The forever loop.
     while True:
@@ -67,16 +76,23 @@ def wh_updater(args, queue, key_cache):
             # Loop the queue.
             whtype, message = queue.get()
 
+            # Get the proper cache if this type has one.
+            key_cache = None
+
+            if whtype in key_caches:
+                key_cache = key_caches[whtype]
+
+            # Get the unique identifier to check our cache, if it has one.
             ident = message.get(ident_fields.get(whtype), None)
 
             # cachetools in Python2.7 isn't thread safe, so we add a lock.
             with wh_lock:
                 # Only send if identifier isn't already in cache.
-                if ident is None:
-                    # We don't know what it is, so let's just log and send
-                    # as-is.
+                if ident is None or key_cache is None:
+                    # We don't know what it is, or it doesn't have a cache,
+                    # so let's just log and send as-is.
                     log.debug(
-                        'Sending webhook item of unknown type: %s.', whtype)
+                        'Sending webhook item of uncached type: %s.', whtype)
                     send_to_webhook(session, whtype, message)
                 elif ident not in key_cache:
                     key_cache[ident] = message
@@ -97,6 +113,7 @@ def wh_updater(args, queue, key_cache):
                         log.debug('Not resending %s to webhook: %s.',
                                   whtype, ident)
 
+            # Helping out the GC.
             del whtype
             del message
             del ident
@@ -173,7 +190,8 @@ def __get_key_fields(whtype):
                     'individual_stamina', 'individual_defense',
                     'individual_attack'],
         'gym': ['team_id', 'guard_pokemon_id',
-                'gym_points', 'enabled', 'latitude', 'longitude']
+                'gym_points', 'enabled', 'latitude', 'longitude'],
+        'gym_details': ['latitude', 'longitude', 'team', 'pokemon']
     }
 
     return key_fields.get(whtype, [])
