@@ -66,7 +66,8 @@ var gymTypes = ['Uncontested', 'Mystic', 'Valor', 'Instinct']
 var gymPrestige = [2000, 4000, 8000, 12000, 16000, 20000, 30000, 40000, 50000]
 var audio = new Audio('static/sounds/ding.mp3')
 
-var GenderType = ['♂', '♀', '⚪']
+var genderType = ['♂', '♀', '⚲']
+var unownForm = ['unset', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '!', '?']
 
 
 /*
@@ -402,18 +403,33 @@ function getDateStr(t) {
     return dateStr
 }
 
-function pokemonLabel(name, rarity, types, disappearTime, id, latitude, longitude, encounterId, atk, def, sta, move1, move2, weight, height, gender) {
-    var disappearDate = new Date(disappearTime)
-    var rarityDisplay = rarity ? '(' + rarity + ')' : ''
+function pokemonLabel(item) {
+    var name = item['pokemon_name']
+    var rarityDisplay = item['pokemon_rarity'] ? '(' + item['pokemon_rarity'] + ')' : ''
+    var types = item['pokemon_types']
     var typesDisplay = ''
-    var pMove1 = (moves[move1] !== undefined) ? i8ln(moves[move1]['name']) : 'gen/unknown'
-    var pMove2 = (moves[move2] !== undefined) ? i8ln(moves[move2]['name']) : 'gen/unknown'
+    var encounterId = item['encounter_id']
+    var id = item['pokemon_id']
+    var latitude = item['latitude']
+    var longitude = item['longitude']
+    var disappearTime = item['disappear_time']
+    var disappearDate = new Date(disappearTime)
+    var atk = item['individual_attack']
+    var def = item['individual_defense']
+    var sta = item['individual_stamina']
+    var pMove1 = (moves[item['move_1']] !== undefined) ? i8ln(moves[item['move_1']]['name']) : 'gen/unknown'
+    var pMove2 = (moves[item['move_2']] !== undefined) ? i8ln(moves[item['move_2']]['name']) : 'gen/unknown'
+    var weight = item['weight']
+    var height = item['height']
+    var gender = item['gender']
+    var form = item['form']
 
     $.each(types, function (index, type) {
         typesDisplay += getTypeSpan(type)
     })
+
     var details = ''
-    if (atk != null) {
+    if (atk !== null && def !== null && sta !== null) {
         var iv = getIv(atk, def, sta)
         details = `
             <div>
@@ -424,17 +440,20 @@ function pokemonLabel(name, rarity, types, disappearTime, id, latitude, longitud
             </div>
             `
     }
-    if (gender != null) {
+    if (gender !== null && weight !== null && height !== null) {
         details += `
             <div>
-                Gender: ${GenderType[gender - 1]} | Weight: ${weight.toFixed(2)}kg | Height: ${height.toFixed(2)}m
+                Gender: ${genderType[gender - 1]} | Weight: ${weight.toFixed(2)}kg | Height: ${height.toFixed(2)}m
             </div>
             `
     }
     var contentstring = `
         <div>
-            <b>${name}</b>
-            <span> - </span>
+            <b>${name}</b>`
+    if (id === 201 && form !== null && form > 0) {
+        contentstring += ` (${unownForm[item['form']]})`
+    }
+    contentstring += `<span> - </span>
             <small>
                 <a href='http://www.pokemon.com/us/pokedex/${id}' target='_blank' title='View in Pokedex'>#${id}</a>
             </small>
@@ -727,7 +746,7 @@ function customizePokemonMarker(marker, item, skipNotification) {
     }
 
     marker.infoWindow = new google.maps.InfoWindow({
-        content: pokemonLabel(item['pokemon_name'], item['pokemon_rarity'], item['pokemon_types'], item['disappear_time'], item['pokemon_id'], item['latitude'], item['longitude'], item['encounter_id'], item['individual_attack'], item['individual_defense'], item['individual_stamina'], item['move_1'], item['move_2'], item['weight'], item['height'], item['gender']),
+        content: pokemonLabel(item),
         disableAutoPan: true
     })
 
