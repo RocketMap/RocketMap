@@ -20,10 +20,10 @@ wh_warning_threshold = 100
 wh_threshold_lifetime = int(5 * (wh_warning_threshold / 100.0))
 wh_lock = threading.Lock()
 
+args = get_args()
+
 
 def send_to_webhook(session, message_type, message):
-    args = get_args()
-
     if not args.webhooks:
         # What are you even doing here...
         log.warning('Called send_to_webhook() without webhooks.')
