@@ -1,6 +1,6 @@
 # Pokémon Encounters
 
-Since the IV update of April 21st 2017 which makes IVs the same for players of level 25 and above, the encounter system has been reworked and now includes CP/IV scanning.
+Since the IV update of April 21st 2017 which makes IVs the same for players of level 30 and above, the encounter system has been reworked and now includes CP/IV scanning.
 
 Steps for using the new encounter system:
 

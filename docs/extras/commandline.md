@@ -81,8 +81,8 @@
                         "auth_service,username,passwd" lines. [env var:
                         POGOMAP_ACCOUNTCSV]
     -hlvl HIGH_LVL_ACCOUNTS, --high-lvl-accounts HIGH_LVL_ACCOUNTS
-                        Load high level accounts from CSV file containing "25
-                        or 30,auth_service,username,passwd" lines. [env var:
+                        Load high level accounts from CSV file containing
+                        "auth_service,username,passwd" lines. [env var:
                         POGOMAP_HIGH_LVL_ACCOUNTS]
     -bh, --beehive        Use beehive configuration for multiple accounts, one
                         account per hex. Make sure to keep -st under 5, and -w
