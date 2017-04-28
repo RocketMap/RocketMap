@@ -99,10 +99,8 @@
 
 #encounter                      # Set to true to start encounters to pull more info, like IVs or movesets. (default=False)
 #encounter-delay:               # Delay in seconds before starting an encounter. Must not be zero. (default=1)
-#encounter-whitelist:           # Whitelist of pokemon ids to encounter. Syntax [id,id,id,id] (Do not use with blacklist)
-#encounter-whitelist-file:      # File containing a list of Pokemon to encounter for more stats. (Do not use with blacklist-file)
-#encounter-blacklist:           # Blacklist of pokemon ids to NOT encounter. Syntax [id,id,id,id] (Do not use with whitelist)
-#encounter-blacklist-file:      # File containing a list of Pokemon to NOT encounter formore stats. (Do not use with whitelist-file)
+#high-lvl-accounts:             # File containing a list high level accounts, in the format "25 or 30,auth_service,username,password"
+#enc-whitelist-file:            # File containing a list of Pokemon IDs to encounter for IV/CPs. Requires L30 or higher accounts in --high-lvl-accounts.
 
 
 # Webserver settings

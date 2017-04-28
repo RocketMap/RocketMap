@@ -86,6 +86,11 @@ def get_args():
     parser.add_argument('-ac', '--accountcsv',
                         help=('Load accounts from CSV file containing ' +
                               '"auth_service,username,passwd" lines.'))
+    parser.add_argument('-hlvl', '--high-lvl-accounts',
+                        help=('Load high level accounts from CSV file '
+                              + ' containing '
+                              + '"auth_service,username,passwd"'
+                              + ' lines.'))
     parser.add_argument('-bh', '--beehive',
                         help=('Use beehive configuration for multiple ' +
                               'accounts, one account per hex.  Make sure ' +
@@ -155,23 +160,16 @@ def get_args():
                         help=('Time delay between encounter pokemon ' +
                               'in scan threads.'),
                         type=float, default=1)
-    encounter_list = parser.add_mutually_exclusive_group()
-    encounter_list.add_argument('-ewht', '--encounter-whitelist',
-                                action='append', default=[],
-                                help=('List of Pokemon to encounter for ' +
-                                      'more stats.'))
-    encounter_list.add_argument('-eblk', '--encounter-blacklist',
-                                action='append', default=[],
-                                help=('List of Pokemon to NOT encounter for ' +
-                                      'more stats.'))
-    encounter_list.add_argument('-ewhtf', '--encounter-whitelist-file',
-                                default='', help='File containing a list of '
-                                                 'Pokemon to encounter for'
-                                                 ' more stats.')
-    encounter_list.add_argument('-eblkf', '--encounter-blacklist-file',
-                                default='', help='File containing a list of '
-                                                 'Pokemon to NOT encounter for'
-                                                 ' more stats.')
+    parser.add_argument('-encwf', '--enc-whitelist-file',
+                        default='', help='File containing a list of '
+                        'Pokemon IDs to encounter for'
+                        ' IV/CP scanning.')
+    parser.add_argument('-nostore', '--no-api-store',
+                        help=("Don't store the API objects used by the high"
+                              + ' level accounts in memory. This will increase'
+                              + ' the number of logins per account, but '
+                              + ' decreases memory usage.'),
+                        action='store_true', default=False)
     webhook_list = parser.add_mutually_exclusive_group()
     webhook_list.add_argument('-wwht', '--webhook-whitelist',
                               action='append', default=[],
@@ -300,6 +298,10 @@ def get_args():
                         help=('Set a maximum speed in km/hour for scanner ' +
                               'movement.'),
                         type=int, default=35)
+    parser.add_argument('-hkph', '--hlvl-kph',
+                        help=('Set a maximum speed in km/hour for scanner ' +
+                              'movement, for high-level (L30) accounts.'),
+                        type=int, default=25)
     parser.add_argument('-ldur', '--lure-duration',
                         help=('Change duration for lures set on pokestops. ' +
                               'This is useful for events that extend lure ' +
@@ -639,6 +641,47 @@ def get_args():
                                   'password': args.password[i],
                                   'auth_service': args.auth_service[i]})
 
+        # Prepare the L30 accounts for the account sets.
+        args.accounts_L30 = []
+
+        if args.high_lvl_accounts:
+            # Context processor.
+            with open(args.high_lvl_accounts, 'r') as accs:
+                for line in accs:
+                    # Make sure it's not an empty line.
+                    if not line.strip():
+                        continue
+
+                    line = line.split(',')
+
+                    # We need "service, user, pass".
+                    if len(line) < 3:
+                        raise Exception('L30 account is missing a'
+                                        + ' field. Each line requires: '
+                                        + '"service,user,pass".')
+
+                    # Let's remove trailing whitespace.
+                    service = line[0].strip()
+                    username = line[1].strip()
+                    password = line[2].strip()
+
+                    hlvl_account = {
+                        'auth_service': service,
+                        'username': username,
+                        'password': password,
+                        'captcha': False
+                    }
+
+                    args.accounts_L30.append(hlvl_account)
+
+        # Prepare the IV/CP scanning filters.
+        args.enc_whitelist = []
+
+        # IV/CP scanning.
+        if args.enc_whitelist_file:
+            with open(args.enc_whitelist_file) as f:
+                args.enc_whitelist = frozenset([int(l.strip()) for l in f])
+
         # Make max workers equal number of accounts if unspecified, and disable
         # account switching.
         if args.workers is None:
@@ -656,20 +699,6 @@ def get_args():
                   ": Error: no accounts specified. Use -a, -u, and -p or " +
                   "--accountcsv to add accounts.")
             sys.exit(1)
-
-        if args.encounter_whitelist_file:
-            with open(args.encounter_whitelist_file) as f:
-                args.encounter_whitelist = [get_pokemon_id(name) for name in
-                                            f.read().splitlines()]
-        elif args.encounter_blacklist_file:
-            with open(args.encounter_blacklist_file) as f:
-                args.encounter_blacklist = [get_pokemon_id(name) for name in
-                                            f.read().splitlines()]
-        else:
-            args.encounter_blacklist = [int(i) for i in
-                                        args.encounter_blacklist]
-            args.encounter_whitelist = [int(i) for i in
-                                        args.encounter_whitelist]
 
         if args.webhook_whitelist_file:
             with open(args.webhook_whitelist_file) as f:

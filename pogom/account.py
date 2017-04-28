@@ -4,10 +4,15 @@
 import logging
 import time
 import random
+from threading import Lock
+from timeit import default_timer
 
+from pgoapi import PGoApi
 from pgoapi.exceptions import AuthException
 
-from .utils import in_radius
+from .fakePogoApi import FakePogoApi
+from .utils import in_radius, generate_device_info, equi_rect_distance
+from .proxy import get_new_proxy
 
 log = logging.getLogger(__name__)
 
@@ -16,6 +21,39 @@ class TooManyLoginAttempts(Exception):
     pass
 
 
+# Create the API object that'll be used to scan.
+def setup_api(args, status):
+    # Create the API instance this will use.
+    if args.mock != '':
+        api = FakePogoApi(args.mock)
+    else:
+        device_info = generate_device_info()
+        api = PGoApi(device_info=device_info)
+
+    # New account - new proxy.
+    if args.proxy:
+        # If proxy is not assigned yet or if proxy-rotation is defined
+        # - query for new proxy.
+        if ((not status['proxy_url']) or
+                ((args.proxy_rotation is not None) and
+                 (args.proxy_rotation != 'none'))):
+
+            proxy_num, status['proxy_url'] = get_new_proxy(args)
+            if args.proxy_display.upper() != 'FULL':
+                status['proxy_display'] = proxy_num
+            else:
+                status['proxy_display'] = status['proxy_url']
+
+    if status['proxy_url']:
+        log.debug('Using proxy %s', status['proxy_url'])
+        api.set_proxy({
+            'http': status['proxy_url'],
+            'https': status['proxy_url']})
+
+    return api
+
+
+# Use API to check the login status, and retry the login if possible.
 def check_login(args, account, api, position, proxy_url):
 
     # Logged in? Enough time left? Cool!
@@ -303,4 +341,91 @@ def spin_pokestop_request(api, fort, step_location):
 
     except Exception as e:
         log.warning('Exception while spinning Pokestop: %s', repr(e))
+        return False
+
+
+# The AccountSet returns a scheduler that cycles through different
+# sets of accounts (e.g. L30). Each set is defined at runtime, and is
+# (currently) used to separate regular accounts from L30 accounts.
+# TODO: Migrate the old account Queue to a real AccountScheduler, preferably
+# handled globally via database instead of per instance.
+# TODO: Accounts in the AccountSet are exempt from things like the
+# account recycler thread. We could've hardcoded support into it, but that
+# would have added to the amount of ugly code. Instead, we keep it as is
+# until we have a proper account manager.
+class AccountSet(object):
+
+    def __init__(self, kph):
+        self.sets = {}
+
+        # Scanning limits.
+        self.kph = kph
+
+        # Thread safety.
+        self.next_lock = Lock()
+
+    # Set manipulation.
+    def create_set(self, name, values=[]):
+        if name in self.sets:
+            raise Exception('Account set ' + name + ' is being created twice.')
+
+        self.sets[name] = values
+
+    # Release an account back to the pool after it was used.
+    def release(self, account):
+        if 'in_use' not in account:
+            log.error('Released account %s back to the AccountSet,'
+                      + " but it wasn't locked.",
+                      account['username'])
+        else:
+            account['in_use'] = False
+
+    # Get next account that is ready to be used for scanning.
+    def next(self, set_name, coords_to_scan):
+        # Yay for thread safety.
+        with self.next_lock:
+            # Readability.
+            account_set = self.sets[set_name]
+
+            # Loop all accounts for a good one.
+            now = default_timer()
+            max_speed_kmph = self.kph
+
+            for i in range(len(account_set)):
+                account = account_set[i]
+
+                # Make sure it's not in use.
+                if account.get('in_use', False):
+                    continue
+
+                # Make sure it's not captcha'd.
+                if account.get('captcha', False):
+                    continue
+
+                # Check if we're below speed limit for account.
+                last_scanned = account.get('last_scanned', False)
+
+                if last_scanned:
+                    seconds_passed = now - last_scanned
+                    old_coords = account.get('last_coords', coords_to_scan)
+
+                    distance_km = equi_rect_distance(
+                        old_coords,
+                        coords_to_scan)
+                    cooldown_time_sec = distance_km / max_speed_kmph
+
+                    # Not enough time has passed for this one.
+                    if seconds_passed < cooldown_time_sec:
+                        continue
+
+                # We've found an account that's ready.
+                account['last_scanned'] = now
+                account['last_coords'] = coords_to_scan
+                account['in_use'] = True
+
+                return account
+
+        # TODO: Instead of returning False, return the amount of min. seconds
+        # the instance needs to wait until the first account becomes available,
+        # so it doesn't need to keep asking if we know we need to wait.
         return False

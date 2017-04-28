@@ -577,12 +577,12 @@ class SpeedScan(HexSearch):
                 # the current ring (90,150,210,270,330 and 30 degrees from
                 # origin) to form a star
                 star_loc = get_new_coords(self.scan_location, xdist * ring,
-                                          90 + 60*i)
+                                          90 + 60 * i)
                 for j in range(0, ring):
                     # Then from each point on the star, create locations
                     # towards the next point of star along the edge of the
                     # current ring
-                    loc = get_new_coords(star_loc, xdist * (j), 210 + 60*i)
+                    loc = get_new_coords(star_loc, xdist * (j), 210 + 60 * i)
                     results.append((loc[0], loc[1], 0))
 
         generated_locations = []
