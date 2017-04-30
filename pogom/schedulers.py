@@ -865,10 +865,14 @@ class SpeedScan(HexSearch):
             q = self.queues[0]
             ms = ((now_date - self.refresh_date).total_seconds() +
                   self.refresh_ms)
-            best = {'score': 0}
+            best = {}
             cant_reach = False
             worker_loc = [status['latitude'], status['longitude']]
             last_action = status['last_scan_date']
+
+            # Logging.
+            log.info('Enumerating %s scan locations in queue.',
+                     len(q))
 
             # Check all scan locations possible in the queue.
             for i, item in enumerate(q):
@@ -934,10 +938,17 @@ class SpeedScan(HexSearch):
                 # last worker position
                 score = score / (distance + .01)
 
-                if score > best['score']:
+                if score > best.get('score', 0):
                     best = {'score': score, 'i': i,
                             'secs_to_arrival': secs_to_arrival}
                     best.update(item)
+
+            # If we didn't find one, log it.
+            if not best:
+                log.info('Enumerating queue found no best location.')
+            else:
+                log.debug('Enumerating queue found best location: %s.',
+                          repr(best))
 
             prefix = 'Calc %.2f for %d scans:' % (time.time() - now_time, n)
             loc = best.get('loc', [])
@@ -946,8 +957,10 @@ class SpeedScan(HexSearch):
             i = best.get('i', 0)
             st = best.get('start', 0)
             end = best.get('end', 0)
+
             log.debug('step {} start {} end {} secs to arrival {}'.format(
                 step, st, end, secs_to_arrival))
+
             messages = {
                 'wait': 'Nothing to scan.',
                 'early': 'Early for step {}; waiting a few seconds...'.format(
