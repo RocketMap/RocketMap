@@ -982,7 +982,7 @@ class SpeedScan(HexSearch):
                                     + ' Overseer refreshing queue.')
                 return -1, 0, 0, 0, messages, 0
 
-            if best['score'] == 0:
+            if best.get('score', 0) == 0:
                 if cant_reach:
                     messages['wait'] = ('Not able to reach any scan'
                                         + ' under the speed limit.')
