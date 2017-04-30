@@ -2,43 +2,40 @@
 
 ## Visual Representation
 
-![](https://camo.githubusercontent.com/d65ac33656b410549aadfc9975f2f1a779ae437c/687474703a2f2f693330342e70686f746f6275636b65742e636f6d2f616c62756d732f6e6e3138362f736f6c6563616a756e2f426565686976652532304578706c616e6174696f6e2e706e67)
+![](../_static/img/soznlqc.png)
 
 ## Get Ready
 
 The beehive script works by specifying only the parameters that are different for each worker on the command line. All other parameters are taken from [the config file](https://github.com/RocketMap/RocketMap/blob/develop/config/config.ini.example).
 
-To ensure that your beehive will run correctly, first make sure that you can run purely from the config file:
+To ensure that your beehive will run correctly, first make sure that you have setup your config.ini with the appropriate settings. 
 
-```
-python runserver.py
-```
+You will want the following to run optimial beehives:
+MySQL
+Captcha Solving (manual or 2captcha)
+possibly a few proxies
 
-If this runs ok, you should be good to go!
 
 ## Get Set
 
-Open a Terminal or Command Window to the Tools / Hex Beehive Generator directory:
+[Go here] (https://voxx.github.io/pgm-multiloc/)
+
+Select the areas in which you want to scan. Keep in mind the more areas you select the more workers you will need. 
+
+Once you have the areas ready, select `Generate Launch Script`
+
+You will select the options for your setup and decide how many workers per hive. 
+
+After your scanning preferences are set, you will download the script. 
+
+***Please Note:*** By default, it will look in the folder workers for accounts to use. For every hive you have you must also have have a CSV named `HIVE{number}.csv`. Please do not put a account in more than one CSV as it might cause unwanted effects.  
+
+CSV format example:
 
 ```
-cd RocketMap/Tools/Hex-Beehive-Generator/
+ptc,username,password
 ```
 
-Now generate coordinates with `location_generator.py`:
-
-***NOTE:*** Carefully read [these instructions](https://github.com/RocketMap/RocketMap/blob/develop/Tools/Hex-Beehive-Generator/Instructions_for_location_generator.txt) for the proper arguments.
-
-```
-python location_generator.py -st stepsize -lp ringsize -lat yourstartinglathere -lon yourstartinglonghere
-```
-
-For example:
-
-```
-python location_generator.py -st 5 -lp 4 -lat 39.949157 -lon -75.165297
-```
-
-This will generate a beehive.bat (or beehive.sh for non-Windows) file in the main map directory.
 
 ## GO!
 
@@ -47,3 +44,9 @@ Run the .bat/.sh file to start the workers.
 ## Troubleshooting
 
 If your instances start but then immediately stop, take each line and run the part after /MIN starting with the python path. This will stop the window from automatically closing so that you can see what the actual error is.
+
+## Distances
+
+![](../_static/img/ZHSo3GN.png)
+
+ if using -st 10, these are the numbers you should know: 4.9283 km, 1.425 km, 2.468175 km, 2.85 km - you can use the distances to calculate coords here http://www.sunearthtools.com/tools/distance.php

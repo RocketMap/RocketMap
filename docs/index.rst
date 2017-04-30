@@ -40,10 +40,11 @@ RocketMap gives you a live visualization map of nearby Pokémon, Pokéstops, and
 .. toctree::
     :titlesonly:
     :maxdepth: 1
-    :caption: Advanced Installation
+    :caption: Common Issues
     :glob:
 
-    advanced-install/*
+    common-issues/*
+	
 
 .. toctree::
     :titlesonly:
@@ -52,11 +53,12 @@ RocketMap gives you a live visualization map of nearby Pokémon, Pokéstops, and
     :glob:
 
     extras/*
-
+	
 .. toctree::
     :titlesonly:
     :maxdepth: 1
-    :caption: Common Issues
+    :caption: Advanced Installation
     :glob:
 
-    common-issues/*
+    advanced-install/*
+
