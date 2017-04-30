@@ -874,10 +874,22 @@ class SpeedScan(HexSearch):
             log.info('Enumerating %s scan locations in queue.',
                      len(q))
 
+            # Keep some stats for logging purposes. If something goes wrong,
+            # we can track what happened.
+            count_claimed = 0
+            count_parked = 0
+            count_missed = 0
+            count_fresh_band = 0
+            count_early = 0
+            count_late = 0
+            min_parked_time_remaining = 0
+            min_fresh_band_time_remaining = 0
+
             # Check all scan locations possible in the queue.
             for i, item in enumerate(q):
                 # If already claimed by another worker or done, pass.
                 if item.get('done', False):
+                    count_claimed += 1
                     continue
 
                 # If the item is parked by a different thread (or by a
@@ -891,19 +903,29 @@ class SpeedScan(HexSearch):
                     # the park so another worker can pick it up.
                     now = default_timer()
                     max_parking_idle_seconds = 3 * 60
+                    time_passed = now - item.get('parked_last_update', now)
+                    time_remaining = (max_parking_idle_seconds - time_passed)
 
-                    if (now - item.get('parked_last_update', now)
-                            > max_parking_idle_seconds):
+                    # Update logging stats.
+                    if not min_parked_time_remaining:
+                        min_parked_time_remaining = time_remaining
+                    elif time_remaining < min_parked_time_remaining:
+                        min_parked_time_remaining = time_remaining
+
+                    # Check parked status.
+                    if (time_passed > max_parking_idle_seconds):
                         # Unpark & don't skip it.
                         item.pop('parked_name', None)
                         item.pop('parked_last_update', None)
                     else:
                         # Still parked and not our item. Skip it.
                         if item.get('parked_name') != our_parked_name:
+                            count_parked += 1
                             continue
 
                 # If already timed out, mark it as Missed and check next.
                 if ms > item['end']:
+                    count_missed += 1
                     item['done'] = 'Missed' if not item.get(
                         'done', False) else item['done']
                     continue
@@ -911,21 +933,32 @@ class SpeedScan(HexSearch):
                 # If we just did a fresh band recently, wait a few seconds to
                 # space out the band scans.
                 if now_date < self.next_band_date:
+                    count_fresh_band += 1
+
+                    # Update logging stats.
+                    band_time_remaining = (self.next_band_date - now_date)
+                    if not min_fresh_band_time_remaining:
+                        min_fresh_band_time_remaining = band_time_remaining
+                    elif band_time_remaining < min_fresh_band_time_remaining:
+                        min_fresh_band_time_remaining = band_time_remaining
+
                     continue
 
-                # If we are going to get there before it starts then ignore
+                # If we are going to get there before it starts then ignore.
                 loc = item['loc']
                 distance = equi_rect_distance(loc, worker_loc)
                 secs_to_arrival = distance / self.args.kph * 3600
                 secs_waited = (now_date - last_action).total_seconds()
                 secs_to_arrival = max(secs_to_arrival - secs_waited, 0)
                 if ms + secs_to_arrival < item['start']:
+                    count_early += 1
                     continue
 
                 # If we can't make it there before it disappears, don't bother
                 # trying.
                 if ms + secs_to_arrival > item['end']:
                     cant_reach = True
+                    count_late += 1
                     continue
 
                 n += 1
@@ -945,7 +978,20 @@ class SpeedScan(HexSearch):
 
             # If we didn't find one, log it.
             if not best:
-                log.info('Enumerating queue found no best location.')
+                log.info('Enumerating queue found no best location, with'
+                         + ' %s claimed, %s parked, %s missed, %s fresh band'
+                         + " skips, %s missed because we're early, %s because"
+                         + " we're too late. Minimum %s time remaining on"
+                         + ' parked item, and %s time remaining for next'
+                         + ' fresh band.',
+                         count_claimed,
+                         count_parked,
+                         count_missed,
+                         count_fresh_band,
+                         count_early,
+                         count_late,
+                         min_parked_time_remaining,
+                         min_fresh_band_time_remaining)
             else:
                 log.debug('Enumerating queue found best location: %s.',
                           repr(best))
