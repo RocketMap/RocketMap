@@ -32,6 +32,14 @@ RocketMap gives you a live visualization map of nearby Pokémon, Pokéstops, and
 .. toctree::
     :titlesonly:
     :maxdepth: 1
+    :caption: First Run
+    :glob:
+
+    first-run/*	
+
+.. toctree::
+    :titlesonly:
+    :maxdepth: 1
     :caption: Advanced Installation
     :glob:
 
@@ -44,3 +52,11 @@ RocketMap gives you a live visualization map of nearby Pokémon, Pokéstops, and
     :glob:
 
     extras/*
+
+.. toctree::
+    :titlesonly:
+    :maxdepth: 1
+    :caption: Common Issues
+    :glob:
+
+    common-issues/*
