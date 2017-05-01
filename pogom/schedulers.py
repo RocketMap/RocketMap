@@ -871,8 +871,8 @@ class SpeedScan(HexSearch):
             last_action = status['last_scan_date']
 
             # Logging.
-            log.info('Enumerating %s scan locations in queue.',
-                     len(q))
+            log.debug('Enumerating %s scan locations in queue.',
+                      len(q))
 
             # Keep some stats for logging purposes. If something goes wrong,
             # we can track what happened.
@@ -978,20 +978,20 @@ class SpeedScan(HexSearch):
 
             # If we didn't find one, log it.
             if not best:
-                log.info('Enumerating queue found no best location, with'
-                         + ' %s claimed, %s parked, %s missed, %s fresh band'
-                         + " skips, %s missed because we're early, %s because"
-                         + " we're too late. Minimum %s time remaining on"
-                         + ' parked item, and %s time remaining for next'
-                         + ' fresh band.',
-                         count_claimed,
-                         count_parked,
-                         count_missed,
-                         count_fresh_band,
-                         count_early,
-                         count_late,
-                         min_parked_time_remaining,
-                         min_fresh_band_time_remaining)
+                log.debug('Enumerating queue found no best location, with'
+                          + ' %s claimed, %s parked, %s missed, %s fresh band'
+                          + " skips, %s missed because we're early, %s because"
+                          + " we're too late. Minimum %s time remaining on"
+                          + ' parked item, and %s time remaining for next'
+                          + ' fresh band.',
+                          count_claimed,
+                          count_parked,
+                          count_missed,
+                          count_fresh_band,
+                          count_early,
+                          count_late,
+                          min_parked_time_remaining,
+                          min_fresh_band_time_remaining)
             else:
                 log.debug('Enumerating queue found best location: %s.',
                           repr(best))
