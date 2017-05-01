@@ -412,7 +412,7 @@ class AccountSet(object):
                     distance_km = equi_rect_distance(
                         old_coords,
                         coords_to_scan)
-                    cooldown_time_sec = distance_km / max_speed_kmph
+                    cooldown_time_sec = distance_km / max_speed_kmph * 3600
 
                     # Not enough time has passed for this one.
                     if seconds_passed < cooldown_time_sec:
