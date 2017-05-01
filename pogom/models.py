@@ -34,7 +34,7 @@ from .utils import get_pokemon_name, get_pokemon_rarity, get_pokemon_types, \
 from .transform import transform_from_wgs_to_gcj, get_new_coords
 from .customLog import printPokemon
 from .account import (tutorial_pokestop_spin, get_player_level, check_login,
-                      setup_api)
+                      setup_api, encounter_pokemon_request)
 
 log = logging.getLogger(__name__)
 
@@ -1989,7 +1989,8 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                         # these single-use variables are making me ill.
                         if args.hash_key:
                             key = key_scheduler.next()
-                            log.debug('Using key %s for this encounter.', key)
+                            log.debug('Using hashing key %s for this'
+                                      + ' encounter.', key)
                             hlvl_api.activate_hash_server(key)
 
                     # We have an API object now. If necessary, store it.
@@ -2003,52 +2004,58 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                     check_login(args, hlvl_account, hlvl_api, scan_location,
                                 status['proxy_url'])
 
-                    # Setup encounter request envelope.
-                    req = hlvl_api.create_request()
-                    req.encounter(
-                        encounter_id=p['encounter_id'],
-                        spawn_point_id=p['spawn_point_id'],
-                        player_latitude=scan_location[0],
-                        player_longitude=scan_location[1])
-                    req.check_challenge()
-                    req.get_hatched_eggs()
-                    req.get_inventory()
-                    req.check_awarded_badges()
-                    req.download_settings()
-                    req.get_buddy_walked()
-                    encounter_result = req.call()
+                    # Encounter Pokémon.
+                    encounter_result = encounter_pokemon_request(
+                        hlvl_api,
+                        p['encounter_id'],
+                        p['spawn_point_id'],
+                        scan_location)
 
-                    # Readability.
-                    responses = encounter_result['responses']
+                    # Handle errors.
+                    if encounter_result:
+                        # Readability.
+                        responses = encounter_result['responses']
 
-                    # Check for captcha
-                    captcha_url = responses['CHECK_CHALLENGE']['challenge_url']
-                    # Throw warning but finish parsing
-                    if len(captcha_url) > 1:
-                        # Flag account.
-                        hlvl_account['captcha'] = True
-                        log.info('Level %s account %s encountered a captcha.',
-                                 encounter_level,
-                                 hlvl_account['username'])
+                        # Check for captcha.
+                        captcha_url = responses[
+                            'CHECK_CHALLENGE']['challenge_url']
+
+                        # Throw warning but finish parsing.
+                        if len(captcha_url) > 1:
+                            # Flag account.
+                            hlvl_account['captcha'] = True
+                            log.error('Account %s encountered a captcha.'
+                                      + ' Account will not be used.',
+                                      hlvl_account['username'])
+                        else:
+                            # Update level indicator before we clear the
+                            # response.
+                            encounter_level = get_player_level(
+                                encounter_result)
+
+                            # User error?
+                            if encounter_level < 30:
+                                raise Exception('Expected account of level 30'
+                                                + ' or higher, but account '
+                                                + hlvl_account['username']
+                                                + ' is only level '
+                                                + encounter_level + '.')
+
+                        # We're done with the encounter. If it's from an
+                        # AccountSet, release account back to the pool.
+                        if using_accountset:
+                            account_sets.release(hlvl_account)
+
+                        # Clear the response for memory management.
+                        encounter_result = clear_dict_response(
+                            encounter_result)
                     else:
-                        # Update level indicator before we clear the response.
-                        encounter_level = get_player_level(encounter_result)
+                        # Something happened. Clean up.
 
-                        # User error?
-                        if encounter_level < 30:
-                            raise Exception('Expected account of level 30 or'
-                                            + ' higher, but account '
-                                            + hlvl_account['username']
-                                            + ' is only level '
-                                            + encounter_level + '.')
-
-                    # We're done with the encounter. If it's from an
-                    # AccountSet, release account back to the pool.
-                    if using_accountset:
-                        account_sets.release(hlvl_account)
-
-                    # Clear the response for memory management.
-                    encounter_result = clear_dict_response(encounter_result)
+                        # We're done with the encounter. If it's from an
+                        # AccountSet, release account back to the pool.
+                        if using_accountset:
+                            account_sets.release(hlvl_account)
                 else:
                     log.error('No L30 accounts are available, please'
                               + ' consider adding more. Skipping encounter.')

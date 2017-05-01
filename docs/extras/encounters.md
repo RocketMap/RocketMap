@@ -48,3 +48,20 @@ Some important notes:
  * Captcha'd L30 accounts will be logged in console and disabled in the scheduler. Having `-v` enabled will show you an entry in the logs mentioning "High level account x encountered a captcha". They will not be solved automatically.
  * The encounter is a single request (1 RPM). We intentionally don't use the account for anything else besides the encounter.
  * The high level account properly uses a proxy if one is set for the scan, and properly rotates hashing keys when needed.
+
+## Relevant Logs
+
+The following messages can be logged (`-v`) and used to debug problems. Values denoted as `%s` are variable.
+
+Info & debug:
+
+* > Encountering Pokémon ID %s with account %s at %s, %s.
+* > Using hashing key %s for this encounter.
+* > Encounter for Pokémon ID %s at %s, %s successful: %s/%s/%s, %s CP.
+
+Errors & exceptions:
+
+* > Exception while encountering Pokémon: %s.
+* > Account %s encountered a captcha. Account will not be used.
+* > Expected account of level 30 or higher, but account %s is only level %s.
+* > No L30 accounts are available, please consider adding more. Skipping encounter.
