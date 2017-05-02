@@ -274,6 +274,11 @@ def main():
 
     if not args.only_server:
 
+        # Abort if we don't have a hash key set
+        if not args.hash_key:
+            log.critical('Hash key is required for scanning. Exiting.')
+            sys.exit()
+
         # Processing proxies if set (load from file, check and overwrite old
         # args.proxy with new working list)
         args.proxy = check_proxies(args)
