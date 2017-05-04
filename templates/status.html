@@ -50,6 +50,26 @@
         </label>
       </div>
     </div>
+    <div class="form-control switch-container">
+     <h3>Show Workers</h3>
+     <div class="onoffswitch">
+       <input id="showworker-switch" type="checkbox" name="showworker-switch" class="onoffswitch-checkbox" checked>
+       <label class="onoffswitch-label" for="showworker-switch">
+         <span class="switch-label" data-on="On" data-off="Off"></span>
+         <span class="switch-handle"></span>
+       </label>
+     </div>
+   </div>
+   <div class="form-control switch-container">
+      <h3>Hash Key Status</h3>
+      <div class="onoffswitch">
+        <input id="hashkey-switch" type="checkbox" name="hashkey-switch" class="onoffswitch-checkbox" checked>
+        <label class="onoffswitch-label" for="hashkey-switch">
+          <span class="switch-label" data-on="On" data-off="Off"></span>
+          <span class="switch-handle"></span>
+        </label>
+      </div>
+    </div>
   </div>
 </nav>
 <div class="spacing"></div>
@@ -63,5 +83,6 @@
 </div>
 <script src="{{ url_for('static', filename='dist/js/status.min.js').lstrip('/') }}"></script>
 <script src="{{ url_for('static', filename='dist/js/app.min.js').lstrip('/') }}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
 </body>
 </html>

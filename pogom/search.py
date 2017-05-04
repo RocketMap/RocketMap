@@ -39,9 +39,10 @@ from requests.packages.urllib3.util.retry import Retry
 
 from pgoapi.utilities import f2i
 from pgoapi import utilities as util
-from pgoapi.hash_server import HashServer
-
-from .models import parse_map, GymDetails, parse_gyms, MainWorker, WorkerStatus
+from pgoapi.hash_server import (HashServer, BadHashRequestException,
+                                HashingOfflineException)
+from .models import (parse_map, GymDetails, parse_gyms, MainWorker,
+                     WorkerStatus, HashKeys)
 from .utils import now, clear_dict_response
 from .transform import get_new_coords, jitter_location
 from .account import (setup_api, check_login, get_tutorial_state,
@@ -397,7 +398,8 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
     # Create the key scheduler.
     if args.hash_key:
         log.info('Enabling hashing key scheduler...')
-        key_scheduler = schedulers.KeyScheduler(args.hash_key)
+        key_scheduler = schedulers.KeyScheduler(args.hash_key,
+                                                db_updates_queue)
 
     if(args.print_status):
         log.info('Starting status printer thread...')
@@ -1095,19 +1097,46 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                                        whq, dbq)
                             del gym_responses
 
+                # Update hashing key stats in the database based on the values
+                # reported back by the hashing server.
                 if args.hash_key:
-                    key_instance = key_scheduler.keys[key_scheduler.current()]
+                    key = HashServer.status.get('token', None)
+                    key_instance = key_scheduler.keys[key]
                     key_instance['remaining'] = HashServer.status.get(
                         'remaining', 0)
 
-                    if key_instance['maximum'] == 0:
-                        key_instance['maximum'] = HashServer.status.get(
-                            'maximum', 0)
+                    key_instance['maximum'] = (
+                        HashServer.status.get('maximum', 0))
 
-                    peak = key_instance['maximum'] - key_instance['remaining']
+                    usage = (
+                        key_instance['maximum'] -
+                        key_instance['remaining'])
 
-                    if key_instance['peak'] < peak:
-                        key_instance['peak'] = peak
+                    if key_instance['peak'] < usage:
+                        key_instance['peak'] = usage
+
+                    if key_instance['expires'] is None:
+                        expires = HashServer.status.get(
+                            'expiration', None)
+
+                        if expires is not None:
+                            expires = datetime.utcfromtimestamp(expires)
+                            key_instance['expires'] = expires
+
+                    key_instance['last_updated'] = datetime.utcnow()
+
+                    log.debug('Hash key %s has %s/%s RPM left.', key,
+                              key_instance['remaining'],
+                              key_instance['maximum'])
+
+                    # Prepare hashing keys to be sent to the db. But only
+                    # sent latest updates of the 'peak' value per key.
+                    hashkeys = {}
+                    hashkeys[key] = key_instance
+                    hashkeys[key]['key'] = key
+                    hashkeys[key]['peak'] = max(key_instance['peak'],
+                                                HashKeys.getStoredPeak(key))
+                    dbq.put((HashKeys, hashkeys))
 
                 # Delay the desired amount after "scan" completion.
                 delay = scheduler.delay(status['last_scan_date'])
@@ -1166,6 +1195,11 @@ def map_request(api, position, no_jitter=False):
         response = clear_dict_response(response, True)
         return response
 
+    except HashingOfflineException as e:
+        log.warning('Hashing server is unreachable, it might be offline.')
+    except BadHashRequestException as e:
+        log.warning('Invalid or expired hashing key: %s.',
+                    api._hash_server_token)
     except Exception as e:
         log.warning('Exception while downloading map: %s', repr(e))
         return False

@@ -33,6 +33,7 @@ from .utils import get_pokemon_name, get_pokemon_rarity, get_pokemon_types, \
     clear_dict_response
 from .transform import transform_from_wgs_to_gcj, get_new_coords
 from .customLog import printPokemon
+
 from .account import (tutorial_pokestop_spin, get_player_level, check_login,
                       setup_api, encounter_pokemon_request)
 
@@ -1753,6 +1754,48 @@ class Token(flaskDb.Model):
         return tokens
 
 
+class HashKeys(BaseModel):
+    key = CharField(primary_key=True, max_length=20)
+    maximum = SmallIntegerField(default=0)
+    remaining = SmallIntegerField(default=0)
+    peak = SmallIntegerField(default=0)
+    expires = DateTimeField(null=True)
+    last_updated = DateTimeField(default=datetime.utcnow)
+
+    @staticmethod
+    def get_by_key(key):
+        query = (HashKeys
+                 .select()
+                 .where(HashKeys.key == key)
+                 .dicts())
+
+        return query[0] if query else {
+            'maximum': 0,
+            'remaining': 0,
+            'peak': 0,
+            'expires': None,
+            'last_updated': None
+        }
+
+    @staticmethod
+    def get_obfuscated_keys():
+        # Obfuscate hashing keys before we sent them to the front-end.
+        hashkeys = HashKeys.get_all()
+        for i, s in enumerate(hashkeys):
+            hashkeys[i]['key'] = s['key'][:-9] + '*'*9
+        return hashkeys
+
+    @staticmethod
+    # Retrieve the last stored 'peak' value for each hashing key.
+    def getStoredPeak(key):
+            result = HashKeys.select(HashKeys.peak).where(HashKeys.key == key)
+            if result:
+                # only one row can be returned
+                return result[0].peak
+            else:
+                return 0
+
+
 def hex_bounds(center, steps=None, radius=None):
     # Make a box that is (70m * step_limit * 2) + 70m away from the
     # center point.  Rationale is that you need to travel.
@@ -2541,6 +2584,13 @@ def clean_db_loop(args):
                              (datetime.utcnow() - timedelta(minutes=2)))))
             query.execute()
 
+            # Remove expired HashKeys
+            query = (HashKeys
+                     .delete()
+                     .where(HashKeys.expires <
+                            (datetime.now() - timedelta(days=1))))
+            query.execute()
+
             # If desired, clear old Pokemon spawns.
             if args.purge_data > 0:
                 log.info("Beginning purge of old Pokemon spawns.")
@@ -2618,7 +2668,7 @@ def create_tables(db):
     tables = [Pokemon, Pokestop, Gym, ScannedLocation, GymDetails,
               GymMember, GymPokemon, Trainer, MainWorker, WorkerStatus,
               SpawnPoint, ScanSpawnPoint, SpawnpointDetectionData,
-              Token, LocationAltitude]
+              Token, LocationAltitude, HashKeys]
     for table in tables:
         if not table.table_exists():
             log.info('Creating table: %s', table.__name__)
@@ -2634,7 +2684,7 @@ def drop_tables(db):
               GymDetails, GymMember, GymPokemon, Trainer, MainWorker,
               WorkerStatus, SpawnPoint, ScanSpawnPoint,
               SpawnpointDetectionData, LocationAltitude,
-              Token]
+              Token, HashKeys]
     db.connect()
     db.execute_sql('SET FOREIGN_KEY_CHECKS=0;')
     for table in tables:
