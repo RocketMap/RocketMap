@@ -52,9 +52,6 @@ from .proxy import get_new_proxy
 
 log = logging.getLogger(__name__)
 
-TIMESTAMP = ('\000\000\000\000\000\000\000\000\000\000\000' +
-             '\000\000\000\000\000\000\000\000\000\000')
-
 loginDelayLock = Lock()
 
 

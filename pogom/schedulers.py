@@ -78,7 +78,6 @@ class BaseScheduler(object):
         self.status = status
         self.args = args
         self.scan_location = False
-        self.size = None
         self.ready = False
 
     # Schedule function fills the queues with data.
@@ -97,9 +96,6 @@ class BaseScheduler(object):
     # Note: This function is called repeatedly while scanning is paused!
     def scanning_paused(self):
         self.empty_queues()
-
-    def getsize(self):
-        return self.size
 
     def get_overseer_message(self):
         nextitem = self.queues[0].queue[0]
@@ -300,7 +296,6 @@ class HexSearch(BaseScheduler):
             # queue.
             self.queues[0].put(location)
             log.debug("Added location {}".format(location))
-        self.size = len(self.locations)
         self.ready = True
 
 
@@ -339,9 +334,6 @@ class SpawnScan(BaseScheduler):
 
     def __init__(self, queues, status, args):
         BaseScheduler.__init__(self, queues, status, args)
-        # On the first scan, we want to search the last 15 minutes worth of
-        # spawns to get existing pokemon onto the map.
-        self.firstscan = True
 
         # If we are only scanning for pokestops/gyms, the scan radius can be
         # 450m.  Otherwise 70m.
@@ -461,7 +453,6 @@ class SpawnScan(BaseScheduler):
             log.debug("Added location {}".format(location))
 
         # Clear the locations list so it gets regenerated next cycle.
-        self.size = len(self.locations)
         self.locations = None
         self.ready = True
 
@@ -488,7 +479,6 @@ class SpeedScan(HexSearch):
         self.spawns_found = 0
         self.spawns_missed_delay = {}
         self.scans_done = 0
-        self.scans_missed = 0
         self.scans_missed_list = []
         # Minutes between queue refreshes. Should be less than 10 to allow for
         # new bands during Initial scan
@@ -506,7 +496,6 @@ class SpeedScan(HexSearch):
         self.spawns_found = 0
         self.spawns_missed_delay = {}
         self.scans_done = 0
-        self.scans_missed = 0
         self.scans_missed_list = []
 
     def _locks_init(self):
@@ -591,9 +580,6 @@ class SpeedScan(HexSearch):
             generated_locations.append(
                 (step, (location[0], location[1], altitude), 0, 0))
         return generated_locations
-
-    def getsize(self):
-        return len(self.queues[0])
 
     def get_overseer_message(self):
         n = 0
@@ -860,13 +846,10 @@ class SpeedScan(HexSearch):
                 time.sleep(1)
 
             now_date = datetime.utcnow()
-            now_time = time.time()
-            n = 0  # count valid scans reviewed
             q = self.queues[0]
             ms = ((now_date - self.refresh_date).total_seconds() +
                   self.refresh_ms)
             best = {}
-            cant_reach = False
             worker_loc = [status['latitude'], status['longitude']]
             last_action = status['last_scan_date']
 
@@ -957,11 +940,8 @@ class SpeedScan(HexSearch):
                 # If we can't make it there before it disappears, don't bother
                 # trying.
                 if ms + secs_to_arrival > item['end']:
-                    cant_reach = True
                     count_late += 1
                     continue
-
-                n += 1
 
                 # Bands are top priority to find new spawns first
                 score = 1e12 if item['kind'] == 'band' else (
@@ -996,7 +976,6 @@ class SpeedScan(HexSearch):
                 log.debug('Enumerating queue found best location: %s.',
                           repr(best))
 
-            prefix = 'Calc %.2f for %d scans:' % (time.time() - now_time, n)
             loc = best.get('loc', [])
             step = best.get('step', 0)
             secs_to_arrival = best.get('secs_to_arrival', 0)
@@ -1029,7 +1008,7 @@ class SpeedScan(HexSearch):
                 return -1, 0, 0, 0, messages, 0
 
             if best.get('score', 0) == 0:
-                if cant_reach:
+                if count_late > 0:
                     messages['wait'] = ('Not able to reach any scan'
                                         + ' under the speed limit.')
                 return -1, 0, 0, 0, messages, 0
@@ -1056,8 +1035,6 @@ class SpeedScan(HexSearch):
                 if secs_to_arrival > 179 - self.args.scan_delay:
                     secs_to_arrival = 179 - self.args.scan_delay
                 return -1, 0, 0, 0, messages, max(secs_to_arrival, 0)
-
-            prefix += ' Step %d,' % (step)
 
             # Check again if another worker heading there.
             # TODO: Check if this is still necessary. I believe this was

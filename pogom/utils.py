@@ -7,8 +7,6 @@ import os
 import math
 import json
 import logging
-import shutil
-import pprint
 import random
 import time
 import socket
@@ -26,13 +24,6 @@ log = logging.getLogger(__name__)
 def parse_unicode(bytestring):
     decoded_string = bytestring.decode(sys.getfilesystemencoding())
     return decoded_string
-
-
-def verify_config_file_exists(filename):
-    fullpath = os.path.join(os.path.dirname(__file__), filename)
-    if not os.path.exists(fullpath):
-        log.info('Could not find %s, copying default.', filename)
-        shutil.copy2(fullpath + '.example', fullpath)
 
 
 def memoize(function):
@@ -752,11 +743,6 @@ def clock_between(start, test, end):
             (not (end <= test <= start) and start > end))
 
 
-# Return amount of seconds between two times on the clock.
-def secs_between(time1, time2):
-    return min((time1 - time2) % 3600, (time2 - time1) % 3600)
-
-
 # Return the s2sphere cellid token from a location.
 def cellid(loc):
     return CellId.from_lat_lng(LatLng.from_degrees(loc[0], loc[1])).to_token()
@@ -868,24 +854,6 @@ def get_move_energy(move_id):
 def get_move_type(move_id):
     move_type = get_moves_data(move_id)['type']
     return {"type": i8ln(move_type), "type_en": move_type}
-
-
-class Timer():
-
-    def __init__(self, name):
-        self.times = [(name, time.time(), 0)]
-
-    def add(self, step):
-        t = time.time()
-        self.times.append((step, t, round((t - self.times[-1][1]) * 1000)))
-
-    def checkpoint(self, step):
-        t = time.time()
-        self.times.append(('total @ ' + step, t, t - self.times[0][1]))
-
-    def output(self):
-        self.checkpoint('end')
-        pprint.pprint(self.times)
 
 
 def dottedQuadToNum(ip):
