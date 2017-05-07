@@ -792,7 +792,7 @@
         "dps": 25.86
     },
     "100": {
-        "name": "X Scissor",
+        "name": "X-Scissor",
         "type": "Bug",
         "damage": 45,
         "duration": 1600,
@@ -1696,7 +1696,7 @@
         "dps": 10.91
     },
     "275": {
-        "name": "Futuresight",
+        "name": "Future Sight",
         "type": "Psychic",
         "damage": 120,
         "duration": 2700,
