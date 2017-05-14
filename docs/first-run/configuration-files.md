@@ -17,24 +17,28 @@ The default configuration file is *config/config.ini* underneath the project hom
 
     keyname: [ value1, value2, ...]
     e.g.   username: [ randomjoe, bonnieclyde ]
+	
+	*for usernames and passwords, the first username must correspond to the first password, and so on *
 
   For command line arguments that take no parameters:
 
     keyname: True
     e.g.   fixed-location: True
+	
 
 ## Example config file
 
-  <pre>
-  -- contents of file myconfig.seattle --
-  username: [ randomjoe, bob ]
+```
+  auth-service: ptc
+  username: [ username1, username2 ]
   password: [ password1, password2 ]
   location: seattle, wa
   step-limit: 5
   gmaps-key: MyGmapsKeyGoesHereSomeLongString
+  hash-kay: MyHashingKeyGoesHere
   print-status: "status"
-  -- end of file --
-  </pre>
+  speed-scan: True
+```
 
   Running this config file as:
 
@@ -49,3 +53,9 @@ The default configuration file is *config/config.ini* underneath the project hom
    One common way of running multiple locations is to use two configuration files each with common or default database values, but with different location specs. The first configuration running as both a scanner and a server, and in the second configuration file, use the *no-server* flag to not start the web interface for the second configuration.   In the config file, this would mean including a line like:
 
    no-server: True
+   
+### Using `-ns` and `-os`
+
+If RocketMap is not scanning enough areas, you can add additional areas by starting a 2nd RocketMap instance with the flag `-ns`. This starts the searchers without starting another webserver. You can run as many instances with `-ns` as your server can keep up with. ***HOWEVER:*** If all your instances are running `-ns` you will also want to start an instance with `-os`. This will start only the webserver. This becomes useful if you begin to seperate your RM instances across several computers all linked to the same database. 
+
+

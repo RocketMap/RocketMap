@@ -1,4 +1,5 @@
-# External Access to RocketMap
+# Access Your Map Anywhere
+aka External Access to RocketMap
 
 ## Introduction
 

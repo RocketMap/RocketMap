@@ -81,8 +81,6 @@
 
 Now that we have our server setup and our config.ini filled out it's time to actually run the workers to make sure everything is in check. Remember from above if you commented out any parameters in the util.py file that all of those parameters need to be met and filled out when you run the runserver.py script. In our case we commented out location, and steps so we could individual choose where each worker scanned, and the size of the scan. I've put two code snippets below, one would be used if you didn't comment out anything and instead filled out the **[Search_Settings]** in section IV step 4 above. The other code snippet is what you would run if you commented out the same lines as I did in our running example.
 
-**Filled out Search_Settings**
-
 ```
 python runserver.py
 ```
@@ -95,7 +93,45 @@ python runserver.py -st 10 -l "[LOCATION]"
 
 You should now be up and running. If you've encountered any errors it's most likely due to missing a parameter you commented out when you call runserver.py or you mis-typed something in your `config.ini`. However, if it's neither of those issues and something not covered in this guide hop into the RocketMap discord server, and go to the help channel. People there are great, and gladly assist people with troubleshooting issues.
 
-## VII. Linux Instructions
+
+## Set up MySQL on a second computer, seperate from RM instances. 
+
+In this example, computer running RocketMap will be `Server A` while computer running MySQL will be `Server B`.
+
+You will follow above directions for II and III on Server B and directions for IV on Server A. 
+***However:*** The following steps will be different. 
+
+Server B- III
+
+You will need to grant your account permission to use the database outside of your database server. 
+
+```
+   CREATE DATABASE rocketmapdb;
+   CREATE USER 'rocketmapuser'@'%' IDENTIFIED BY 'password';
+   GRANT ALL PRIVILEGES ON rocketmapdb . * TO 'rocketmapuser'@'%';
+   exit
+```
+
+Server A- IV
+
+You need to tell RocketMap where the database is!
+
+```
+**Database Settings:** This is the important section you will want to modify.
+ - Change the "db-type" to "mysql"
+ - Change "db-host" to [IP ADDDRESS OF SERVER B]
+ - Change "db-name:" to "rocketmapdb"
+ - Change "db-user:" to "rocketmapuser"
+ - Change "db-pass" to the password you chose in section III step 4, or leave it blank if you chose to roll with no password.
+```
+***AND***
+```
+ **Webserver Settings:** This is how your server knows where to communicate.
+ - Change "host" to "0.0.0.0"
+```
+
+
+## Linux Instructions
 1. Visit https://downloads.mariadb.org/mariadb/repositories/ and download mariaDB
 2. Login to your MySQL DB
    - mysql -p
@@ -118,7 +154,7 @@ You should now be up and running. If you've encountered any errors it's most lik
    db-pass: YourPW         # required for mysql
    ```
 
-## VIII. Docker Settings w/ Let's Encrypt
+## Docker Settings w/ Let's Encrypt
 
 Note: These are preliminary until better Docker support in the official container hosted on Docker Hub
 Note: These commands require git to be installed

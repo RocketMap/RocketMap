@@ -1,4 +1,5 @@
-# RocketMap tutorial completion for accounts (up to Level 2)
+# Tutorial Completion
+## RocketMap's tutorial completion for new accounts (includes getting accounts to level 2.)
 This is a guide on how to complete the Pokémon Go tutorial steps and becoming
 level 2 on your accounts as fast as possible, so you can use `-tut` once
 on all accounts and disable it again afterwards.
