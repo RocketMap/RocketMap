@@ -349,7 +349,7 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
     account_sets = AccountSet(args.hlvl_kph)
     threadStatus = {}
     key_scheduler = None
-    api_version = '0.61.0'
+    api_version = '0.63.1'
     api_check_time = 0
 
     '''
