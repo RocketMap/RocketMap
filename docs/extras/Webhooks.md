@@ -11,14 +11,17 @@ Every time an event occurs (e.g. a Pokemon spawns) a POST request will be sent t
 Pokemon Spawn webhooks are available. 
 If you're a developer, feel free to contribute by creating some more webhooks.
 
-| Name | Notes |
-|---|---|
-| `pokemon` | Emitted every time a Pokemon spawns.  |
-| `gym` | Emitted when finding a gym. |
-| `pokestop` | Emitted when finding a pokestop. |
-| `pokestop_lured` | Emitted every time a Pokestop is lured. |
-| `gym_defeated` |  Emitted every time a Gym is defeated (prestige changes) |
-| `gym_conquered` |  Emitted every time the owner of a Gym is changed |
+`pokemon` - Emitted every time a Pokemon spawns.
+
+`gym` - Emitted when finding a gym.
+
+`pokestop` - Emitted when finding a pokestop.
+
+`pokestop_lured` - Emitted every time a Pokestop is lured.
+
+`gym_defeated` -  Emitted every time a Gym is defeated (prestige changes)
+
+`gym_conquered` -  Emitted every time the owner of a Gym is changed
 
 ## Configuring Webhooks
 Add `-wh http://my-webhook/location` argument when starting RocketMap (runserver.py) to define the location of your webhook. You can add multiple webhook locations to a single -wh argument to define multiple webhooks.
