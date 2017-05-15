@@ -366,8 +366,10 @@ function initSidebar() {
     var searchBox = new google.maps.places.Autocomplete(document.getElementById('next-location'))
     $('#next-location').css('background-color', $('#geoloc-switch').prop('checked') ? '#e0e0e0' : '#ffffff')
 
-    updateSearchStatus()
-    setInterval(updateSearchStatus, 5000)
+    if ($('#search-switch').length) {
+        updateSearchStatus()
+        setInterval(updateSearchStatus, 5000)
+    }
 
     searchBox.addListener('place_changed', function () {
         var place = searchBox.getPlace()
