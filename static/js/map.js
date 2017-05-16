@@ -426,6 +426,7 @@ function pokemonLabel(item) {
     var gender = item['gender']
     var form = item['form']
     var cp = item['cp']
+    var cpMultiplier = item['cp_multiplier']
 
     $.each(types, function (index, type) {
         typesDisplay += getTypeSpan(type)
@@ -440,10 +441,11 @@ function pokemonLabel(item) {
             </div>
             `
 
-        if (cp !== null) {
+        if (cp !== null && cpMultiplier !== null) {
+            var pokemonLevel = getPokemonLevel(cpMultiplier)
             details += `
             <div>
-                CP: ${cp}
+                CP: ${cp} | Level: ${pokemonLevel} 
             </div>
             `
         }
@@ -700,6 +702,18 @@ function getIv(atk, def, stm) {
     }
 
     return false
+}
+
+function getPokemonLevel(cpMultiplier) {
+    if (cpMultiplier < 0.734) {
+        var pokemonLevel = (58.35178527 * cpMultiplier * cpMultiplier -
+                         2.838007664 * cpMultiplier + 0.8539209906)
+    } else {
+        pokemonLevel = 171.0112688 * cpMultiplier - 95.20425243
+    }
+    pokemonLevel = (Math.round(pokemonLevel) * 2) / 2
+
+    return pokemonLevel
 }
 
 function lpad(str, len, padstr) {

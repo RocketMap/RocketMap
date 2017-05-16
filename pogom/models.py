@@ -29,7 +29,7 @@ from . import config
 from .utils import (get_pokemon_name, get_pokemon_rarity, get_pokemon_types,
                     get_args, cellid, in_radius, date_secs, clock_between,
                     get_move_name, get_move_damage, get_move_energy,
-                    get_move_type, clear_dict_response)
+                    get_move_type, clear_dict_response, calc_pokemon_level)
 from .transform import transform_from_wgs_to_gcj, get_new_coords
 from .customLog import printPokemon
 
@@ -42,7 +42,7 @@ args = get_args()
 flaskDb = FlaskDB()
 cache = TTLCache(maxsize=100, ttl=60 * 5)
 
-db_schema_version = 18
+db_schema_version = 19
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -107,6 +107,7 @@ class Pokemon(BaseModel):
     move_1 = SmallIntegerField(null=True)
     move_2 = SmallIntegerField(null=True)
     cp = SmallIntegerField(null=True)
+    cp_multiplier = FloatField(null=True)
     weight = FloatField(null=True)
     height = FloatField(null=True)
     gender = SmallIntegerField(null=True)
@@ -2064,6 +2065,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                 'move_1': None,
                 'move_2': None,
                 'cp': None,
+                'cp_multiplier': None,
                 'height': None,
                 'weight': None,
                 'gender': p['pokemon_data']['pokemon_display']['gender'],
@@ -2111,6 +2113,9 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                 # Only add CP if we're level 30+.
                 if encounter_level >= 30:
                     pokemon[p['encounter_id']]['cp'] = cp
+                    pokemon[p['encounter_id']][
+                        'cp_multiplier'] = pokemon_info.get(
+                        'cp_multiplier', None)
 
             if args.webhooks:
                 if (pokemon_id in args.webhook_whitelist or
@@ -2128,6 +2133,11 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                         'spawn_end': start_end[1],
                         'player_level': encounter_level
                     })
+                    if wh_poke['cp_multiplier'] is not None:
+                        wh_poke.update({
+                            'pokemon_level': calc_pokemon_level(
+                                wh_poke['cp_multiplier'])
+                        })
                     wh_update_queue.put(('pokemon', wh_poke))
 
     if forts and (config['parse_pokestops'] or config['parse_gyms']):
@@ -2880,6 +2890,12 @@ def database_migrate(db, old_ver):
         migrate(
             migrator.add_column('pokemon', 'cp',
                                 SmallIntegerField(null=True))
+        )
+
+    if old_ver < 19:
+        migrate(
+            migrator.add_column('pokemon', 'cp_multiplier',
+                                FloatField(null=True))
         )
 
     # Always log that we're done.
