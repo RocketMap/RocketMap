@@ -860,7 +860,7 @@ def dottedQuadToNum(ip):
 def get_blacklist():
     try:
         url = 'https://blist.devkat.org/blacklist.json'
-        blacklist = requests.get(url).json()
+        blacklist = requests.get(url, timeout=5).json()
         log.debug('Entries in blacklist: %s.', len(blacklist))
         return blacklist
     except (requests.exceptions.RequestException, IndexError, KeyError):

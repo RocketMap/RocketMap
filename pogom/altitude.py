@@ -17,7 +17,8 @@ def get_gmaps_altitude(lat, lng, gmaps_key):
         r_session = requests.Session()
         response = r_session.get((
             'https://maps.googleapis.com/maps/api/elevation/json?' +
-            'locations={},{}&key={}').format(lat, lng, gmaps_key))
+            'locations={},{}&key={}').format(lat, lng, gmaps_key),
+            timeout=5)
         response = response.json()
         status = response['status']
         results = response.get('results', [])

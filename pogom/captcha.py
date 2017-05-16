@@ -303,7 +303,7 @@ def token_request(args, status, url):
             'http://2captcha.com/in.php?key={}&method=userrecaptcha' +
             '&googlekey={}&pageurl={}').format(args.captcha_key,
                                                args.captcha_dsk, url)
-        captcha_id = s.post(request_url).text.split('|')[1]
+        captcha_id = s.post(request_url, timeout=5).text.split('|')[1]
         captcha_id = str(captcha_id)
     # IndexError implies that the retuned response was a 2captcha error.
     except IndexError:
@@ -314,12 +314,12 @@ def token_request(args, status, url):
     # Get the response, retry every 5 seconds if it's not ready.
     recaptcha_response = s.get(
         'http://2captcha.com/res.php?key={}&action=get&id={}'.format(
-            args.captcha_key, captcha_id)).text
+            args.captcha_key, captcha_id), timeout=5).text
     while 'CAPCHA_NOT_READY' in recaptcha_response:
         log.info('Captcha token is not ready, retrying in 5 seconds...')
         time.sleep(5)
         recaptcha_response = s.get(
             'http://2captcha.com/res.php?key={}&action=get&id={}'.format(
-                args.captcha_key, captcha_id)).text
+                args.captcha_key, captcha_id), timeout=5).text
     token = str(recaptcha_response.split('|')[1])
     return token
