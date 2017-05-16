@@ -454,12 +454,17 @@ function pokemonLabel(item) {
             </div>
             `
     }
-    if (gender !== null && weight !== null && height !== null) {
+    if (gender !== null) {
         details += `
             <div>
-                Gender: ${genderType[gender - 1]} | Weight: ${weight.toFixed(2)}kg | Height: ${height.toFixed(2)}m
-            </div>
+                Gender: ${genderType[gender - 1]}
             `
+        if (weight !== null && height !== null) {
+            details += `| Weight: ${weight.toFixed(2)}kg | Height: ${height.toFixed(2)}m`
+        }
+        details += `
+                </div>
+                `
     }
     var contentstring = `
         <div>
