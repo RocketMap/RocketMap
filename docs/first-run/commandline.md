@@ -157,14 +157,11 @@
                         List of Pokemon NOT to send to webhooks. Specified as
                         Pokemon ID. [env var: POGOMAP_WEBHOOK_BLACKLIST]
     -wwhtf WEBHOOK_WHITELIST_FILE, --webhook-whitelist-file WEBHOOK_WHITELIST_FILE
-                        File containing a list of Pokemon to send to webhooks.
-                        Pokemon are specified by their name, one on each line.
-                        [env var: POGOMAP_WEBHOOK_WHITELIST_FILE]
+                        File containing a list of Pokemon IDs to be sent to
+                        webhooks. [env var: POGOMAP_WEBHOOK_WHITELIST_FILE]
     -wblkf WEBHOOK_BLACKLIST_FILE, --webhook-blacklist-file WEBHOOK_BLACKLIST_FILE
-                        File containing a list of Pokemon NOT to send
-                        towebhooks. Pokemon are specified by their name, one
-                        on each line. [env var:
-                        POGOMAP_WEBHOOK_BLACKLIST_FILE]
+                        File containing a list of Pokemon IDs NOT to be sent to
+                        webhooks. [env var: POGOMAP_WEBHOOK_BLACKLIST_FILE]
     -ld LOGIN_DELAY, --login-delay LOGIN_DELAY
                         Time delay between each login attempt. [env var:
                         POGOMAP_LOGIN_DELAY]

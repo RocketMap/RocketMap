@@ -118,8 +118,9 @@ def main():
 
     # Let's not forget to run Grunt / Only needed when running with webserver.
     if not args.no_server:
+        root_path = os.path.dirname(__file__)
         if not os.path.exists(
-                os.path.join(os.path.dirname(__file__), 'static/dist')):
+                os.path.join(root_path, 'static/dist')):
             log.critical(
                 'Missing front-end assets (static/dist) -- please run ' +
                 '"npm install && npm run build" before starting the server.')
@@ -127,10 +128,9 @@ def main():
 
         # You need custom image files now.
         if not os.path.isfile(
-                os.path.join(os.path.dirname(__file__),
-                             'static/icons-sprite.png')):
+                os.path.join(root_path, 'static/icons-sprite.png')):
             log.info('Sprite files not present, extracting bundled ones...')
-            extract_sprites()
+            extract_sprites(root_path)
             log.info('Done!')
 
     # These are very noisy, let's shush them up a bit.
@@ -272,6 +272,9 @@ def main():
         t.daemon = True
         t.start()
 
+    config['ROOT_PATH'] = app.root_path
+    config['GMAPS_KEY'] = args.gmaps_key
+
     if not args.only_server:
 
         # Abort if we don't have a hash key set
@@ -324,9 +327,6 @@ def main():
     app.set_search_control(pause_bit)
     app.set_heartbeat_control(heartbeat)
     app.set_location_queue(new_location_queue)
-
-    config['ROOT_PATH'] = app.root_path
-    config['GMAPS_KEY'] = args.gmaps_key
 
     if args.no_server:
         # This loop allows for ctrl-c interupts to work since flask won't be
