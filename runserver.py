@@ -23,7 +23,8 @@ from pogom.altitude import get_gmaps_altitude
 
 from pogom.search import search_overseer_thread
 from pogom.models import (init_database, create_tables, drop_tables,
-                          Pokemon, db_updater, clean_db_loop)
+                          Pokemon, db_updater, clean_db_loop,
+                          verify_table_encoding, verify_database_schema)
 from pogom.webhook import wh_updater
 
 from pogom.proxy import check_proxies, proxies_refresher
@@ -221,7 +222,14 @@ def main():
             drop_tables(db)
         elif os.path.isfile(args.db):
             os.remove(args.db)
+
+    verify_database_schema(db)
+
     create_tables(db)
+
+    # fixing encoding on present and future tables
+    verify_table_encoding(db)
+
     if args.clear_db:
         log.info("Drop and recreate is complete. Now remove -cd and restart.")
         sys.exit()
