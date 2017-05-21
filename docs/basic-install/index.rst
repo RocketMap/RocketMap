@@ -155,6 +155,6 @@ You can update with a few quick commands:
   pip install -r requirements.txt --upgrade (Prepend sudo -H on Linux)
   npm run build
 
- Watch the `latest changes <https://github.com/RocketMap/RocketMap/commits/develop>`_ on `Discord <https://discord.gg/RocketMap>`_ to know when updating will require commands other than above. 
+Watch the `latest changes <https://github.com/RocketMap/RocketMap/commits/develop>`_ on `Discord <https://discord.gg/RocketMap>`_ to know when updating will require commands other than above. 
   
 **IMPORTANT** Some updates will include database changes that run on first startup. You should run only **one** ``runserver.py`` command until you are certain that the DB has been updated. You will know almost immediately that your DB needs updating if **Detected database version x, updating to x** is printed in the console. This can take a while so please be patient. Once it's done, you can start all your instances like you normally would.
