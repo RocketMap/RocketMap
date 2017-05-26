@@ -8,7 +8,7 @@ from .models import LocationAltitude
 
 log = logging.getLogger(__name__)
 
-# Altitude used when use_altitude_cache is enabled
+# Altitude used when use_altitude_cache is enabled.
 fallback_altitude = None
 
 
@@ -24,8 +24,8 @@ def get_gmaps_altitude(lat, lng, gmaps_key):
         results = response.get('results', [])
         result = results[0] if results else {}
         altitude = result.get('elevation', None)
-    except:
-        log.error('Unable to retrieve altitude from Google APIs.')
+    except Exception as e:
+        log.exception('Unable to retrieve altitude from Google APIs: %s.', e)
         status = 'UNKNOWN_ERROR'
         altitude = None
 
