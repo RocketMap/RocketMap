@@ -422,6 +422,7 @@
     <script>
       var centerLat = {{lat}};
       var centerLng = {{lng}};
+      var showConfig = {{show|tojson|safe}};	  
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="{{ url_for('static', filename='dist/js/map.common.min.js').lstrip('/') }}"></script>

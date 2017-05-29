@@ -948,7 +948,7 @@ function setupScannedMarker(item) {
         map: map,
         clickable: false,
         center: circleCenter,
-        radius: 70, // metres
+        radius: (showConfig.pokemons === true ? 70 : 450), // metres
         fillColor: getColorByDate(item['last_modified']),
         fillOpacity: 0.1,
         strokeWeight: 1,
