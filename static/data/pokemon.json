@@ -781,6 +781,10 @@
       {
         "type": "Water",
         "color": "#6890f0"
+      },
+      {
+        "type": "Fighting",
+        "color": "#c03028"
       }
     ],
     "spawn_rate": "1709"
