@@ -168,7 +168,8 @@ class Pogom(Flask):
             'encounter': args.encounter,
             'scan_display': scan_display,
             'search_display': search_display,
-            'fixed_display': not args.fixed_location
+            'fixed_display': not args.fixed_location,
+            'custom_css': args.custom_css
         }
 
         map_lat = self.current_location[0]
@@ -447,10 +448,17 @@ class Pogom(Flask):
             }
             pokemon_list.append((entry, entry['distance']))
         pokemon_list = [y[0] for y in sorted(pokemon_list, key=lambda x: x[1])]
+        args = get_args()
+        visibility_flags = {
+            'custom_css': args.custom_css
+        }
+
         return render_template('mobile_list.html',
                                pokemon_list=pokemon_list,
                                origin_lat=lat,
-                               origin_lng=lon)
+                               origin_lng=lon,
+                               show=visibility_flags
+                               )
 
     def get_valid_stat_input(self):
         duration = request.args.get("duration", type=str)
@@ -536,11 +544,17 @@ class Pogom(Flask):
         return valid_input
 
     def get_stats(self):
+        args = get_args()
+        visibility_flags = {
+            'custom_css': args.custom_css
+        }
+
         return render_template('statistics.html',
                                lat=self.current_location[0],
                                lng=self.current_location[1],
                                gmaps_key=config['GMAPS_KEY'],
-                               valid_input=self.get_valid_stat_input()
+                               valid_input=self.get_valid_stat_input(),
+                               show=visibility_flags
                                )
 
     def get_gymdata(self):
@@ -551,10 +565,14 @@ class Pogom(Flask):
 
     def get_status(self):
         args = get_args()
+        visibility_flags = {
+            'custom_css': args.custom_css
+        }
         if args.status_page_password is None:
             abort(404)
 
-        return render_template('status.html')
+        return render_template('status.html',
+                               show=visibility_flags)
 
     def post_status(self):
         args = get_args()

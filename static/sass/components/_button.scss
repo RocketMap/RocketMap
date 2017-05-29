@@ -16,10 +16,11 @@
     font-weight: _font(weight-bold);
     height: 2.85em;
     line-height: 2.95em;
-    padding: 0 1.5em;
+    padding: 0 0.5em;
     text-align: center;
     text-decoration: none;
     white-space: nowrap;
+    margin-top: 1em;
 
     &:hover {
       background-color: lighten(_palette(accent2, bg), 5);
@@ -94,6 +95,6 @@
     }
 
     @include breakpoint(xsmall) {
-      padding: 0;
+      padding: 0 0.5em;
     }
   }

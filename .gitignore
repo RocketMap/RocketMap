@@ -19,6 +19,7 @@ static/pixel_icons/*.png
 static/icons-sprite.png
 static/icons-large-sprite.png
 static/icons/*.png
+static/css/custom.css
 *.csv
 *.bat
 *.sh

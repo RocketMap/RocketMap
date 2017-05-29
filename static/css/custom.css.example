@@ -1,0 +1,38 @@
+/* ==========================================================================
+CSS class definitions
+========================================================================== */
+
+/**
+* Use class .mapPage for styles in map.html.
+* Use class .mobilePage for styles in mobile_list.html.
+* Use class .statisticsPage for styles in statistics.html.
+* Use class .statusPage for styles in status.html.
+*
+* Example: .mapPage #nav h3 {font-size: 11px;} will set font-size to 11px in map.html and use default style in all other pages.
+*/
+
+/* Gym, Pokémon, Pokéstop information dialog box font style example: */
+
+.gm-style .gm-style-iw {font-weight: 400; font-size: 11px;}
+
+/* Options menu font style example: */
+
+#nav h3 {font-size: 11px; font-weight: 500;}
+#nav .ui-accordion-header {font-weight: 900;}
+
+/* Options menu padding, width example: */
+
+#nav.visible {padding: 10px;}
+#nav {width: 250px;}
+
+/* Options menu form-control/switch-container, on/off switch style example: */
+
+.form-control input[type=text] {font-size: 11px !important;}
+.onoffswitch-label, .onoffswitch-label:before {border-color: #256db6 !important;}
+#nav .onoffswitch-checkbox:checked+.onoffswitch-label {border-color: #256db6; background-color: #ffde4e;}
+.select2-container {font-size: 11px;}
+
+/* Options menu Reset button style example: */
+
+.mapPage button {border: 1px solid #256db6; background-color: #fff; color: #256db6 !important; font-size: 11px;}
+.mapPage button:hover {background-color: #ffde4e;}

@@ -4,8 +4,12 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<script>var pageLoaded = new Date().getTime();</script>
 	<link rel="stylesheet" href="{{ url_for('static', filename='dist/css/mobile.min.css').lstrip('/') }}" type="text/css" />
+	<!-- Custom CSS code-->
+		{% if show.custom_css %}
+	<link rel="stylesheet" type="text/css" href="static/css/custom.css">
+		{% endif %}
 </head>
-<body>
+<body class="mobilePage">
 	<h1>Nearby Pokémon</h1>
 
 	<ol>

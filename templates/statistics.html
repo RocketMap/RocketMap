@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Rocket Map - Statistics</title>
+    <title>RocketMap - Statistics</title>
 
     <!-- Fav- & Apple-Touch-Icons -->
     <!-- Favicon -->
@@ -26,6 +26,10 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/app.min.css').lstrip('/') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/statistics.min.css').lstrip('/') }}">
+    <!-- Custom CSS code-->
+      {% if show.custom_css %}
+    <link rel="stylesheet" type="text/css" href="static/css/custom.css">
+      {% endif %}
     <script src="{{ url_for('static', filename='js/vendor/modernizr.custom.js').lstrip('/') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.9.1/polyfill.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
@@ -37,11 +41,12 @@
     </script>
     <script src="{{ url_for('static', filename='dist/js/map.common.min.js').lstrip('/') }}"></script>
 </head>
-<body>
+<body class="statisticsPage">
         <!-- Header -->
         <header id="header">
-            <a href="#nav">Options</a>
-            <h1><a href="./">Rocket Map</a></h1>
+          <a href="#nav"><span class="label">Options</span></a>
+          <h1><a href="./">RocketMap<i class="fa fa-rocket fa-fw"></i></a></h1>
+          <a href="status" target="_blank" style="float: right;"><span class="label">Status</span></a>
         </header>
         <nav id="nav">
           <div class="ui-accordion-content">

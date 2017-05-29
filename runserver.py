@@ -134,6 +134,15 @@ def main():
             extract_sprites(root_path)
             log.info('Done!')
 
+        # Check if custom.css is used otherwise fall back to default.
+        if os.path.exists(os.path.join(root_path, 'static/css/custom.css')):
+            args.custom_css = True
+            log.info(
+                'File \"custom.css\" found, applying user-defined settings.')
+        else:
+            args.custom_css = False
+            log.info('No file \"custom.css\" found, using default settings.')
+
     # These are very noisy, let's shush them up a bit.
     logging.getLogger('peewee').setLevel(logging.INFO)
     logging.getLogger('requests').setLevel(logging.WARNING)

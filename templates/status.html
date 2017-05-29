@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Rocket Map - Status</title>
+    <title>RocketMap - Status</title>
 
     <!-- Fav- & Apple-Touch-Icons -->
     <!-- Favicon -->
@@ -27,19 +27,22 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/app.min.css').lstrip('/') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/status.min.css').lstrip('/') }}">
+    <!-- Custom CSS code-->
+      {% if show.custom_css %}
+    <link rel="stylesheet" type="text/css" href="static/css/custom.css">
+      {% endif %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/skel/3.0.1/skel.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.0/jquery-ui.min.js"></script>
 </head>
-<body>
+<body class="statusPage">
 <!-- Header -->
 <header id="header">
     <a href="#nav"><span class="label">Options</span></a>
-    <h1><a href="./">Rocket Map</a></h1>
+    <h1><a href="#">RocketMap<i class="fa fa-rocket fa-fw"></i></a></h1>
 </header>
 <nav id="nav">
   <div id="nav-accordion">
-    <h3>Status Settings</h3>
     <div class="form-control switch-container">
       <h3>Group by Workers</h3>
       <div class="onoffswitch">

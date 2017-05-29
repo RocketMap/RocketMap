@@ -2,7 +2,7 @@
 <html lang="{{lang}}">
   <head>
     <meta charset="utf-8">
-    <title>Rocket Map</title>
+    <title>RocketMap</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -34,19 +34,24 @@
     <script src="{{ url_for('static', filename='js/vendor/modernizr.custom.js').lstrip('/') }}"></script>
     <!-- Toastr -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <!-- Custom CSS code-->
+      {% if show.custom_css %}
+    <link rel="stylesheet" type="text/css" href="static/css/custom.css">
+      {% endif %}
   </head>
-  <body id="top">
+  <body id="top" class="mapPage">
     <div class="wrapper">
       <!-- Header -->
       <header id="header">
         <a href="#nav"><span class="label">Options</span></a>
-        <h1><a href="#">Rocket Map</a></h1>
+        <h1><a href="./">RocketMap<i class="fa fa-rocket fa-fw"></i></a></h1>
         <a href="#stats" id="statsToggle" class="statsNav" style="float: right;"><span class="label">Stats</span></a>
+        <a href="status" target="_blank" style="float: right;"><span class="label">Status</span></a>
       </header>
       <!-- NAV -->
       <nav id="nav">
         <div id="nav-accordion">
-          <h3>Marker Settings</h3>
+          <h3><i class="fa fa-map-marker fa-fw"></i>Marker Settings</h3>
           <div>
               {% if show.pokemons %}
             <div class="form-control switch-container">
@@ -71,7 +76,6 @@
                 </label>
               </div>
             </div>
-
               {% if show.gym_info %}
             <div class="form-control switch-container" id="gym-sidebar-wrapper" style="display:none">
               <h3>Use Gym Sidebar</h3>
@@ -209,7 +213,7 @@
               {% endif %}
           </div>
 
-          <h3>Location &amp; Search Settings</h3>
+          <h3><i class="fa fa-location-arrow fa-fw"></i>Location &amp; Search Settings</h3>
 
           <div>
               {% if show.fixed_display %}
@@ -286,9 +290,8 @@
               {% endif %}
           </div>
 
-
             {% if show.pokemons %}
-          <h3>Notification Settings</h3>
+          <h3><i class="fa fa-bullhorn fa-fw"></i>Notification Settings</h3>
           <div>
             <div class="form-control">
               <label for="notify-pokemon">
@@ -323,8 +326,9 @@
                   <span class="switch-label" data-on="On" data-off="Off"></span>
                   <span class="switch-handle"></span>
                 </label>
-              </div><br><br>
-              <div id="pokemoncries" style="display:none">
+              </div>
+            </div>
+              <div class="form-control switch-container">
               <h3>Use Pokémon cries</h3>
                 <div class="onoffswitch">
                 <input id="cries-switch" type="checkbox" name="cries-switch" class="onoffswitch-checkbox" checked>
@@ -334,10 +338,9 @@
                   </label>
                 </div>
               </div>
-             </div>
           </div>
             {% endif %}
-          <h3>Style Settings</h3>
+          <h3><i class="fa fa-map-o fa-fw"></i>Style Settings</h3>
           <div>
             <div class="form-control switch-container">
               <h3>Map Style</h3>
@@ -370,6 +373,9 @@
             </div>
           </div>
         </div>
+      <div>
+        <center><button class="settings" onclick="confirm('Are you sure you want to reset settings to default values?') ? (localStorage.clear(), window.location.reload()) : false"><i class="fa fa-refresh fa-fw"></i>Reset Settings</button></center>
+      </div>
       </nav>
       <nav id="stats">
         <div class="switch-container">
