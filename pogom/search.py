@@ -440,6 +440,7 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
 
     # Create specified number of search_worker_thread.
     log.info('Starting search worker threads...')
+    log.info('Configured scheduler is %s.', args.scheduler)
     for i in range(0, args.workers):
         log.debug('Starting search worker thread %d...', i)
 
