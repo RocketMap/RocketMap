@@ -903,11 +903,11 @@ def generate_device_info():
     device_info['hardware_model'] = IPHONES[device_info['device_model_boot']]
     device_info['device_id'] = uuid4().hex
 
-    if device_info['hardware_model'] in ('iPhone9,1', 'iPhone9,2',
-                                         'iPhone9,3', 'iPhone9,4'):
+    if device_info['device_model_boot'] in ('iPhone9,1', 'iPhone9,2',
+                                            'iPhone9,3', 'iPhone9,4'):
         device_info['firmware_type'] = random.choice(ios10)
-    elif device_info['hardware_model'] in ('iPhone8,1', 'iPhone8,2',
-                                           'iPhone8,4'):
+    elif device_info['device_model_boot'] in ('iPhone8,1', 'iPhone8,2',
+                                              'iPhone8,4'):
         device_info['firmware_type'] = random.choice(ios9 + ios10)
     else:
         device_info['firmware_type'] = random.choice(ios8 + ios9 + ios10)
