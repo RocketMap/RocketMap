@@ -61,7 +61,7 @@ def wh_updater(args, queue, key_caches):
         'pokestop': 'pokestop_id',
         'pokemon': 'encounter_id',
         'gym': 'gym_id',
-        'gym_details': 'gym_id'
+        'gym_details': 'id'
     }
 
     # Instantiate WH LFU caches for all cached types. We separate the caches
