@@ -138,9 +138,11 @@ You need to tell RocketMap where the database is!
    - Enter your password if you set one
 3. Create the DB
 
- - CREATE DATABASE rocketmapdb;
- - CREATE USER 'rocketmapuser'@'localhost' IDENTIFIED BY 'password';
- - GRANT ALL PRIVILEGES ON rocketmapdb . * TO 'rocketmapuser'@'localhost';
+   ```
+   CREATE DATABASE rocketmapdb;
+   CREATE USER 'rocketmapuser'@'localhost' IDENTIFIED BY 'password';
+   GRANT ALL PRIVILEGES ON rocketmapdb.* TO 'rocketmapuser'@'localhost';
+   ```
 
 4. Quit the MySQL command line tool `quit`
 5. Edit the `config/config.ini` file
