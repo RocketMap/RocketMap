@@ -126,7 +126,7 @@ The most basic config you could use would look something like this:
 Let's run through this startup command to make sure you understand what flags are being set.
 
 * -ac accounts.csv
-Load accounts from CSV (Comma Seperated Values) file containing "auth_service,username,passwd" lines. `More Info <http://rocketmap.readthedocs.io/en/develop/first-run/multi-account.html>`_
+Load accounts from CSV (Comma Seperated Values) file containing "auth_service,username,password" lines. `More Info <http://rocketmap.readthedocs.io/en/develop/first-run/multi-account.html>`_
 
 * -tut
 Complete ToS and tutorial steps on accounts if they haven't already. `More Info <http://rocketmap.readthedocs.io/en/develop/first-run/tutorial.html>`_
@@ -137,7 +137,7 @@ Key used to access the hash server. `More Info <http://rocketmap.readthedocs.io/
 * -cs -ck "CAPTCHA_KEY"
 Enables captcha solving and 2Captcha API key. (Manual captcha available, see `Full Info <http://rocketmap.readthedocs.io/en/develop/first-run/captchas.html>`_ )
 
-Another thing to note is that all of these flags can be set inside of a configuration file to avoid clutter on the command line. View `this page <http://rocketmap.readthedocs.io/en/develop/first-run/configuration-files.html>`_ to see how. A full list of all commands are available `here <https://rocketmap.readthedocs.io/en/develop/first-run/commandline.html>`_
+Another thing to note is that all of these flags can be set inside of a configuration file to avoid clutter on the command line. View `this page <http://rocketmap.readthedocs.io/en/develop/first-run/configuration-files.html>`_ to see how. A full list of all commands are available `here. <https://rocketmap.readthedocs.io/en/develop/first-run/commandline.html>`_ A few tools to help you along the way are located `here. <https://rocketmap.readthedocs.io/en/develop/extras/Community-Tools.html>`_
 
 Once your setup is running, open your browser to http://localhost:5000 and your pokemon will begin to show up! Happy hunting!
 =============================================================================================================================
