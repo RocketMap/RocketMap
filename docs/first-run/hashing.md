@@ -29,14 +29,23 @@ If you use a configuration file, use `hash-key: [YourHashKeyHere, YourSecondHash
 ### If you have multiple keys, how does RM decide which one to use?
 RM will load balance the keys until a key is full. For example, if you had a 150 rpm key and 500 rpm key, both would be used equally until the 150 rpm key is full then only the 500 rpm key would be utilized.
 
-### What does `HashingQuotaExceededException('429: Request limited, error: ',)` mean?
+### What does this mean? 
+```
+HashingQuotaExceededException('429: Request limited, error: ',)
+```
 Any variant of this means you've exceeded the Requests Per Minute that your key allows. Currently, this is not being tracked accurately by Bossland, therefore, you will get more hashing requests than what you are paying for.
 
-### How about `Hashing server is unreachable, it might be offline.`
+```
+Hashing server is unreachable, it might be offline.
+```
 Hashing server is temporarily unavailable (possibly offline). This could be due to maintenance or server failure. Please checkout discord for more information is you start getting this error.
 
-### And this one? `Invalid or expired hashing key: %s. + api._hash_server_token`
+```
+Invalid or expired hashing key: %s. + api._hash_server_token
+```
 Either your key is expired, the hashing servers are having issues, or you have mistyped your key.
 
-### This one? `TempHashingBanException('Your IP was temporarily banned for sending too many requests with invalid keys',)`
+```
+TempHashingBanException('Your IP was temporarily banned for sending too many requests with invalid keys',)
+```
 You are using invalid keys, or... you guessed it, the hashing servers are having issues. This ban will last for 3 minutes. 

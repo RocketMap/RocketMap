@@ -11,17 +11,12 @@ Every time an event occurs (e.g. a Pokemon spawns) a POST request will be sent t
 Pokemon Spawn webhooks are available. 
 If you're a developer, feel free to contribute by creating some more webhooks.
 
-`pokemon` - Emitted every time a Pokemon spawns.
-
-`gym` - Emitted when finding a gym.
-
-`pokestop` - Emitted when finding a pokestop.
-
-`pokestop_lured` - Emitted every time a Pokestop is lured.
-
-`gym_defeated` -  Emitted every time a Gym is defeated (prestige changes)
-
-`gym_conquered` -  Emitted every time the owner of a Gym is changed
+* `pokemon` - Emitted every time a Pokemon spawns.
+* `gym` - Emitted when finding a gym.
+* `pokestop` - Emitted when finding a pokestop.
+* `pokestop_lured` - Emitted every time a Pokestop is lured.
+* `gym_defeated` -  Emitted every time a Gym is defeated (prestige changes)
+* `gym_conquered` -  Emitted every time the owner of a Gym is changed
 
 ## Configuring Webhooks
 Add `-wh http://my-webhook/location` argument when starting RocketMap (runserver.py) to define the location of your webhook. You can add multiple webhook locations to a single -wh argument to define multiple webhooks.
@@ -48,7 +43,7 @@ PokeAlarm is an example of a script you can run to accept webhook data and send 
 
 The POST request made by RocketMap will contain the following data for pokemon type webhooks:
 
-```
+```json
 {
    "message":{
       "disappear_time":1493734519,
@@ -70,11 +65,11 @@ The POST request made by RocketMap will contain the following data for pokemon t
       "pokemon_id":187,
       "player_level":6,
       "individual_stamina":null,
-      "longitude":-4.325233518227877,
-      "spawn_start":25.55069872455855,
+      "longitude":0,
+      "spawn_start":0,
       "pokemon_level":null,
       "gender":null,
-      "latitude":****,
+      "latitude":0,
       "individual_attack":null
    },
    "type":"pokemon"

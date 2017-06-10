@@ -11,7 +11,7 @@ Follow one of the guides below to get the basic prerequisites installed:
  * :doc:`osx`
  * :doc:`windows`
  * :doc:`linux`
-
+ 
 Credentials
 ***********
 
@@ -137,10 +137,19 @@ Key used to access the hash server. `More Info <http://rocketmap.readthedocs.io/
 * -cs -ck "CAPTCHA_KEY"
 Enables captcha solving and 2Captcha API key. (Manual captcha available, see `Full Info <http://rocketmap.readthedocs.io/en/develop/first-run/captchas.html>`_ )
 
-Another thing to note is that all of these flags can be set inside of a configuration file to avoid clutter on the command line. View `this page <http://rocketmap.readthedocs.io/en/develop/first-run/configuration-files.html>`_ to see how. A full list of all commands are available `here. <https://rocketmap.readthedocs.io/en/develop/first-run/commandline.html>`_ A few tools to help you along the way are located `here. <https://rocketmap.readthedocs.io/en/develop/extras/Community-Tools.html>`_
+**Once your setup is running, open your browser to http://localhost:5000 and your pokemon will begin to show up! Happy hunting!**
 
-Once your setup is running, open your browser to http://localhost:5000 and your pokemon will begin to show up! Happy hunting!
-=============================================================================================================================
+Things to Know
+**************
+
+ * You may want to use more than one account to scan with RocketMap. `Here <https://rocketmap.readthedocs.io/en/develop/first-run/multi-account.html>`_ is how to use as many accounts as your heart desires. 
+ * Your accounts need to complete the tutorial before they will be any use to RocketMap! `Here <https://rocketmap.readthedocs.io/en/develop/first-run/tutorial.html>`_ is how do that with RM. 
+ * You might experience your accounts encountering Captchas at some point. `Here <https://rocketmap.readthedocs.io/en/develop/first-run/captchas.html>`_ is how we handle those. 
+ * Due to recent updates, you might experience a shaddow ban. `Here <https://rocketmap.readthedocs.io/en/develop/first-run/Blinding.html>`_ is what you need to know.
+ * All of these flags can be set inside of a configuration file to avoid clutter in the command line. Go `here <http://rocketmap.readthedocs.io/en/develop/first-run/configuration-files.html>`_ to see how. 
+ * A full list of all commands are available `here. <https://rocketmap.readthedocs.io/en/develop/first-run/commandline.html>`_ 
+ * A few tools to help you along the way are located `here. <https://rocketmap.readthedocs.io/en/develop/extras/Community-Tools.html>`_
+
 
 Updating the Application
 ************************

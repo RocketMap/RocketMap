@@ -29,7 +29,7 @@
 3. If you created a password in step 5a above enter it now and hit enter. If you didn't create a password simply hit enter.
 4. One this command prompt screen you'll want to enter:
 
-   ```
+   ```sql
    CREATE DATABASE rocketmapdb;
    CREATE USER 'rocketmapuser'@'localhost' IDENTIFIED BY 'password';
    GRANT ALL PRIVILEGES ON rocketmapdb . * TO 'rocketmapuser'@'localhost';
@@ -105,7 +105,7 @@ Server B- III
 
 You will need to grant your account permission to use the database outside of your database server. 
 
-```
+```sql
    CREATE DATABASE rocketmapdb;
    CREATE USER 'rocketmapuser'@'%' IDENTIFIED BY 'password';
    GRANT ALL PRIVILEGES ON rocketmapdb . * TO 'rocketmapuser'@'%';

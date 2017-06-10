@@ -9,6 +9,8 @@ CSS class definitions
 * Use class .statusPage for styles in status.html.
 *
 * Example: .mapPage #nav h3 {font-size: 11px;} will set font-size to 11px in map.html and use default style in all other pages.
+*
+* For more help, go to this wiki page: https://rocketmap.readthedocs.io/en/develop/extras/Custom-CSS.html 
 */
 
 /* Gym, Pokémon, Pokéstop information dialog box font style example: */
