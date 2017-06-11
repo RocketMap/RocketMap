@@ -1982,7 +1982,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                     # Make new API for this account if we're not using an
                     # API that's already logged in.
                     if not hlvl_api:
-                        hlvl_api = setup_api(args, status)
+                        hlvl_api = setup_api(args, status, account)
 
                         # Hashing key.
                         # TODO: all of this should be handled properly... all

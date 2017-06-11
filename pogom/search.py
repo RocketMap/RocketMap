@@ -807,7 +807,7 @@ def search_worker_thread(args, api_version, account_queue, account_sets,
             # for stat purposes.
             consecutive_noitems = 0
 
-            api = setup_api(args, status)
+            api = setup_api(args, status, account)
 
             # The forever loop for the searches.
             while True:
