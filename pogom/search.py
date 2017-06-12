@@ -351,7 +351,6 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
     account_sets = AccountSet(args.hlvl_kph)
     threadStatus = {}
     key_scheduler = None
-    api_version = '0.63.1'
     api_check_time = 0
     hashkeys_last_upsert = timeit.default_timer()
     hashkeys_upsert_min_delay = 5.0
@@ -474,7 +473,7 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
 
         t = Thread(target=search_worker_thread,
                    name='search-worker-{}'.format(i),
-                   args=(args, api_version, account_queue, account_sets,
+                   args=(args, account_queue, account_sets,
                          account_failures, account_captchas,
                          search_items_queue, pause_bit,
                          threadStatus[workerId], db_updates_queue,
@@ -514,9 +513,8 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
                 scheduler_array[i].scanning_paused()
             # API Watchdog - Continue to check API version.
             if not args.no_version_check and not odt_triggered:
-                api_check_time = check_forced_version(args, api_version,
-                                                      api_check_time,
-                                                      pause_bit)
+                api_check_time = check_forced_version(
+                    args, api_check_time, pause_bit)
             time.sleep(1)
 
         # If a new location has been passed to us, get the most recent one.
@@ -591,8 +589,8 @@ def search_overseer_thread(args, new_location_queue, pause_bit, heartb,
 
         # API Watchdog - Check if Niantic forces a new API.
         if not args.no_version_check and not odt_triggered:
-            api_check_time = check_forced_version(args, api_version,
-                                                  api_check_time, pause_bit)
+            api_check_time = check_forced_version(
+                args, api_check_time, pause_bit)
 
         # Now we just give a little pause here.
         time.sleep(1)
@@ -752,7 +750,7 @@ def generate_hive_locations(current_location, step_distance,
     return results
 
 
-def search_worker_thread(args, api_version, account_queue, account_sets,
+def search_worker_thread(args, account_queue, account_sets,
                          account_failures, account_captchas,
                          search_items_queue, pause_bit, status, dbq, whq,
                          scheduler, key_scheduler):
@@ -1081,10 +1079,8 @@ def search_worker_thread(args, api_version, account_queue, account_sets,
                                     current_gym, len(gyms_to_update),
                                     step_location[0], step_location[1])
                             time.sleep(random.random() + 2)
-                            response = gym_request(api,
-                                                   step_location,
-                                                   gym,
-                                                   api_version)
+                            response = gym_request(api, account, step_location,
+                                                   gym, args.api_version)
 
                             # Make sure the gym was in range. (Sometimes the
                             # API gets cranky about gyms that are ALMOST 1km
@@ -1285,7 +1281,7 @@ def stat_delta(current_status, last_status, stat_name):
     return current_status.get(stat_name, 0) - last_status.get(stat_name, 0)
 
 
-def check_forced_version(args, api_version, api_check_time, pause_bit):
+def check_forced_version(args, api_check_time, pause_bit):
     if int(time.time()) > api_check_time:
         log.debug("Checking forced API version.")
         api_check_time = int(time.time()) + args.version_check_interval
@@ -1301,12 +1297,12 @@ def check_forced_version(args, api_version, api_check_time, pause_bit):
 
         # Got a response let's compare version numbers.
         try:
-            if StrictVersion(api_version) < StrictVersion(forced_api):
+            if StrictVersion(args.api_version) < StrictVersion(forced_api):
                 # Installed API version is lower. Pause scanning.
                 pause_bit.set()
                 log.warning('Started with API: %s, ' +
                             'Niantic forced to API: %s',
-                            api_version,
+                            args.api_version,
                             forced_api)
                 log.warning('Scanner paused due to forced Niantic API update.')
             else:
