@@ -1079,8 +1079,8 @@ def search_worker_thread(args, account_queue, account_sets,
                                     current_gym, len(gyms_to_update),
                                     step_location[0], step_location[1])
                             time.sleep(random.random() + 2)
-                            response = gym_request(api, account, step_location,
-                                                   gym, args.api_version)
+                            response = gym_request(api,  step_location, gym,
+                                                   args.api_version)
 
                             # Make sure the gym was in range. (Sometimes the
                             # API gets cranky about gyms that are ALMOST 1km
