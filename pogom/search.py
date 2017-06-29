@@ -1086,7 +1086,7 @@ def search_worker_thread(args, account_queue, account_sets,
                             # API gets cranky about gyms that are ALMOST 1km
                             # away.)
                             if response['responses'][
-                                    'GET_GYM_DETAILS']['result'] == 2:
+                                    'GYM_GET_INFO']['result'] == 2:
                                 log.warning(
                                     ('Gym @ %f/%f is out of range (%dkm), ' +
                                      'skipping.'),
@@ -1094,7 +1094,7 @@ def search_worker_thread(args, account_queue, account_sets,
                                     distance)
                             else:
                                 gym_responses[gym['gym_id']] = response[
-                                    'responses']['GET_GYM_DETAILS']
+                                    'responses']['GYM_GET_INFO']
                             del response
                             # Increment which gym we're on for status messages.
                             current_gym += 1
@@ -1209,17 +1209,18 @@ def map_request(api, position, no_jitter=False):
         req.check_awarded_badges()
         req.download_settings()
         req.get_buddy_walked()
+        req.get_inbox(is_history=True)
         response = req.call()
         response = clear_dict_response(response, True)
         return response
 
     except HashingOfflineException as e:
-        log.warning('Hashing server is unreachable, it might be offline.')
+        log.error('Hashing server is unreachable, it might be offline.')
     except BadHashRequestException as e:
-        log.warning('Invalid or expired hashing key: %s.',
-                    api._hash_server_token)
+        log.error('Invalid or expired hashing key: %s.',
+                  api._hash_server_token)
     except Exception as e:
-        log.warning('Exception while downloading map: %s', repr(e))
+        log.exception('Exception while downloading map: %s', repr(e))
         return False
 
 
@@ -1229,25 +1230,26 @@ def gym_request(api, position, gym, api_version):
                   gym['latitude'], gym['longitude'],
                   calc_distance(position, [gym['latitude'], gym['longitude']]))
         req = api.create_request()
-        req.get_gym_details(gym_id=gym['gym_id'],
-                            player_latitude=f2i(position[0]),
-                            player_longitude=f2i(position[1]),
-                            gym_latitude=gym['latitude'],
-                            gym_longitude=gym['longitude'],
-                            client_version=api_version)
+        req.gym_get_info(
+            gym_id=gym['gym_id'],
+            player_lat_degrees=f2i(position[0]),
+            player_lng_degrees=f2i(position[1]),
+            gym_lat_degrees=gym['latitude'],
+            gym_lng_degrees=gym['longitude'])
         req.check_challenge()
         req.get_hatched_eggs()
         req.get_inventory()
         req.check_awarded_badges()
         req.download_settings()
         req.get_buddy_walked()
-        x = req.call()
-        x = clear_dict_response(x)
+        req.get_inbox(is_history=True)
+        response = req.call()
+        response = clear_dict_response(response)
         # Print pretty(x).
-        return x
+        return response
 
     except Exception as e:
-        log.warning('Exception while downloading gym details: %s.', repr(e))
+        log.exception('Exception while downloading gym details: %s.', repr(e))
         return False
 
 

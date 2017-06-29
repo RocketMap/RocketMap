@@ -1748,12 +1748,12 @@ class HashKeys(BaseModel):
     @staticmethod
     # Retrieve the last stored 'peak' value for each hashing key.
     def getStoredPeak(key):
-            result = HashKeys.select(HashKeys.peak).where(HashKeys.key == key)
-            if result:
-                # only one row can be returned
-                return result[0].peak
-            else:
-                return 0
+        result = HashKeys.select(HashKeys.peak).where(HashKeys.key == key)
+        if result:
+            # only one row can be returned
+            return result[0].peak
+        else:
+            return 0
 
 
 def hex_bounds(center, steps=None, radius=None):
@@ -2351,93 +2351,115 @@ def parse_gyms(args, gym_responses, wh_update_queue, db_update_queue):
     gym_members = {}
     gym_pokemon = {}
     trainers = {}
-
     i = 0
     for g in gym_responses.values():
-        gym_state = g['gym_state']
-        gym_id = gym_state['fort_data']['id']
+        gym_state = g['gym_status_and_defenders']
+        gym_id = gym_state['pokemon_fort_proto']['id']
 
         gym_details[gym_id] = {
             'gym_id': gym_id,
             'name': g['name'],
             'description': g.get('description'),
-            'url': g['urls'][0],
+            'url': g['url']
         }
 
         if args.webhooks:
             webhook_data = {
                 'id': b64encode(str(gym_id)),
-                'latitude': gym_state['fort_data']['latitude'],
-                'longitude': gym_state['fort_data']['longitude'],
-                'team': gym_state['fort_data'].get('owned_by_team', 0),
+                'latitude': gym_state['pokemon_fort_proto']['latitude'],
+                'longitude': gym_state['pokemon_fort_proto']['longitude'],
+                'team': gym_state['pokemon_fort_proto'].get(
+                    'owned_by_team', 0),
                 'name': g['name'],
                 'description': g.get('description'),
-                'url': g['urls'][0],
+                'url': g['url'],
                 'pokemon': [],
             }
 
-        for member in gym_state.get('memberships', []):
-            gym_members[i] = {
-                'gym_id': gym_id,
-                'pokemon_uid': member['pokemon_data']['id'],
-            }
+        for member in gym_state.get('gym_defender', []):
+            pokemon = member['motivated_pokemon']['pokemon']
+            gym_members[i] = {'gym_id': gym_id, 'pokemon_uid': pokemon['id']}
 
             gym_pokemon[i] = {
-                'pokemon_uid': member['pokemon_data']['id'],
-                'pokemon_id': member['pokemon_data']['pokemon_id'],
-                'cp': member['pokemon_data']['cp'],
-                'trainer_name': member['trainer_public_profile']['name'],
-                'num_upgrades': member['pokemon_data'].get('num_upgrades', 0),
-                'move_1': member['pokemon_data'].get('move_1'),
-                'move_2': member['pokemon_data'].get('move_2'),
-                'height': member['pokemon_data'].get('height_m'),
-                'weight': member['pokemon_data'].get('weight_kg'),
-                'stamina': member['pokemon_data'].get('stamina'),
-                'stamina_max': member['pokemon_data'].get('stamina_max'),
-                'cp_multiplier': member['pokemon_data'].get('cp_multiplier'),
-                'additional_cp_multiplier': member['pokemon_data'].get(
-                    'additional_cp_multiplier', 0),
-                'iv_defense': member['pokemon_data'].get(
-                    'individual_defense', 0),
-                'iv_stamina': member['pokemon_data'].get(
-                    'individual_stamina', 0),
-                'iv_attack': member['pokemon_data'].get(
-                    'individual_attack', 0),
-                'last_seen': datetime.utcnow(),
+                'pokemon_uid':
+                    pokemon['id'],
+                'pokemon_id':
+                    pokemon['pokemon_id'],
+                'cp':
+                    member['motivated_pokemon']['cp_when_deployed'],
+                'trainer_name':
+                    pokemon['owner_name'],
+                'num_upgrades':
+                    pokemon.get('num_upgrades', 0),
+                'move_1':
+                    pokemon.get('move_1'),
+                'move_2':
+                    pokemon.get('move_2'),
+                'height':
+                    pokemon.get('height_m'),
+                'weight':
+                    pokemon.get('weight_kg'),
+                'stamina':
+                    pokemon.get('stamina'),
+                'stamina_max':
+                    pokemon.get('stamina_max'),
+                'cp_multiplier':
+                    pokemon.get('cp_multiplier'),
+                'additional_cp_multiplier':
+                    pokemon.get('additional_cp_multiplier', 0),
+                'iv_defense':
+                    pokemon.get('individual_defense', 0),
+                'iv_stamina':
+                    pokemon.get('individual_stamina', 0),
+                'iv_attack':
+                    pokemon.get('individual_attack', 0),
+                'last_seen':
+                    datetime.utcnow(),
             }
 
             trainers[i] = {
                 'name': member['trainer_public_profile']['name'],
-                'team': gym_state['fort_data']['owned_by_team'],
+                'team': member['trainer_public_profile']['team_color'],
                 'level': member['trainer_public_profile']['level'],
                 'last_seen': datetime.utcnow(),
             }
 
             if args.webhooks:
                 webhook_data['pokemon'].append({
-                    'pokemon_uid': member['pokemon_data']['id'],
-                    'pokemon_id': member['pokemon_data']['pokemon_id'],
-                    'cp': member['pokemon_data']['cp'],
-                    'num_upgrades': member['pokemon_data'].get(
-                        'num_upgrades', 0),
-                    'move_1': member['pokemon_data'].get('move_1'),
-                    'move_2': member['pokemon_data'].get('move_2'),
-                    'height': member['pokemon_data'].get('height_m'),
-                    'weight': member['pokemon_data'].get('weight_kg'),
-                    'stamina': member['pokemon_data'].get('stamina'),
-                    'stamina_max': member['pokemon_data'].get('stamina_max'),
-                    'cp_multiplier': member['pokemon_data'].get(
-                        'cp_multiplier'),
-                    'additional_cp_multiplier': member['pokemon_data'].get(
-                        'additional_cp_multiplier', 0),
-                    'iv_defense': member['pokemon_data'].get(
-                        'individual_defense', 0),
-                    'iv_stamina': member['pokemon_data'].get(
-                        'individual_stamina', 0),
-                    'iv_attack': member['pokemon_data'].get(
-                        'individual_attack', 0),
-                    'trainer_name': member['trainer_public_profile']['name'],
-                    'trainer_level': member['trainer_public_profile']['level'],
+                    'pokemon_uid':
+                        pokemon['id'],
+                    'pokemon_id':
+                        pokemon['pokemon_id'],
+                    'cp':
+                        member['motivated_pokemon']['cp_when_deployed'],
+                    'num_upgrades':
+                        pokemon.get('num_upgrades', 0),
+                    'move_1':
+                        pokemon.get('move_1'),
+                    'move_2':
+                        pokemon.get('move_2'),
+                    'height':
+                        pokemon.get('height_m'),
+                    'weight':
+                        pokemon.get('weight_kg'),
+                    'stamina':
+                        pokemon.get('stamina'),
+                    'stamina_max':
+                        pokemon.get('stamina_max'),
+                    'cp_multiplier':
+                        pokemon.get('cp_multiplier'),
+                    'additional_cp_multiplier':
+                        pokemon.get('additional_cp_multiplier', 0),
+                    'iv_defense':
+                        pokemon.get('individual_defense', 0),
+                    'iv_stamina':
+                        pokemon.get('individual_stamina', 0),
+                    'iv_attack':
+                        pokemon.get('individual_attack', 0),
+                    'trainer_name':
+                        member['trainer_public_profile']['name'],
+                    'trainer_level':
+                        member['trainer_public_profile']['level'],
                 })
 
             i += 1

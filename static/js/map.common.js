@@ -875,8 +875,8 @@ var StoreOptions = {
         type: StoreTypes.Boolean
     },
     'showOpenGymsOnly': {
-        default: 0,
-        type: StoreTypes.Number
+        default: false,
+        type: StoreTypes.Boolean
     },
     'showTeamGymsOnly': {
         default: 0,
@@ -891,7 +891,7 @@ var StoreOptions = {
         type: StoreTypes.Number
     },
     'maxGymLevel': {
-        default: 10,
+        default: 6,
         type: StoreTypes.Number
     },
     'showPokemon': {
