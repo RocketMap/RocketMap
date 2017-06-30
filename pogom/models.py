@@ -33,7 +33,7 @@ from .utils import (get_pokemon_name, get_pokemon_rarity, get_pokemon_types,
 from .transform import transform_from_wgs_to_gcj, get_new_coords
 from .customLog import printPokemon
 
-from .account import (tutorial_pokestop_spin, get_player_level, check_login,
+from .account import (tutorial_pokestop_spin, check_login,
                       setup_api, encounter_pokemon_request)
 
 log = logging.getLogger(__name__)
@@ -1791,7 +1791,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
     # and a list of forts.
     cells = map_dict['responses']['GET_MAP_OBJECTS']['map_cells']
     # Get the level for the pokestop spin, and to send to webhook.
-    level = get_player_level(map_dict)
+    level = account['level']
     # Use separate level indicator for our L30 encounters.
     encounter_level = level
 
@@ -2008,6 +2008,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                     # Encounter Pokémon.
                     encounter_result = encounter_pokemon_request(
                         hlvl_api,
+                        account,
                         p['encounter_id'],
                         p['spawn_point_id'],
                         scan_location)
@@ -2031,8 +2032,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                         else:
                             # Update level indicator before we clear the
                             # response.
-                            encounter_level = get_player_level(
-                                encounter_result)
+                            encounter_level = hlvl_account['level']
 
                             # User error?
                             if encounter_level < 30:

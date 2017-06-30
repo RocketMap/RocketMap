@@ -48,7 +48,7 @@ from .models import (parse_map, GymDetails, parse_gyms, MainWorker,
 from .utils import now, clear_dict_response
 from .transform import get_new_coords, jitter_location
 from .account import (setup_api, check_login, get_tutorial_state,
-                      complete_tutorial, AccountSet)
+                      complete_tutorial, AccountSet, parse_new_timestamp_ms)
 from .captcha import captcha_overseer_thread, handle_captcha
 from .proxy import get_new_proxy
 
@@ -960,7 +960,8 @@ def search_worker_thread(args, account_queue, account_sets,
 
                 # Make the actual request.
                 scan_date = datetime.utcnow()
-                response_dict = map_request(api, step_location, args.no_jitter)
+                response_dict = map_request(api, account, step_location,
+                                            args.no_jitter)
                 status['last_scan_date'] = datetime.utcnow()
 
                 # Record the time and the place that the worker made the
@@ -989,7 +990,8 @@ def search_worker_thread(args, account_queue, account_sets,
                         # Make another request for the same location
                         # since the previous one was captcha'd.
                         scan_date = datetime.utcnow()
-                        response_dict = map_request(api, step_location,
+                        response_dict = map_request(api, account,
+                                                    step_location,
                                                     args.no_jitter)
                     elif captcha is not None:
                         account_queue.task_done()
@@ -1080,8 +1082,8 @@ def search_worker_thread(args, account_queue, account_sets,
                                     current_gym, len(gyms_to_update),
                                     step_location[0], step_location[1])
                             time.sleep(random.random() + 2)
-                            response = gym_request(api,  step_location, gym,
-                                                   args.api_version)
+                            response = gym_request(api, account, step_location,
+                                                   gym, args.api_version)
 
                             # Make sure the gym was in range. (Sometimes the
                             # API gets cranky about gyms that are ALMOST 1km
@@ -1184,7 +1186,7 @@ def upsertKeys(keys, key_scheduler, db_updates_queue):
     db_updates_queue.put((HashKeys, hashkeys))
 
 
-def map_request(api, position, no_jitter=False):
+def map_request(api, account, position, no_jitter=False):
     # Create scan_location to send to the api based off of position, because
     # tuples aren't mutable.
     if no_jitter:
@@ -1206,13 +1208,14 @@ def map_request(api, position, no_jitter=False):
                             cell_id=cell_ids)
         req.check_challenge()
         req.get_hatched_eggs()
-        req.get_inventory()
+        req.get_inventory(last_timestamp_ms=account['last_timestamp_ms'])
         req.check_awarded_badges()
-        req.download_settings()
         req.get_buddy_walked()
         req.get_inbox(is_history=True)
         response = req.call()
+
         response = clear_dict_response(response, True)
+        parse_new_timestamp_ms(account, response)
         return response
 
     except HashingOfflineException as e:
@@ -1225,9 +1228,9 @@ def map_request(api, position, no_jitter=False):
         return False
 
 
-def gym_request(api, position, gym, api_version):
+def gym_request(api, account, position, gym, api_version):
     try:
-        log.debug('Getting details for gym @ %f/%f (%fkm away).',
+        log.debug('Getting details for gym @ %f/%f (%fkm away)',
                   gym['latitude'], gym['longitude'],
                   calc_distance(position, [gym['latitude'], gym['longitude']]))
         req = api.create_request()
@@ -1239,14 +1242,13 @@ def gym_request(api, position, gym, api_version):
             gym_lng_degrees=gym['longitude'])
         req.check_challenge()
         req.get_hatched_eggs()
-        req.get_inventory()
+        req.get_inventory(last_timestamp_ms=account['last_timestamp_ms'])
         req.check_awarded_badges()
-        req.download_settings()
         req.get_buddy_walked()
         req.get_inbox(is_history=True)
         response = req.call()
+        parse_new_timestamp_ms(account, response)
         response = clear_dict_response(response)
-        # Print pretty(x).
         return response
 
     except Exception as e:
