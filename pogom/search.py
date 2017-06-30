@@ -941,13 +941,14 @@ def search_worker_thread(args, account_queue, account_sets,
 
                     # Check tutorial completion.
                     if args.complete_tutorial:
-                        tutorial_state = get_tutorial_state(api, account)
+                        tutorial_state = get_tutorial_state(args, api, account)
 
                         if not all(x in tutorial_state
                                    for x in (0, 1, 3, 4, 7)):
                             log.info('Completing tutorial steps for %s.',
                                      account['username'])
-                            complete_tutorial(api, account, tutorial_state)
+                            complete_tutorial(args, api, account,
+                                              tutorial_state)
                         else:
                             log.info('Account %s already completed tutorial.',
                                      account['username'])

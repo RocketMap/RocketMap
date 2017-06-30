@@ -104,14 +104,11 @@ def check_login(args, account, api, position, proxy_url):
 
 # Check if all important tutorial steps have been completed.
 # API argument needs to be a logged in API instance.
-def get_tutorial_state(api, account):
+def get_tutorial_state(args, api, account):
     log.debug('Checking tutorial state for %s.', account['username'])
     request = api.create_request()
     request.get_player(
-        player_locale={'country': 'US',
-                       'language': 'en',
-                       'timezone': 'America/Denver'})
-
+        player_locale=args.player_locale)
     response = request.call().get('responses', {})
 
     get_player = response.get('GET_PLAYER', {})
@@ -124,7 +121,7 @@ def get_tutorial_state(api, account):
 # Complete minimal tutorial steps.
 # API argument needs to be a logged in API instance.
 # TODO: Check if game client bundles these requests, or does them separately.
-def complete_tutorial(api, account, tutorial_state):
+def complete_tutorial(args, api, account, tutorial_state):
     if 0 not in tutorial_state:
         time.sleep(random.uniform(1, 5))
         request = api.create_request()
@@ -186,10 +183,7 @@ def complete_tutorial(api, account, tutorial_state):
         time.sleep(random.uniform(0.5, 0.6))
         request = api.create_request()
         request.get_player(
-            player_locale={
-                'country': 'US',
-                'language': 'en',
-                'timezone': 'America/Denver'})
+            player_locale=args.player_locale)
         responses = request.call().get('responses', {})
 
         inventory = responses.get('GET_INVENTORY', {}).get(
@@ -215,10 +209,7 @@ def complete_tutorial(api, account, tutorial_state):
         time.sleep(0.1)
         request = api.create_request()
         request.get_player(
-            player_locale={
-                'country': 'US',
-                'language': 'en',
-                'timezone': 'America/Denver'})
+            player_locale=args.player_locale)
         request.call()
 
     if 7 not in tutorial_state:

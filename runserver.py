@@ -18,7 +18,7 @@ from flask_cache_bust import init_cache_busting
 
 from pogom import config
 from pogom.app import Pogom
-from pogom.utils import get_args, now, extract_sprites
+from pogom.utils import get_args, now, extract_sprites, gmaps_reverse_geolocate
 from pogom.altitude import get_gmaps_altitude
 
 from pogom.search import search_overseer_thread
@@ -311,6 +311,12 @@ def main():
             t.start()
         else:
             log.info('Periodical proxies refresh disabled.')
+
+        # Update player locale.
+        args.player_locale = gmaps_reverse_geolocate(
+            args.gmaps_key,
+            args.locale,
+            str(position[0]) + ', ' + str(position[1]))
 
         # Gather the Pokemon!
 
