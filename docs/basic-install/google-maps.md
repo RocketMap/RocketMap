@@ -40,6 +40,11 @@ This project uses Google Maps. Each instance of Google Maps requires an API key 
      - Type 'Elevation' into the search box ' Search all 100+ APIs'
      - Choose Google Maps Elevation API
      - Click 'ENABLE'
+    - Google Maps Time Zone API - Enables time zone for a location
+     - Click on 'Library'
+     - Type 'Time Zone' into the search box ' Search all 100+ APIs'
+     - Choose Google Maps Time Zone API
+     - Click 'ENABLE'
 
 ## Using the API Key
 
