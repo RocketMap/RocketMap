@@ -25,25 +25,31 @@ This project uses Google Maps. Each instance of Google Maps requires an API key 
    ![API Browser Key](../_static/img/csEFWKd.png)
    ![API Browser Key](../_static/img/6upJVIr.png)
 
-5. Enable three Google Maps APIs
+5. Enable five Google Maps APIs
    - Google Maps Javascript API - Enables Displaying of Map
      - Click on 'Library'
-     - Click on Google Maps Javascript API
+     - Type 'JavaScript' in the search box
+     - Choose 'Google Maps Javascript API'
      - Click 'ENABLE'
    - Google Places API Web Service - Enables Location Searching
      - Click on 'Library'
-     - Type 'Places' into the search box ' Search all 100+ APIs'
-     - Choose Google Places API Web Service
+     - Type 'Places' in the search box
+     - Choose 'Google Places API Web Service'
      - Click 'ENABLE'
    - Google Maps Elevation API - Enables fetching of altitude
      - Click on 'Library'
-     - Type 'Elevation' into the search box ' Search all 100+ APIs'
-     - Choose Google Maps Elevation API
+     - Type 'Elevation' in the search box
+     - Choose 'Google Maps Elevation API'
      - Click 'ENABLE'
-    - Google Maps Time Zone API - Enables time zone for a location
+   - Google Maps Geocoding API - Enables geocoding and reverse geocoding
      - Click on 'Library'
-     - Type 'Time Zone' into the search box ' Search all 100+ APIs'
-     - Choose Google Maps Time Zone API
+     - Type 'Geocoding' in the search box
+     - Choose 'Google Maps Geocoding API'
+     - Click 'ENABLE'
+   - Google Maps Time Zone API - Enables time zone for a location
+     - Click on 'Library'
+     - Type 'Time Zone' in the search box
+     - Choose 'Google Maps Time Zone API'
      - Click 'ENABLE'
 
 ## Using the API Key
