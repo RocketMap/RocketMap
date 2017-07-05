@@ -32,6 +32,10 @@ def check_proxy(proxy_queue, timeout, proxies, show_warnings, check_results):
 
     # Url for proxy testing.
     proxy_test_url = 'https://pgorelease.nianticlabs.com/plfe/rpc'
+    proxy_test_ptc_url = 'https://sso.pokemon.com/sso/oauth2.0/authorize?' \
+                         'client_id=mobile-app_pokemon-go&redirect_uri=' \
+                         'https%3A%2F%2Fwww.nianticlabs.com%2Fpokemongo' \
+                         '%2Ferror'
     proxy = proxy_queue.get()
 
     check_result = check_result_ok
@@ -46,22 +50,42 @@ def check_proxy(proxy_queue, timeout, proxies, show_warnings, check_results):
                                                     'https': proxy[1]},
                                            timeout=timeout)
 
-            if proxy_response.status_code == 200:
+            proxy_response_ptc = requests.get(proxy_test_ptc_url, '',
+                                              proxies={'http': proxy[1],
+                                                       'https': proxy[1]},
+                                              timeout=timeout,
+                                              headers={'User-Agent':
+                                                       'pokemongo/1 '
+                                                       'CFNetwork/811.4.18 '
+                                                       'Darwin/16.5.0',
+                                                       'Host':
+                                                       'sso.pokemon.com',
+                                                       'X-Unity-Version':
+                                                       '5.5.1f1'})
+
+            niantic_status = proxy_response.status_code
+            ptc_status = proxy_response_ptc.status_code
+
+            banned_status_codes = [403, 409]
+
+            if niantic_status == 200 and ptc_status == 200:
                 log.debug('Proxy %s is ok.', proxy[1])
                 proxy_queue.task_done()
                 proxies.append(proxy[1])
                 check_results[check_result_ok] += 1
                 return True
 
-            elif proxy_response.status_code == 403:
+            elif (niantic_status in banned_status_codes or
+                  ptc_status in banned_status_codes):
                 proxy_error = ("Proxy " + proxy[1] +
-                               " is banned - got status code: " +
-                               str(proxy_response.status_code))
+                               " is banned - got Niantic status code: " +
+                               str(niantic_status) + ", PTC status code: " +
+                               str(ptc_status))
                 check_result = check_result_banned
 
             else:
-                proxy_error = ("Wrong status code - " +
-                               str(proxy_response.status_code))
+                proxy_error = ("Wrong status codes - " + str(niantic_status) +
+                               ", " + str(ptc_status))
                 check_result = check_result_wrong
 
         except requests.ConnectTimeout:
