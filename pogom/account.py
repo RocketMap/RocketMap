@@ -534,9 +534,12 @@ def spin_pokestop(api, account, fort, step_location):
     if in_radius((fort['latitude'], fort['longitude']), step_location,
                  spinning_radius):
         log.debug('Attempt to spin Pokestop (ID %s)', fort['id'])
-        time.sleep(random.uniform(0.8, 1.8))  # Do not let Niantic throttle
+
+        time.sleep(random.uniform(0.8, 1.8))
+        fort_details_request(api, account, fort)
+        time.sleep(random.uniform(0.8, 1.8))  # Don't let Niantic throttle
         response = spin_pokestop_request(api, account, fort, step_location)
-        time.sleep(random.uniform(2, 4))  # Do not let Niantic throttle
+        time.sleep(random.uniform(2, 4))  # Don't let Niantic throttle.
 
         # Check for reCaptcha
         captcha_url = response['responses'][
@@ -586,6 +589,27 @@ def spin_pokestop_request(api, account, fort, step_location):
 
     except Exception as e:
         log.exception('Exception while spinning Pokestop: %s.', repr(e))
+        return False
+
+
+def fort_details_request(api, account, fort):
+    try:
+        req = api.create_request()
+        req.fort_details(
+            fort_id=fort['id'],
+            latitude=fort['latitude'],
+            longitude=fort['longitude'])
+        req.check_challenge()
+        req.get_hatched_eggs()
+        req.get_inventory(last_timestamp_ms=account['last_timestamp_ms'])
+        req.check_awarded_badges()
+        req.get_buddy_walked()
+        req.get_inbox(is_history=True)
+        response = req.call()
+        parse_new_timestamp_ms(account, response)
+        return response
+    except Exception as e:
+        log.exception('Exception while getting Pokestop details: %s.', repr(e))
         return False
 
 
