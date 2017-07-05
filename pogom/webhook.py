@@ -189,8 +189,9 @@ def __get_key_fields(whtype):
                     'disappear_time', 'move_1', 'move_2',
                     'individual_stamina', 'individual_defense',
                     'individual_attack', 'form', 'cp', 'pokemon_level'],
-        'gym': ['team_id', 'guard_pokemon_id',
-                'gym_points', 'enabled', 'latitude', 'longitude'],
+        'gym': ['team_id', 'guard_pokemon_id', 'gym_points', 'enabled',
+                'latitude', 'longitude', 'total_gym_cp',
+                'lowest_pokemon_motivation', 'occupied_seconds'],
         'gym_details': ['latitude', 'longitude', 'team', 'pokemon']
     }
 
