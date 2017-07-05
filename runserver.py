@@ -23,7 +23,7 @@ from pogom.altitude import get_gmaps_altitude
 
 from pogom.search import search_overseer_thread
 from pogom.models import (init_database, create_tables, drop_tables,
-                          Pokemon, db_updater, clean_db_loop,
+                          Pokemon, PlayerLocale, db_updater, clean_db_loop,
                           verify_table_encoding, verify_database_schema)
 from pogom.webhook import wh_updater
 
@@ -312,11 +312,22 @@ def main():
         else:
             log.info('Periodical proxies refresh disabled.')
 
-        # Update player locale.
-        args.player_locale = gmaps_reverse_geolocate(
-            args.gmaps_key,
-            args.locale,
-            str(position[0]) + ', ' + str(position[1]))
+        # Update player locale if not set correctly, yet.
+        args.player_locale = PlayerLocale.get_locale(args.location)
+        if not args.player_locale:
+            args.player_locale = gmaps_reverse_geolocate(
+                args.gmaps_key,
+                args.locale,
+                str(position[0]) + ', ' + str(position[1]))
+            db_player_locale = {
+                'location': args.location,
+                'country': args.player_locale['country'],
+                'language': args.player_locale['country'],
+                'timezone': args.player_locale['timezone'],
+            }
+            db_updates_queue.put((PlayerLocale, {0: db_player_locale}))
+        else:
+            log.debug('Existing player locale has been retrieved from the DB.')
 
         # Gather the Pokemon!
 
