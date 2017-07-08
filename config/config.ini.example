@@ -29,6 +29,7 @@
 #no-gyms                        # Disables gym scanning (default=False)
 #no-pokemon                     # Disables pokemon scanning. (default=False)
 #no-pokestops                   # Disables pokestop scanning. (default=False)
+#no-raids                       # Disables raid scanning (default=False)
 #print-status                   # Enable ENTER to switch between log view and a status view.
                                 # Optionally add ": status" to start in status view and ": logs" to start in log view. (default=False)
 #status-page-password:          # Enables and protects the /status page to view status of all workers. (default=None)

@@ -153,6 +153,7 @@ def main():
     config['parse_pokemon'] = not args.no_pokemon
     config['parse_pokestops'] = not args.no_pokestops
     config['parse_gyms'] = not args.no_gyms
+    config['parse_raids'] = not args.no_raids
 
     # Turn these back up if debugging.
     if args.verbose or args.very_verbose:
