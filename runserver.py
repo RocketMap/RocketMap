@@ -29,9 +29,6 @@ from pogom.webhook import wh_updater
 
 from pogom.proxy import check_proxies, proxies_refresher
 
-# Currently supported pgoapi.
-pgoapi_version = "1.1.7"
-
 # Moved here so logger is configured at load time.
 logging.basicConfig(
     format='%(asctime)s [%(threadName)18s][%(module)14s][%(levelname)8s] ' +
@@ -41,19 +38,11 @@ log = logging.getLogger()
 # Assert pgoapi is installed.
 try:
     import pgoapi
-    from pgoapi import utilities as util
+    from pgoapi import PGoApi, utilities as util
 except ImportError:
     log.critical(
         "It seems `pgoapi` is not installed. Try running " +
         "pip install --upgrade -r requirements.txt.")
-    sys.exit(1)
-
-# Assert pgoapi >= pgoapi_version.
-if (not hasattr(pgoapi, "__version__") or
-        StrictVersion(pgoapi.__version__) < StrictVersion(pgoapi_version)):
-    log.critical(
-        "It seems `pgoapi` is not up-to-date. Try running " +
-        "pip install --upgrade -r requirements.txt again.")
     sys.exit(1)
 
 
@@ -126,6 +115,38 @@ def validate_assets(args):
     else:
         args.custom_css = False
         log.info('No file \"custom.css\" found, using default settings.')
+
+    return True
+
+
+def can_start_scanning(args):
+    # Currently supported pgoapi.
+    pgoapi_version = "1.2.0"
+    api_version_error = (
+        'The installed pgoapi is out of date. Please refer to ' +
+        'http://rocketmap.readthedocs.io/en/develop/common-issues/' +
+        'faq.html#i-get-an-error-about-pgooapi-version'
+    )
+
+    # Assert pgoapi >= pgoapi_version.
+    if (not hasattr(pgoapi, "__version__") or
+            StrictVersion(pgoapi.__version__) < StrictVersion(pgoapi_version)):
+        log.critical(api_version_error)
+        return False
+
+    # Abort if we don't have a hash key set.
+    if not args.hash_key:
+        log.critical('Hash key is required for scanning. Exiting.')
+        return False
+
+    # Check the PoGo api pgoapi implements against what RM is expecting
+    try:
+        if PGoApi.get_api_version() != int(args.api_version.replace('.', '0')):
+            log.critical(api_version_error)
+            return False
+    except AttributeError:
+        log.critical(api_version_error)
+        return False
 
     return True
 
@@ -313,11 +334,9 @@ def main():
     config['GMAPS_KEY'] = args.gmaps_key
 
     if not args.only_server:
-
-        # Abort if we don't have a hash key set
-        if not args.hash_key:
-            log.critical('Hash key is required for scanning. Exiting.')
-            sys.exit()
+        # Check if we are able to scan.
+        if not can_start_scanning(args):
+            sys.exit(1)
 
         # Processing proxies if set (load from file, check and overwrite old
         # args.proxy with new working list)
