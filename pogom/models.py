@@ -2106,7 +2106,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                                                 + ' or higher, but account '
                                                 + hlvl_account['username']
                                                 + ' is only level '
-                                                + encounter_level + '.')
+                                                + str(encounter_level) + '.')
 
                         # We're done with the encounter. If it's from an
                         # AccountSet, release account back to the pool.
