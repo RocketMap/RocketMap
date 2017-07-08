@@ -31,3 +31,4 @@ static/css/custom.css
 !contrib/supervisord/install-reinstall.sh
 !static/data/*
 !static/icons/hsl*.png
+!static/app/settings.json
