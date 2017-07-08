@@ -89,6 +89,47 @@ def handle_exception(exc_type, exc_value, exc_traceback):
         exc_type, exc_value, exc_traceback))
 
 
+def validate_assets(args):
+    assets_error_log = (
+        'Missing front-end assets (static/dist) -- please run ' +
+        '"npm install && npm run build" before starting the server.')
+
+    root_path = os.path.dirname(__file__)
+    if not os.path.exists(os.path.join(root_path, 'static/dist')):
+        log.critical(assets_error_log)
+        return False
+
+    static_path = os.path.join(root_path, 'static/js')
+    for file in os.listdir(static_path):
+        if file.endswith(".js"):
+            generated_path = os.path.join(static_path, '../dist/js/',
+                                          file.replace(".js", ".min.js"))
+            source_path = os.path.join(static_path, file)
+            if not os.path.exists(generated_path) or (
+                    os.path.getmtime(source_path) >
+                    os.path.getmtime(generated_path)):
+                log.critical(assets_error_log)
+                return False
+
+    # You need custom image files now.
+    if not os.path.isfile(
+            os.path.join(root_path, 'static/icons-sprite.png')):
+        log.info('Sprite files not present, extracting bundled ones...')
+        extract_sprites(root_path)
+        log.info('Done!')
+
+    # Check if custom.css is used otherwise fall back to default.
+    if os.path.exists(os.path.join(root_path, 'static/css/custom.css')):
+        args.custom_css = True
+        log.info(
+            'File \"custom.css\" found, applying user-defined settings.')
+    else:
+        args.custom_css = False
+        log.info('No file \"custom.css\" found, using default settings.')
+
+    return True
+
+
 def main():
     # Patch threading to make exceptions catchable.
     install_thread_excepthook()
@@ -118,30 +159,8 @@ def main():
         log.setLevel(logging.INFO)
 
     # Let's not forget to run Grunt / Only needed when running with webserver.
-    if not args.no_server:
-        root_path = os.path.dirname(__file__)
-        if not os.path.exists(
-                os.path.join(root_path, 'static/dist')):
-            log.critical(
-                'Missing front-end assets (static/dist) -- please run ' +
-                '"npm install && npm run build" before starting the server.')
-            sys.exit()
-
-        # You need custom image files now.
-        if not os.path.isfile(
-                os.path.join(root_path, 'static/icons-sprite.png')):
-            log.info('Sprite files not present, extracting bundled ones...')
-            extract_sprites(root_path)
-            log.info('Done!')
-
-        # Check if custom.css is used otherwise fall back to default.
-        if os.path.exists(os.path.join(root_path, 'static/css/custom.css')):
-            args.custom_css = True
-            log.info(
-                'File \"custom.css\" found, applying user-defined settings.')
-        else:
-            args.custom_css = False
-            log.info('No file \"custom.css\" found, using default settings.')
+    if not args.no_server and not validate_assets(args):
+        sys.exit(1)
 
     # These are very noisy, let's shush them up a bit.
     logging.getLogger('peewee').setLevel(logging.INFO)
