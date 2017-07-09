@@ -1088,17 +1088,19 @@ def search_worker_thread(args, account_queue, account_sets,
                             # Make sure the gym was in range. (Sometimes the
                             # API gets cranky about gyms that are ALMOST 1km
                             # away.)
-                            if response['responses'][
-                                    'GYM_GET_INFO']['result'] == 2:
-                                log.warning(
-                                    ('Gym @ %f/%f is out of range (%dkm), ' +
-                                     'skipping.'),
-                                    gym['latitude'], gym['longitude'],
-                                    distance)
-                            else:
-                                gym_responses[gym['gym_id']] = response[
-                                    'responses']['GYM_GET_INFO']
-                            del response
+                            if response:
+                                if response['responses'][
+                                        'GYM_GET_INFO']['result'] == 2:
+                                    log.warning(
+                                        ('Gym @ %f/%f is out of range (%dkm),'
+                                         + ' skipping.'),
+                                        gym['latitude'], gym['longitude'],
+                                        distance)
+                                else:
+                                    gym_responses[gym['gym_id']] = response[
+                                        'responses']['GYM_GET_INFO']
+                                del response
+
                             # Increment which gym we're on for status messages.
                             current_gym += 1
 
