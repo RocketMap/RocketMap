@@ -23,7 +23,7 @@ from pogom.altitude import get_gmaps_altitude
 
 from pogom.search import search_overseer_thread
 from pogom.models import (init_database, create_tables, drop_tables,
-                          Pokemon, PlayerLocale, db_updater, clean_db_loop,
+                          PlayerLocale, SpawnPoint, db_updater, clean_db_loop,
                           verify_table_encoding, verify_database_schema)
 from pogom.webhook import wh_updater
 
@@ -377,7 +377,7 @@ def main():
                 args.dump_spawnpoints):
             with open(args.spawnpoint_scanning, 'w+') as file:
                 log.info('Saving spawn points to %s', args.spawnpoint_scanning)
-                spawns = Pokemon.get_spawnpoints_in_hex(
+                spawns = SpawnPoint.get_spawnpoints_in_hex(
                     position, args.step_limit)
                 file.write(json.dumps(spawns))
                 log.info('Finished exporting spawn points')

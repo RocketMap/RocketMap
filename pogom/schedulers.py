@@ -60,7 +60,7 @@ from queue import Empty
 from operator import itemgetter
 from datetime import datetime, timedelta
 from .transform import get_new_coords
-from .models import (hex_bounds, Pokemon, SpawnPoint, ScannedLocation,
+from .models import (hex_bounds, SpawnPoint, ScannedLocation,
                      ScanSpawnPoint, HashKeys)
 from .utils import now, cur_sec, cellid, equi_rect_distance
 from .altitude import get_altitude
@@ -313,7 +313,7 @@ class HexSearchSpawnpoint(HexSearch):
     def _generate_locations(self):
         n, e, s, w = hex_bounds(self.scan_location, self.step_limit)
         spawnpoints = set((d['latitude'], d['longitude'])
-                          for d in Pokemon.get_spawnpoints(s, w, n, e))
+                          for d in SpawnPoint.get_spawnpoints(s, w, n, e))
 
         if len(spawnpoints) == 0:
             log.warning('No spawnpoints found in the specified area!  (Did ' +
@@ -365,7 +365,7 @@ class SpawnScan(BaseScheduler):
         # No locations yet? Try the database!
         if not self.locations:
             log.debug('Loading spawn points from database')
-            self.locations = Pokemon.get_spawnpoints_in_hex(
+            self.locations = SpawnPoint.get_spawnpoints_in_hex(
                 self.scan_location, self.args.step_limit)
 
         # Well shit...

@@ -17,7 +17,8 @@ from bisect import bisect_left
 
 from . import config
 from .models import (Pokemon, Gym, Pokestop, ScannedLocation,
-                     MainWorker, WorkerStatus, Token, HashKeys)
+                     MainWorker, WorkerStatus, Token, HashKeys,
+                     SpawnPoint)
 from .utils import now, dottedQuadToNum, get_blacklist
 log = logging.getLogger(__name__)
 compress = Compress()
@@ -358,15 +359,15 @@ class Pogom(Flask):
 
         if request.args.get('spawnpoints', 'false') == 'true':
             if lastspawns != 'true':
-                d['spawnpoints'] = Pokemon.get_spawnpoints(
+                d['spawnpoints'] = SpawnPoint.get_spawnpoints(
                     swLat=swLat, swLng=swLng, neLat=neLat, neLng=neLng)
             else:
-                d['spawnpoints'] = Pokemon.get_spawnpoints(
+                d['spawnpoints'] = SpawnPoint.get_spawnpoints(
                     swLat=swLat, swLng=swLng, neLat=neLat, neLng=neLng,
                     timestamp=timestamp)
                 if newArea:
                     d['spawnpoints'] = d['spawnpoints'] + (
-                        Pokemon.get_spawnpoints(
+                        SpawnPoint.get_spawnpoints(
                             swLat, swLng, neLat, neLng,
                             oSwLat=oSwLat, oSwLng=oSwLng,
                             oNeLat=oNeLat, oNeLng=oNeLng))
