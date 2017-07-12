@@ -1197,8 +1197,8 @@ class SpawnPoint(BaseModel):
             'kind': 'hhhs',
             'links': '????',
             'missed_count': 0,
-            'latest_seen': None,
-            'earliest_unseen': None
+            'latest_seen': 0,
+            'earliest_unseen': 0
 
         }
 
