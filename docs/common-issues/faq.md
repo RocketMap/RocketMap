@@ -97,7 +97,21 @@ No, remove everything and start from scratch. A Pull Request is merged when it m
 
 Good Job! We recommend making new accounts. [Current Tools are Here!](https://rocketmap.readthedocs.io/en/develop/extras/Community-Tools.html)
 
+### I get an error about PGoAPI version
+
+You can get a warning which pauses your scanner due to a new API being forced. In that case check for announcements to see if a new version has been released, and update as it says.
+
+In case your server does not start due to a PGoAPI version mismatch the problem is that you are trying to start your server with an different installed PGoAPI that the one it is built for, to update your PGoAPI installation to the required version do:
+
+```bash
+pip uninstall pgoapi
+pip install --upgrade -r requirements.txt
+```
+Use `sudo` or `--user` if you don't have permissions to install modules.
+
 ### I'm getting this error...
+
+#### Python version
 
 ```
 pip or python is not recognized as an internal or external command
@@ -111,6 +125,8 @@ Exception, e <- Invalid syntax.
 
 This error is caused by Python 3. The project requires python 2.7
 
+#### Gcc missing
+
 ```
 error: command 'gcc' failed with exit status 1
 
@@ -121,6 +137,8 @@ error: command 'gcc' failed with exit status 1
 
 Your OS is missing the `gcc` compiler library. For Debian, run `apt-get install build-essentials`. For Red Hat, run `yum groupinstall 'Development Tools'`
 
+#### KeyError
+
 ```
 cells = map_dict['responses']['GET_MAP_OBJECTS']['map_cells']
 
@@ -129,11 +147,15 @@ KeyError: 'map_cells'
 
 The account is banned or hasn't completed the tutorial.
 
+#### Database error
+
 ```
 InternalError(1054, u"unknown column 'cp' in 'field list'") or similar
 ```
 
 Only one instance can run when the database is being modified or upgraded. Run ***ONE*** instance of RM with `-cd` to wipe your database, then run ***ONE*** instance of RM (without `-cd`) to setup your database.
+
+#### Peewee max connections
 
 ```
 ValueError: Exceeded maximum connections.
@@ -141,11 +163,15 @@ ValueError: Exceeded maximum connections.
 
 Try raising --db-max_connections, default is 5.
 
+#### MySQL max connections
+
 ```
 OperationalError(1040, u'Too many connections')
 ```
 
 You need to raise the maximum connections allowed on your MySQL server configuration, this is typically by setting `max_connections` in my.cnf or my.ini. Please use Google to find where this file is located on your specific operating system.
+
+#### SQLite query limit
 
 ```
 OperationalError: too many SQL variables
@@ -153,27 +179,47 @@ OperationalError: too many SQL variables
 
 Due to SQLite supporting only a small amount of variables in a single query, you will need to use MySQL as you are above said limit. This is typically due to the adding of more workers/area to your map.
 
+#### Certificate errors
+
+```
+Unable to retrieve altitude from Google APIs: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:579).
+```
+
+RedHat based distros (Fedora, CentOS) could have an old OpenSSL version that is not compatible to the latest `certifi` package, to fix it you need to:
+
+```bash
+pip uninstall certifi
+pip install certifi==2015.4.28
+```
+
+Use `sudo` or `--user` if you are not using an account with root permission.
+
+And remember that you should do this every time after updating the requirements of the project.
+
 ## I have more questions!
 
 Please read all wiki pages relating to the specific function you are questioning. If it does not answer your question, join us on the [RocketMap Discord](https://discord.gg/rocketmap). Before asking questions in #help on Discord, make sure you've read #announcements and #faq.
 
 ## Formulas?
 
-st=step distance  
-sd=scan delay [default: 10]  
-w=# of workers  
+st=step distance\
+sd=scan delay [default: 10]\
+w=# of workers\
 t=desired scan time  
 
 ### Speed Scan
 
-Workers for initial scan(speed scan):  
-Workers = Cells / 20, Cells = (((steps * (steps - 1)) * 3) + 1)  
+Workers for initial scan(speed scan):
+```
+cells = (((st * (st - 1)) * 3) + 1)  
+workers = cells / 20
+```
 an example for st 19: (((19 * 18) * 3) +1 ) / 20 = 51.35 so use 52 workers.  
 You will not need as many accounts once initial scan is complete.
 
-### Hex scan
-time to scan: (sd/w)*(3st^2-3st+1)  
-time to scan (using default scan delay): (10/w)*(3st^2-3st+1)
+### Hex Scan
+time to scan: `(sd/w)*(3st^2-3st+1)`\
+time to scan (using default scan delay): `(10/w)*(3st^2-3st+1)`
 
-workers needed: (sd/t)*(3st^2-3st+1)  
-workers needed (using default scan delay): (10/t)*(3st^2-3st+1)
+workers needed: `(sd/t)*(3st^2-3st+1)`\
+workers needed (using default scan delay): `(10/t)*(3st^2-3st+1)`
