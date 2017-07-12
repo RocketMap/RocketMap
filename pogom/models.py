@@ -501,6 +501,7 @@ class Gym(BaseModel):
                            GymPokemon.cp.alias('pokemon_cp'),
                            GymMember.cp_decayed,
                            GymMember.deployment_time,
+                           GymMember.last_scanned,
                            GymPokemon.pokemon_id,
                            Trainer.name.alias('trainer_name'),
                            Trainer.level.alias('trainer_level'))
@@ -575,6 +576,7 @@ class Gym(BaseModel):
                    .select(GymPokemon.cp.alias('pokemon_cp'),
                            GymMember.cp_decayed,
                            GymMember.deployment_time,
+                           GymMember.last_scanned,
                            GymPokemon.pokemon_id,
                            GymPokemon.pokemon_uid,
                            GymPokemon.move_1,
