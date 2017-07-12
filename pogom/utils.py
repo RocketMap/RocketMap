@@ -17,6 +17,9 @@ import hashlib
 
 from s2sphere import CellId, LatLng
 from geopy.geocoders import GoogleV3
+from requests_futures.sessions import FuturesSession
+from requests.packages.urllib3.util.retry import Retry
+from requests.adapters import HTTPAdapter
 
 from . import config
 
@@ -313,9 +316,20 @@ def get_args():
     parser.add_argument('-pxsc', '--proxy-skip-check',
                         help='Disable checking of proxies before start.',
                         action='store_true', default=False)
-    parser.add_argument('-pxt', '--proxy-timeout',
+    parser.add_argument('-pxt', '--proxy-test-timeout',
                         help='Timeout settings for proxy checker in seconds.',
                         type=int, default=5)
+    parser.add_argument('-pxre', '--proxy-test-retries',
+                        help=('Number of times to retry sending proxy ' +
+                              'test requests on failure.'),
+                        type=int, default=0)
+    parser.add_argument('-pxbf', '--proxy-test-backoff-factor',
+                        help=('Factor (in seconds) by which the delay ' +
+                              'until next retry will increase.'),
+                        type=float, default=0.25)
+    parser.add_argument('-pxc', '--proxy-test-concurrency',
+                        help=('Async requests pool size.'), type=int,
+                        default=0)
     parser.add_argument('-pxd', '--proxy-display',
                         help=('Display info on which proxy being used ' +
                               '(index or full). To be used with -ps.'),
@@ -929,11 +943,11 @@ def generate_device_info(identifier):
 
 def extract_sprites(root_path):
     zip_path = os.path.join(
-           root_path,
-           'static01.zip')
+        root_path,
+        'static01.zip')
     extract_path = os.path.join(
-           root_path,
-           'static')
+        root_path,
+        'static')
     log.debug('Extracting sprites from "%s" to "%s"', zip_path, extract_path)
     zip = zipfile.ZipFile(zip_path, 'r')
     zip.extractall(extract_path)
@@ -998,3 +1012,33 @@ def gmaps_reverse_geolocate(gmaps_key, locale, location):
                       + ' Using default locale.', e)
 
     return player_locale
+
+
+# Get a future_requests FuturesSession that supports asynchronous workers
+# and retrying requests on failure.
+# Setting up a persistent session that is re-used by multiple requests can
+# speed up requests to the same host, as it'll re-use the underlying TCP
+# connection.
+def get_async_requests_session(num_retries, backoff_factor, pool_size,
+                               status_forcelist=[500, 502, 503, 504]):
+    # Use requests & urllib3 to auto-retry.
+    # If the backoff_factor is 0.1, then sleep() will sleep for [0.1s, 0.2s,
+    # 0.4s, ...] between retries. It will also force a retry if the status
+    # code returned is in status_forcelist.
+    session = FuturesSession(max_workers=pool_size)
+
+    # If any regular response is generated, no retry is done. Without using
+    # the status_forcelist, even a response with status 500 will not be
+    # retried.
+    retries = Retry(total=num_retries, backoff_factor=backoff_factor,
+                    status_forcelist=status_forcelist)
+
+    # Mount handler on both HTTP & HTTPS.
+    session.mount('http://', HTTPAdapter(max_retries=retries,
+                                         pool_connections=pool_size,
+                                         pool_maxsize=pool_size))
+    session.mount('https://', HTTPAdapter(max_retries=retries,
+                                          pool_connections=pool_size,
+                                          pool_maxsize=pool_size))
+
+    return session
