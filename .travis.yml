@@ -1,5 +1,9 @@
 sudo: false
 language: python
+cache:
+  pip: true
+  directories:
+    - node_modules
 python:
   - 2.7
 
