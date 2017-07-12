@@ -38,3 +38,30 @@
   -webkit-user-select: none;
   user-select: none;
 }
+
+/// Defines Pokemon sprites
+/// @param {string} $filename The filename of the spritesheet, including file extension, excluding path
+/// @param {number} $icon_size The size of one icon, e.g. 80px
+@mixin pokemon-sprites($filename, $icon_size) {
+  /// These are constant for now
+  $icons_per_row: 28;
+  $total_icons: 493;
+
+  display: inline-block;
+  background: {
+    image: url(../../../#{$filename});
+    size: ($icon_size * $icons_per_row) (ceil($total_icons / $icons_per_row) * $icon_size);
+    repeat: no-repeat;
+  };
+  top: 6px;
+  position: relative;
+  -moz-transform-origin: 0 0;
+  height: $icon_size;
+  width: $icon_size;
+
+  @for $i from 1 through $total_icons {
+    &.n#{$i} {
+      background-position: -#{$icon_size * (($i - 1) % $icons_per_row)} -#{$icon_size * floor(($i - 1) / $icons_per_row)}
+    }
+  }
+}
