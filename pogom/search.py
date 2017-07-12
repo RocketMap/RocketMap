@@ -1215,9 +1215,8 @@ def map_request(api, account, position, no_jitter=False):
         req.get_buddy_walked()
         req.get_inbox(is_history=True)
         response = req.call()
-
-        response = clear_dict_response(response, True)
         parse_new_timestamp_ms(account, response)
+        response = clear_dict_response(response)
         return response
 
     except HashingOfflineException as e:

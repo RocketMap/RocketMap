@@ -1862,10 +1862,6 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
     # Use separate level indicator for our L30 encounters.
     encounter_level = level
 
-    # Helping out the GC.
-    if 'GET_INVENTORY' in map_dict['responses']:
-        del map_dict['responses']['GET_INVENTORY']
-
     for i, cell in enumerate(cells):
         # If we have map responses then use the time from the request
         if i == 0:
