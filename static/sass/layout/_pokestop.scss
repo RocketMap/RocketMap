@@ -1,0 +1,71 @@
+.pokestop {
+  font-size: 14px;
+  font-weight: 900;
+  text-align: center;
+  text-decoration: underline;
+
+  &.lure {
+    color: rgb(249,53,133);
+    margin-bottom: 5px;
+  }
+
+  &.nolure {
+    color: rgb(54,198,255);
+    margin-bottom: 5px;
+  }
+
+  &.navigate {
+    color: rgb(93,109,126);
+    font-size: 11px;
+    font-weight: 500;
+
+    &.navigate:before {
+      content: '\f018';
+      display: inline-block;
+      font-family: FontAwesome;
+      margin: 5px 3px 0px 0px;
+      height: 16px;
+      width: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+  }
+}
+
+.pokestop-expire {
+  color: rgb(249,53,133);
+  font-size: 14px;
+  font-weight: 900;
+  text-align: center;
+
+  &:before {
+    color: rgb(93,109,126);
+    content: '\f017';
+    display: inline-block;
+    font-family: FontAwesome;
+    height: 16px;
+    width: 16px;
+    text-align: center;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+a.pokestop:link {
+  font-size: 11px;
+  font-weight: 500;
+
+  &.lure {
+    color: rgb(249,53,133);
+  }
+
+  &.nolure {
+    color: rgb(54,198,255);
+  }
+}
+
+.pokestop.sprite {
+  display: block;
+  height: 32px;
+  width: 32px;
+  margin-left: auto;
+  margin-right: auto;
+}

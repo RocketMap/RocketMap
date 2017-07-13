@@ -1,0 +1,112 @@
+.gym {
+  color: rgb(93,109,126);
+  font-size: 11px;
+  font-weight: 500;
+
+  &.container {
+    display: grid;
+    justify-content: center;
+  }
+
+  &.member {
+    display: inline-block;
+    margin-left: 1px;
+  }
+
+  &.name {
+    font-size: 14px;
+    font-weight: 900;
+    margin-bottom: 2px;
+    text-decoration: underline;
+  }
+
+  &.sprite {
+    display: block;
+    height: 48px;
+    width: 48px;
+    margin: 10px 0px 10px 0px;
+  }
+
+  &.info {
+
+    &.last-modified:before {
+      content: '\f040';
+      display: inline-block;
+      font-family: FontAwesome;
+      height: 16px;
+      width: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    &.last-scanned:before {
+      content: '\f002';
+      display: inline-block;
+      font-family: FontAwesome;
+      height: 16px;
+      width: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    &.navigate:before {
+      content: '\f018';
+      display: inline-block;
+      font-family: FontAwesome;
+      height: 16px;
+      width: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    &.strength {
+      font-weight: 900;
+      height: 12px;
+      width: 12px;
+      vertical-align: middle;
+    }
+  }
+
+  &.pokemon {
+    font-size: 9px;
+
+    &.motivation {
+
+      &.heart {
+        height: 8px;
+        width: 8px;
+        margin-right: -1px;
+        vertical-align: middle;
+      }
+    }
+  }
+}
+
+.raid {
+  color: rgb(93,109,126);
+  font-size: 11px;
+  font-weight: 900;
+  margin-bottom: 5px;
+
+  &.countdown {
+
+    &:before {
+      content: '\f017';
+      display: inline-block;
+      font-family: FontAwesome;
+      margin: 0px 0px 0px -2px;
+      height: 16px;
+      width: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+  }
+
+  &.encounter {
+    font-weight: 500;
+
+    &.info {
+      font-weight: 900;
+    }
+
+    &.pokemon.name {
+      font-size: 13px;
+    }
+  }
+}

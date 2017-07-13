@@ -559,7 +559,8 @@ class Gym(BaseModel):
                               Gym.latitude,
                               Gym.longitude,
                               Gym.last_modified,
-                              Gym.last_scanned)
+                              Gym.last_scanned,
+                              Gym.total_cp)
                       .join(GymDetails, JOIN.LEFT_OUTER,
                             on=(Gym.gym_id == GymDetails.gym_id))
                       .where(Gym.gym_id == id)

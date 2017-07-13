@@ -1,0 +1,106 @@
+.pokemon.container {
+  display: flex;
+
+  &.content-left {
+    width:64px;
+  }
+
+  &.content-right {
+    float: left;
+  }
+}
+
+.pokemon {
+  color: rgb(93,109,126);
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 3px;
+
+  &.name {
+    font-size: 13px;
+    font-weight: 900;
+
+    &.pokedex {
+      font-size: 12px;
+    }
+  }
+
+  &.encounter {
+    font-weight: 900;
+  }
+
+  &.no-encounter {
+    font-weight: 300;
+  }
+
+  &.gender.rarity {
+    font-size: 11px;
+  }
+
+  &.disappear {
+    font-size: 14px;
+    font-weight: 900;
+    margin: 10px 0px 10px 0px;
+
+    &:before {
+      content: '\f017';
+      display: inline-block;
+      font-family: FontAwesome;
+      height: 16px;
+      width: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+  }
+
+  &.links {
+    color: rgb(93,109,126);
+
+    &.exclude:before {
+      content: '\f056';
+      font-family: FontAwesome;
+      margin-right: 3px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    &.notify:before {
+      content: '\f055';
+      font-family: FontAwesome;
+      margin-right: 3px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    &.remove:before {
+      content: '\f057';
+      font-family: FontAwesome;
+      margin-right: 3px;
+      -webkit-font-smoothing: antialiased;
+    }
+  }
+
+  &.navigate {
+    position: absolute;
+
+    &.navigate:before {
+      content: '\f018';
+      display: inline-block;
+      font-family: FontAwesome;
+      margin: 6px 3px 0px 0px;
+      height: 16px;
+      width: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+  }
+}
+
+.pokemon.sprite {
+  display: block;
+  height: 48px;
+  width: 48px;
+}
+
+.pokemon.elements {
+  height: 16px;
+  width: 16px;
+  margin-right: 5px;
+  vertical-align: middle;
+}

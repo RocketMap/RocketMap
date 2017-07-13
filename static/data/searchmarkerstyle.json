@@ -1,42 +1,90 @@
 {
-  "none": {
-    "name": "Hidden",
-    "icon": "static/marker_icons/transparent.png"
+  "backpack": {
+    "name": "Backpack",
+    "icon": "static/images/markers/backpack.png"
+  },
+  "camera": {
+    "name": "Camera",
+    "icon": "static/images/markers/camera.png"
+  },
+  "compass": {
+    "name": "Compass",
+    "icon": "static/images/markers/compass.png"
   },
   "google": {
     "name": "Default Google Marker",
     "icon": null
   },
-  "red": {
-    "name": "Red",
-    "icon": "static/marker_icons/red.gif"
+  "female": {
+    "name": "Female",
+    "icon": "static/images/markers/female.png"
   },
-  "red_animated": {
-    "name": "Red (Animated)",
-    "icon": "static/marker_icons/red_animated.gif"
+  "fist": {
+    "name": "Fist",
+    "icon": "static/images/markers/fist.png"
   },
-  "blue": {
-    "name": "Blue",
-    "icon": "static/marker_icons/blue.gif"
+  "greatball": {
+    "name": "Great Ball",
+    "icon": "static/images/markers/greatball.png"
   },
-  "blue_animated": {
-    "name": "Blue (Animated)",
-    "icon": "static/marker_icons/blue_animated.gif"
+  "hyperpotion": {
+    "name": "Hyper Potion",
+    "icon": "static/images/markers/hyperpotion.png"
   },
-  "yellow": {
-    "name": "Yellow",
-    "icon": "static/marker_icons/yellow.gif"
+  "none": {
+    "name": "Hidden",
+    "icon": "static/images/markers/transparent.png"
   },
-  "yellow_animated": {
-    "name": "Yellow (Animated)",
-    "icon": "static/marker_icons/yellow_animated.gif"
+  "incense": {
+    "name": "Incense",
+    "icon": "static/images/markers/incense.png"
   },
-  "pokesition": {
-    "name": "Pokesition",
-    "icon": "static/marker_icons/pokesition.png"
+  "incubator": {
+    "name": "Incubator",
+    "icon": "static/images/markers/incubator.png"
+  },
+  "male": {
+    "name": "Male",
+    "icon": "static/images/markers/male.png"
+  },
+  "masterball": {
+    "name": "Master Ball",
+    "icon": "static/images/markers/masterball.png"
+  },
+  "mobile": {
+    "name": "Mobile",
+    "icon": "static/images/markers/mobile.png"
   },
   "pokeball": {
     "name": "Pokeball",
-    "icon": "static/marker_icons/pokeball.gif"
+    "icon": "static/images/markers/pokeball.png"
+  },
+  "pokedex": {
+    "name": "Pokedex",
+    "icon": "static/images/markers/pokedex.png"
+  },
+  "pokesition": {
+    "name": "Pokesition",
+    "icon": "static/images/markers/pokesition.png"
+  },
+  "potion": {
+    "name": "Potion",
+    "icon": "static/images/markers/potion.png"
+  },
+  "raspberry": {
+    "name": "Raspberry",
+    "icon": "static/images/markers/raspberry.png"
+  },
+  "stardust": {
+    "name": "Stardust",
+    "icon": "static/images/markers/stardust.png"
+  },
+  "superpotion": {
+    "name": "Super Potion",
+    "icon": "static/images/markers/superpotion.png"
+  },
+  "ultraball": {
+    "name": "Ultra Ball",
+    "icon": "static/images/markers/ultraball.png"
   }
 }

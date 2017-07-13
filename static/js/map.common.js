@@ -963,15 +963,11 @@ var StoreOptions = {
         type: StoreTypes.Number
     },
     'searchMarkerStyle': {
-        default: 'google',
+        default: 'pokesition',
         type: StoreTypes.String
     },
     'locationMarkerStyle': {
-        default: 'none',
-        type: StoreTypes.String
-    },
-    'gymMarkerStyle': {
-        default: 'shield',
+        default: 'mobile',
         type: StoreTypes.String
     },
     'zoomLevel': {

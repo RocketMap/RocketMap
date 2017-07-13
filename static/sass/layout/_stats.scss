@@ -21,7 +21,7 @@
     z-index: 500;
     h3 {
       font-size: 18px;
-      font-family: 'Muli', sans-serif;
+      font-family: 'Open Sans', sans-serif;
       color: darken(_palette(accent2, bg), 12);
     }
     p {
@@ -126,7 +126,7 @@
     .stats-label-container h1 {
       margin: 0.25em;
       font-size: 1.2em;
-      font-family: 'Muli', sans-serif;
+      font-family: 'Open Sans', sans-serif;
     }
 
     // Styling for statistics dataTable
@@ -138,11 +138,22 @@
     table.dataTable.display tbody tr td img
     {
       vertical-align: middle;
-      padding: 0px 10px;
     }
     table.dataTable.display tbody tr td:nth-child(3)
     {
       text-align: center;
+    }
+
+    .pokemonListString {
+      width: 30px;
+    }
+
+    .arenaListString {
+      width: 48px;
+    }
+
+    .pokestopListString {
+      width: 32px;
     }
 
   }
