@@ -394,6 +394,8 @@ class Pogom(Flask):
         args = get_args()
         if args.fixed_location:
             return 'Location changes are turned off', 403
+        lat = None
+        lon = None
         # Part of query string.
         if request.args:
             lat = request.args.get('lat', type=float)
