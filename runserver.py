@@ -349,7 +349,7 @@ def main():
         # args.proxy with new working list).
         args.proxy = load_proxies(args)
 
-        if not args.proxy_skip_check:
+        if args.proxy and not args.proxy_skip_check:
             args.proxy = check_proxies(args, args.proxy)
 
         # Run periodical proxy refresh thread.

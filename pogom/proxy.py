@@ -144,8 +144,11 @@ def load_proxies(args):
             log.error('Proxy file was configured but ' +
                       'no proxies were loaded. Aborting.')
             sys.exit(1)
-    else:
-        proxies = args.proxy
+    elif args.proxy:
+        if isinstance(args.proxy, list):
+            proxies = args.proxy
+        else:
+            proxies.append(args.proxy)
 
     # No proxies - no cookies.
     if (proxies is None) or (len(proxies) == 0):
@@ -167,6 +170,12 @@ def check_proxies(args, proxies):
 
     if args.proxy_test_concurrency == 0:
         proxy_concurrency = total_proxies
+
+    if proxy_concurrency >= 100:
+        log.warning(
+            "Starting proxy test for %d proxies with %d concurrency. If this" +
+            " concurrency level breaks the map for you, consider lowering it.",
+            total_proxies, proxy_concurrency)
 
     # Get persistent session per host.
     # TODO: Rework API request wrapper so requests are retried, then increase
