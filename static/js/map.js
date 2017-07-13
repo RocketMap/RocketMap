@@ -423,6 +423,7 @@ function pokemonLabel(item) {
     var rarityDisplay = item['pokemon_rarity'] ? '(' + item['pokemon_rarity'] + ')' : ''
     var types = item['pokemon_types']
     var typesDisplay = ''
+    var encounterId = item['encounter_id']
     var id = item['pokemon_id']
     var latitude = item['latitude']
     var longitude = item['longitude']
@@ -472,7 +473,7 @@ function pokemonLabel(item) {
                 <span class='pokemon'>Level: </span><span class='pokemon'>${pokemonLevel}</span>
                 <span class='pokemon links exclude'><a href='javascript:excludePokemon(${id})'>Exclude</a></span>
                 <span class='pokemon links notify'><a href='javascript:notifyAboutPokemon(${id})'>Notify</a></span>
-                <span class='pokemon links remove'><a href='javascript:notifyAboutPokemon(${id})'>Remove</a></span>
+                <span class='pokemon links remove'><a href='javascript:removePokemonMarker("${encounterId}")'>Remove</a></span>
               </div>
           </div>
           <div class='pokemon container content-right'>
@@ -504,7 +505,7 @@ function pokemonLabel(item) {
             <span class='pokemon'>Level: </span><span class='pokemon no-encounter'>n/a</span>
             <span class='pokemon links exclude'><a href='javascript:excludePokemon(${id})'>Exclude</a></span>
             <span class='pokemon links notify'><a href='javascript:notifyAboutPokemon(${id})'>Notify</a></span>
-            <span class='pokemon links remove'><a href='javascript:notifyAboutPokemon(${id})'>Remove</a></span>
+            <span class='pokemon links remove'><a href='javascript:removePokemonMarker("${encounterId}")'>Remove</a></span>
           </div>
       </div>
       <div class='pokemon container content-right'>
