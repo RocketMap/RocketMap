@@ -11,7 +11,7 @@ from pgoapi import PGoApi
 from pgoapi.exceptions import AuthException
 
 from .fakePogoApi import FakePogoApi
-from .utils import in_radius, generate_device_info, equi_rect_distance
+from .utils import (in_radius, generate_device_info, equi_rect_distance)
 from .proxy import get_new_proxy
 
 log = logging.getLogger(__name__)
@@ -120,7 +120,7 @@ def rpc_login_sequence(args, api, account):
 
     try:
         request = api.create_request()
-        request.call()
+        request.call(False)
 
         total_req += 1
         time.sleep(random.uniform(.43, .97))
@@ -139,7 +139,7 @@ def rpc_login_sequence(args, api, account):
     try:
         req = api.create_request()
         req.get_player(player_locale=args.player_locale)
-        req.call()
+        req.call(False)
 
         total_req += 1
         time.sleep(random.uniform(.53, 1.1))
@@ -165,7 +165,7 @@ def rpc_login_sequence(args, api, account):
         request.get_inventory(last_timestamp_ms=0)
         request.check_awarded_badges()
         request.download_settings()
-        response = request.call()
+        response = request.call(False)
 
         parse_download_settings(account, response)
         parse_new_timestamp_ms(account, response)
@@ -206,7 +206,7 @@ def rpc_login_sequence(args, api, account):
             request.check_awarded_badges()
             request.download_settings(hash=account[
                 'remote_config']['hash'])
-            response = request.call()
+            response = request.call(False)
 
             parse_new_timestamp_ms(account, response)
 
@@ -226,9 +226,9 @@ def rpc_login_sequence(args, api, account):
             except KeyError:
                 break
 
-            result = response.get('result', 0)
-            page_offset = response.get('page_offset', 0)
-            page_timestamp = response.get('timestamp_ms', 0)
+            result = response.result
+            page_offset = response.page_offset
+            page_timestamp = response.timestamp_ms
             log.debug('Completed %d requests to get asset digest.',
                       req_count)
 
@@ -255,7 +255,7 @@ def rpc_login_sequence(args, api, account):
             request.check_awarded_badges()
             request.download_settings(
                 hash=account['remote_config']['hash'])
-            response = request.call()
+            response = request.call(False)
 
             parse_new_timestamp_ms(account, response)
 
@@ -275,9 +275,9 @@ def rpc_login_sequence(args, api, account):
             except KeyError:
                 break
 
-            result = response.get('result', 0)
-            page_offset = response.get('page_offset', 0)
-            page_timestamp = response.get('timestamp_ms', 0)
+            result = response.result
+            page_offset = response.page_offset
+            page_timestamp = response.timestamp_ms
             log.debug('Completed %d requests to download'
                       + ' item templates.', req_count)
 
@@ -293,7 +293,7 @@ def rpc_login_sequence(args, api, account):
         request.check_awarded_badges()
         request.download_settings(hash=account['remote_config']['hash'])
         request.get_buddy_walked()
-        response = request.call()
+        response = request.call(False)
 
         parse_new_timestamp_ms(account, response)
 
@@ -335,7 +335,7 @@ def rpc_login_sequence(args, api, account):
         request.download_settings(hash=account['remote_config']['hash'])
         request.get_buddy_walked()
         request.get_inbox(is_history=True)
-        response = request.call()
+        response = request.call(False)
 
         parse_new_timestamp_ms(account, response)
 
@@ -363,11 +363,10 @@ def get_tutorial_state(args, api, account):
     request = api.create_request()
     request.get_player(
         player_locale=args.player_locale)
-    response = request.call().get('responses', {})
-
-    get_player = response.get('GET_PLAYER', {})
-    tutorial_state = get_player.get(
-        'player_data', {}).get('tutorial_state', [])
+    response = request.call(False).get('responses', {})
+    if 'GET_PLAYER' not in response:
+        return []
+    tutorial_state = response['GET_PLAYER'].player_data.tutorial_state
     time.sleep(random.uniform(2, 4))
     return tutorial_state
 
@@ -381,7 +380,7 @@ def complete_tutorial(args, api, account, tutorial_state):
         request = api.create_request()
         request.mark_tutorial_complete(tutorials_completed=0)
         log.debug('Sending 0 tutorials_completed for %s.', account['username'])
-        request.call()
+        request.call(False)
 
     if 1 not in tutorial_state:
         time.sleep(random.uniform(5, 12))
@@ -397,20 +396,20 @@ def complete_tutorial(args, api, account, tutorial_state):
         })
         log.debug('Sending set random player character request for %s.',
                   account['username'])
-        request.call()
+        request.call(False)
 
         time.sleep(random.uniform(0.3, 0.5))
 
         request = api.create_request()
         request.mark_tutorial_complete(tutorials_completed=1)
         log.debug('Sending 1 tutorials_completed for %s.', account['username'])
-        request.call()
+        request.call(False)
 
     time.sleep(random.uniform(0.5, 0.6))
     request = api.create_request()
     request.get_player_profile()
     log.debug('Fetching player profile for %s...', account['username'])
-    request.call()
+    request.call(False)
 
     starter_id = None
     if 3 not in tutorial_state:
@@ -421,64 +420,63 @@ def complete_tutorial(args, api, account, tutorial_state):
             'aa8f7687-a022-4773-b900-3a8c170e9aea/1477084794890000',
             'e89109b0-9a54-40fe-8431-12f7826c8194/1477084802881000'])
         log.debug('Grabbing some game assets.')
-        request.call()
+        request.call(False)
 
         time.sleep(random.uniform(1, 1.6))
         request = api.create_request()
-        request.call()
+        request.call(False)
 
         time.sleep(random.uniform(6, 13))
         request = api.create_request()
         starter = random.choice((1, 4, 7))
         request.encounter_tutorial_complete(pokemon_id=starter)
         log.debug('Catching the starter for %s.', account['username'])
-        request.call()
+        request.call(False)
 
         time.sleep(random.uniform(0.5, 0.6))
         request = api.create_request()
-        request.get_player(
-            player_locale=args.player_locale)
-        responses = request.call().get('responses', {})
+        request.get_player(player_locale=args.player_locale)
+        responses = request.call(False).get('responses', {})
 
-        inventory = responses.get('GET_INVENTORY', {}).get(
-            'inventory_delta', {}).get('inventory_items', [])
-        for item in inventory:
-            pokemon = item.get('inventory_item_data', {}).get('pokemon_data')
-            if pokemon:
-                starter_id = pokemon.get('id')
+        if 'GET_INVENTORY' in responses:
+            for item in (responses['GET_INVENTORY'].inventory_delta
+                         .inventory_items):
+                pokemon = item.inventory_item_data.pokemon_data
+                if pokemon:
+                    starter_id = pokemon.id
 
     if 4 not in tutorial_state:
         time.sleep(random.uniform(5, 12))
         request = api.create_request()
         request.claim_codename(codename=account['username'])
         log.debug('Claiming codename for %s.', account['username'])
-        request.call()
+        request.call(False)
 
         time.sleep(random.uniform(1, 1.3))
         request = api.create_request()
         request.mark_tutorial_complete(tutorials_completed=4)
         log.debug('Sending 4 tutorials_completed for %s.', account['username'])
-        request.call()
+        request.call(False)
 
         time.sleep(0.1)
         request = api.create_request()
         request.get_player(
             player_locale=args.player_locale)
-        request.call()
+        request.call(False)
 
     if 7 not in tutorial_state:
         time.sleep(random.uniform(4, 10))
         request = api.create_request()
         request.mark_tutorial_complete(tutorials_completed=7)
         log.debug('Sending 7 tutorials_completed for %s.', account['username'])
-        request.call()
+        request.call(False)
 
     if starter_id:
         time.sleep(random.uniform(3, 5))
         request = api.create_request()
         request.set_buddy_pokemon(pokemon_id=starter_id)
         log.debug('Setting buddy pokemon for %s.', account['username'])
-        request.call()
+        request.call(False)
         time.sleep(random.uniform(0.8, 1.8))
 
     # Sleeping before we start scanning to avoid Niantic throttling.
@@ -502,7 +500,7 @@ def tutorial_pokestop_spin(api, player_level, forts, step_location, account):
             'Spinning Pokestop for account %s.',
             account['username'])
         for fort in forts:
-            if fort.get('type') == 1:
+            if fort.type == 1:
                 if spin_pokestop(api, account, fort, step_location):
                     log.debug(
                         'Account %s successfully spun a Pokestop ' +
@@ -514,26 +512,20 @@ def tutorial_pokestop_spin(api, player_level, forts, step_location, account):
 
 
 def get_player_level(map_dict):
-    inventory_items = map_dict['responses'].get(
-        'GET_INVENTORY', {}).get(
-        'inventory_delta', {}).get(
-        'inventory_items', [])
-    player_stats = [item['inventory_item_data']['player_stats']
-                    for item in inventory_items
-                    if 'player_stats' in item.get(
-                    'inventory_item_data', {})]
-    if len(player_stats) > 0:
-        player_level = player_stats[0].get('level', 1)
-        return player_level
+    if 'responses' in map_dict and 'GET_INVENTORY' in map_dict['responses']:
+        for item in (map_dict['responses']['GET_INVENTORY'].inventory_delta
+                     .inventory_items):
+            if item.inventory_item_data.HasField("player_stats"):
+                return item.inventory_item_data.player_stats.level
 
     return 0
 
 
 def spin_pokestop(api, account, fort, step_location):
     spinning_radius = 0.04
-    if in_radius((fort['latitude'], fort['longitude']), step_location,
+    if in_radius((fort.latitude, fort.longitude), step_location,
                  spinning_radius):
-        log.debug('Attempt to spin Pokestop (ID %s)', fort['id'])
+        log.debug('Attempt to spin Pokestop (ID %s).', fort.id)
 
         time.sleep(random.uniform(0.8, 1.8))
         fort_details_request(api, account, fort)
@@ -542,13 +534,12 @@ def spin_pokestop(api, account, fort, step_location):
         time.sleep(random.uniform(2, 4))  # Don't let Niantic throttle.
 
         # Check for reCaptcha
-        captcha_url = response['responses'][
-            'CHECK_CHALLENGE']['challenge_url']
+        captcha_url = response['responses']['CHECK_CHALLENGE'].challenge_url
         if len(captcha_url) > 1:
             log.debug('Account encountered a reCaptcha.')
             return False
 
-        spin_result = response['responses']['FORT_SEARCH']['result']
+        spin_result = response['responses']['FORT_SEARCH'].result
         if spin_result is 1:
             log.debug('Successful Pokestop spin.')
             return True
@@ -572,9 +563,9 @@ def spin_pokestop_request(api, account, fort, step_location):
     try:
         req = api.create_request()
         req.fort_search(
-            fort_id=fort['id'],
-            fort_latitude=fort['latitude'],
-            fort_longitude=fort['longitude'],
+            fort_id=fort.id,
+            fort_latitude=fort.latitude,
+            fort_longitude=fort.longitude,
             player_latitude=step_location[0],
             player_longitude=step_location[1])
         req.check_challenge()
@@ -583,7 +574,7 @@ def spin_pokestop_request(api, account, fort, step_location):
         req.check_awarded_badges()
         req.get_buddy_walked()
         req.get_inbox(is_history=True)
-        response = req.call()
+        response = req.call(False)
         parse_new_timestamp_ms(account, response)
         return response
 
@@ -605,7 +596,7 @@ def fort_details_request(api, account, fort):
         req.check_awarded_badges()
         req.get_buddy_walked()
         req.get_inbox(is_history=True)
-        response = req.call()
+        response = req.call(False)
         parse_new_timestamp_ms(account, response)
         return response
     except Exception as e:
@@ -629,7 +620,7 @@ def encounter_pokemon_request(api, account, encounter_id, spawnpoint_id,
         req.check_awarded_badges()
         req.get_buddy_walked()
         req.get_inbox(is_history=True)
-        response = req.call()
+        response = req.call(False)
         parse_new_timestamp_ms(account, response)
         return response
     except Exception as e:
@@ -639,16 +630,14 @@ def encounter_pokemon_request(api, account, encounter_id, spawnpoint_id,
 
 def parse_download_settings(account, api_response):
     if 'DOWNLOAD_REMOTE_CONFIG_VERSION' in api_response['responses']:
-        remote_config = (api_response['responses']
-                         .get('DOWNLOAD_REMOTE_CONFIG_VERSION', 0))
-        if 'asset_digest_timestamp_ms' in remote_config:
-            asset_time = remote_config['asset_digest_timestamp_ms'] / 1000000
-        if 'item_templates_timestamp_ms' in remote_config:
-            template_time = remote_config['item_templates_timestamp_ms'] / 1000
+        remote_config = (
+            api_response['responses']['DOWNLOAD_REMOTE_CONFIG_VERSION'])
+        asset_time = remote_config.asset_digest_timestamp_ms / 1000000
+        template_time = remote_config.item_templates_timestamp_ms / 1000
 
         download_settings = {}
-        download_settings['hash'] = api_response[
-            'responses']['DOWNLOAD_SETTINGS']['hash']
+        download_settings['hash'] = api_response['responses'][
+            'DOWNLOAD_SETTINGS'].hash
         download_settings['asset_time'] = asset_time
         download_settings['template_time'] = template_time
 
@@ -663,10 +652,8 @@ def parse_download_settings(account, api_response):
 # Parse new timestamp from the GET_INVENTORY response.
 def parse_new_timestamp_ms(account, api_response):
     if 'GET_INVENTORY' in api_response['responses']:
-        account['last_timestamp_ms'] = (api_response['responses']
-                                                    ['GET_INVENTORY']
-                                                    ['inventory_delta']
-                                        .get('new_timestamp_ms', 0))
+        account['last_timestamp_ms'] = (api_response['responses'][
+            'GET_INVENTORY'].inventory_delta.new_timestamp_ms)
 
         player_level = get_player_level(api_response)
         if player_level:

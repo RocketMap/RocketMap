@@ -179,8 +179,12 @@ def captcha_solver_thread(args, account_queue, account_captchas, hash_key,
 def handle_captcha(args, status, api, account, account_failures,
                    account_captchas, whq, response_dict, step_location):
     try:
-        captcha_url = response_dict['responses'][
-            'CHECK_CHALLENGE']['challenge_url']
+        if 'CHECK_CHALLENGE' not in response_dict['responses']:
+            return None
+
+        challenge = response_dict['responses']['CHECK_CHALLENGE']
+        captcha_url = challenge.challenge_url
+
         if len(captcha_url) > 1:
             status['captcha'] += 1
             if not args.captcha_solving:

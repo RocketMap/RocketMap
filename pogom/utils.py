@@ -955,8 +955,7 @@ def extract_sprites(root_path):
 
 
 def clear_dict_response(response):
-    if 'platform_returns' in response:
-        del response['platform_returns']
+    del response['envelope'].platform_returns[:]
     if 'responses' not in response:
         return response
     responses = [
