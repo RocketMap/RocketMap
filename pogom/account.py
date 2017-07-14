@@ -598,9 +598,9 @@ def fort_details_request(api, account, fort):
     try:
         req = api.create_request()
         req.fort_details(
-            fort_id=fort['id'],
-            latitude=fort['latitude'],
-            longitude=fort['longitude'])
+            fort_id=fort.id,
+            latitude=fort.latitude,
+            longitude=fort.longitude)
         req.check_challenge()
         req.get_hatched_eggs()
         req.get_inventory(last_timestamp_ms=account['last_timestamp_ms'])
