@@ -96,9 +96,8 @@ def switch_status_printer(display_type, current_page, mainlog,
 
 
 # Thread to print out the status of each worker.
-def status_printer(threadStatus, search_items_queue_array, db_updates_queue,
-                   wh_queue, account_queue, account_failures, account_captchas,
-                   logmode, hash_key, key_scheduler):
+def status_printer(threadStatus, account_failures, logmode, hash_key,
+                   key_scheduler):
 
     if (logmode == 'logs'):
         display_type = ['logs']
@@ -139,20 +138,6 @@ def status_printer(threadStatus, search_items_queue_array, db_updates_queue,
             # divide by zero.
             if usable_height < 1:
                 usable_height = 1
-
-            # Print the queue length.
-            search_items_queue_size = 0
-            for i in range(0, len(search_items_queue_array)):
-                search_items_queue_size += search_items_queue_array[i].qsize()
-
-            skip_total = threadStatus['Overseer']['skip_total']
-            status_text.append((
-                'Queues: {} search items, {} db updates, {} webhook.  ' +
-                'Total skipped items: {}. Spare accounts available: {}. ' +
-                'Accounts on hold: {}. Accounts with captcha: {}').format(
-                    search_items_queue_size, db_updates_queue.qsize(),
-                    wh_queue.qsize(), skip_total, account_queue.qsize(),
-                    len(account_failures), len(account_captchas)))
 
             # Print status of overseer.
             status_text.append('{} Overseer: {}'.format(
@@ -401,15 +386,13 @@ def search_overseer_thread(args, new_location_queue, control_flags, heartb,
         key_scheduler = schedulers.KeyScheduler(args.hash_key,
                                                 db_updates_queue)
 
-    if(args.print_status):
+    if (args.print_status):
         log.info('Starting status printer thread...')
-        t = Thread(target=status_printer,
-                   name='status_printer',
-                   args=(threadStatus, search_items_queue_array,
-                         db_updates_queue, wh_queue, account_queue,
-                         account_failures, account_captchas,
-                         args.print_status, args.hash_key,
-                         key_scheduler))
+        t = Thread(
+            target=status_printer,
+            name='status_printer',
+            args=(threadStatus, account_failures, args.print_status,
+                  args.hash_key, key_scheduler))
         t.daemon = True
         t.start()
 
@@ -568,14 +551,15 @@ def search_overseer_thread(args, new_location_queue, control_flags, heartb,
             traceback.print_exc(file=sys.stdout)
             time.sleep(10)
         threadStatus['Overseer']['message'] += '\n' + get_stats_message(
-            threadStatus)
+            threadStatus, search_items_queue_array, db_updates_queue, wh_queue,
+            account_queue, account_failures, account_captchas)
 
         # If enabled, display statistics information into logs on a
         # periodic basis.
         if args.stats_log_timer:
             stats_timer += 1
             if stats_timer == args.stats_log_timer:
-                log.info(get_stats_message(threadStatus))
+                log.info(threadStatus['Overseer']['message'])
                 stats_timer = 0
 
         # Update Overseer statistics
@@ -623,7 +607,9 @@ def wh_status_update(args, status, wh_queue, scheduler):
             status['scheduler_status']['tth_found'] = tth_found
 
 
-def get_stats_message(threadStatus):
+def get_stats_message(threadStatus, search_items_queue_array, db_updates_queue,
+                      wh_queue, account_queue, account_failures,
+                      account_captchas):
     overseer = threadStatus['Overseer']
     starttime = overseer['starttime']
     elapsed = now() - starttime
@@ -640,18 +626,29 @@ def get_stats_message(threadStatus):
     cph = overseer['captcha_total'] * 3600.0 / elapsed
     ccost = cph * 0.00299
     cmonth = ccost * 730
+    # Print the queue length.
+    search_items_queue_size = 0
+    for i in range(0, len(search_items_queue_array)):
+        search_items_queue_size += search_items_queue_array[i].qsize()
 
-    message = ('Total active: {}  |  Success: {} ({:.1f}/hr) | ' +
-               'Fails: {} ({:.1f}/hr) | Empties: {} ({:.1f}/hr) | ' +
-               'Skips {} ({:.1f}/hr) | ' +
-               'Captchas: {} ({:.1f}/hr)|${:.5f}/hr|${:.3f}/mo').format(
-                   overseer['active_accounts'],
-                   overseer['success_total'], sph,
-                   overseer['fail_total'], fph,
-                   overseer['empty_total'], eph,
-                   overseer['skip_total'], skph,
-                   overseer['captcha_total'], cph,
-                   ccost, cmonth)
+    message = (
+        'Queues: {} search items, {} db updates, {} webhook.  ' +
+        'Spare accounts available: {}. Accounts on hold: {}. ' +
+        'Accounts with captcha: {}\n'
+    ).format(search_items_queue_size,
+             db_updates_queue.qsize(),
+             wh_queue.qsize(),
+             account_queue.qsize(),
+             len(account_failures), len(account_captchas))
+
+    message += (
+        'Total active: {}  |  Success: {} ({:.1f}/hr) | ' +
+        'Fails: {} ({:.1f}/hr) | Empties: {} ({:.1f}/hr) | ' +
+        'Skips {} ({:.1f}/hr) | Captchas: {} ({:.1f}/hr)|${:.5f}/hr|${:.3f}/mo'
+    ).format(overseer['active_accounts'], overseer['success_total'], sph,
+             overseer['fail_total'], fph, overseer['empty_total'], eph,
+             overseer['skip_total'], skph, overseer['captcha_total'], cph,
+             ccost, cmonth)
 
     return message
 
