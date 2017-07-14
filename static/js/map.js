@@ -2244,6 +2244,7 @@ $(function () {
 })
 
 $(function () {
+    moment.locale(language)
     function formatState(state) {
         if (!state.id) {
             return state.text
