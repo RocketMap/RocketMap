@@ -1105,8 +1105,8 @@ function getColorBySpawnTime(value) {
 
     var diff = (seconds - value)
     var hue = 275 // light purple when spawn is neither about to spawn nor active
-    if (diff >= 0 && diff <= 900) { // green to red over 15 minutes of active spawn
-        hue = (1 - (diff / 60 / 15)) * 120
+    if (diff >= 0 && diff <= 1800) { // green to red over 30 minutes of active spawn
+        hue = (1 - (diff / 60 / 30)) * 120
     } else if (diff < 0 && diff > -300) { // light blue to dark blue over 5 minutes til spawn
         hue = ((1 - (-diff / 60 / 5)) * 50) + 200
     }
@@ -1155,7 +1155,7 @@ function spawnPointIndex(color) {
 
 function setupSpawnpointMarker(item) {
     var circleCenter = new google.maps.LatLng(item['latitude'], item['longitude'])
-    var hue = getColorBySpawnTime(item.time)
+    var hue = getColorBySpawnTime(item.appear_time)
     var zoom = map.getZoom()
 
     var marker = new google.maps.Marker({
@@ -1579,7 +1579,7 @@ function updateSpawnPoints() {
 
     $.each(mapData.spawnpoints, function (key, value) {
         if (map.getBounds().contains(value.marker.getPosition())) {
-            var hue = getColorBySpawnTime(value['time'])
+            var hue = getColorBySpawnTime(value['appear_time'])
             value.marker.setIcon(changeSpawnIcon(hue, zoom))
             value.marker.setZIndex(spawnPointIndex(hue))
         }
