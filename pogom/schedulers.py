@@ -64,6 +64,7 @@ from .models import (hex_bounds, SpawnPoint, ScannedLocation,
                      ScanSpawnPoint, HashKeys)
 from .utils import now, cur_sec, cellid, equi_rect_distance
 from .altitude import get_altitude
+from .geofence import Geofences
 
 log = logging.getLogger(__name__)
 
@@ -76,6 +77,7 @@ class BaseScheduler(object):
     def __init__(self, queues, status, args):
         self.queues = queues
         self.status = status
+        self.geofences = Geofences()
         self.args = args
         self.scan_location = False
         self.ready = False
@@ -271,6 +273,14 @@ class HexSearch(BaseScheduler):
             else:
                 results = results[-7:] + results[:-7]
 
+        # Geofence results.
+        if self.geofences.is_enabled():
+            results = self.geofences.get_geofenced_coordinates(results)
+            if not results:
+                log.error('No cells regarded as valid for desired scan area. '
+                          'Check your provided geofences. Aborting.')
+                sys.exit()
+
         # Add the required appear and disappear times.
         locationsZeroed = []
         for step, location in enumerate(results, 1):
@@ -367,6 +377,15 @@ class SpawnScan(BaseScheduler):
             log.debug('Loading spawn points from database')
             self.locations = SpawnPoint.get_spawnpoints_in_hex(
                 self.scan_location, self.args.step_limit)
+
+        # Geofence spawnpoints.
+        if self.geofences.is_enabled():
+            self.locations = self.geofences.get_geofenced_coordinates(
+                self.locations)
+            if not self.locations:
+                log.error('No cells regarded as valid for desired scan area. '
+                          'Check your provided geofences. Aborting.')
+                sys.exit()
 
         # Well shit...
         # if not self.locations:
@@ -573,6 +592,14 @@ class SpeedScan(HexSearch):
                     # current ring
                     loc = get_new_coords(star_loc, xdist * (j), 210 + 60 * i)
                     results.append((loc[0], loc[1], 0))
+
+        # Geofence results.
+        if self.geofences.is_enabled():
+            results = self.geofences.get_geofenced_coordinates(results)
+            if not results:
+                log.error('No cells regarded as valid for desired scan area. '
+                          'Check your provided geofences. Aborting.')
+                sys.exit()
 
         generated_locations = []
         for step, location in enumerate(results):

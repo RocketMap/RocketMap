@@ -25,3 +25,4 @@ requests-futures==0.9.7
 PySocks==1.5.6
 git+https://github.com/maddhatter/Flask-CacheBust.git@38d940cc4f18b5fcb5687746294e0360640a107e#egg=flask_cachebust
 cachetools==2.0.0
+matplotlib>=2.0.2

@@ -61,6 +61,14 @@
 #dump-spawnpoints               # Dump the spawnpoints from the db to json (only for use with -ss).
 
 
+# Geofence settings
+###################
+
+#geofence-file:                 # Geofence file to define outer borders of the scan area.
+#geofence-excluded-file:        # File to define forbidden areas inside scan area. Regarded this as inverted geofence. Can be combined with geofence-file.
+#no-matplotlib                  # Prevents the usage of matplotlib when running on incompatible hardware. (default=False)
+
+
 # Search settings
 #################
 
@@ -135,7 +143,6 @@
 #proxy-file:                    # Load proxy list from text file (one proxy per line), overrides #proxy.
 #proxy-refresh:                 # Period of proxy file reloading, in seconds. Works only with proxy-file. (default=0, 0 to disable)
 #proxy-rotation:                # Enable proxy rotation with account changing for search threads (none/round/random). (default='none')
-
 
 
 # Webhook settings

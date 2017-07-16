@@ -21,7 +21,6 @@ from pogom.app import Pogom
 from pogom.utils import get_args, now, extract_sprites, gmaps_reverse_geolocate
 from pogom.altitude import get_gmaps_altitude
 
-from pogom.search import search_overseer_thread
 from pogom.models import (init_database, create_tables, drop_tables,
                           PlayerLocale, SpawnPoint, db_updater, clean_db_loop,
                           verify_table_encoding, verify_database_schema)
@@ -59,6 +58,9 @@ stderr_hdlr.setLevel(logging.WARNING)
 log = logging.getLogger()
 log.addHandler(stdout_hdlr)
 log.addHandler(stderr_hdlr)
+
+# This needs to be after logging to be able to log geofences import errors.
+from pogom.search import search_overseer_thread  # noqa
 
 # Assert pgoapi is installed.
 try:

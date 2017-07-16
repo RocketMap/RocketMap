@@ -1,0 +1,9 @@
+[ExcludedArea1]
+lat11, lng11
+lat12, lng12
+...
+
+[ExcludedArea2]
+lat21, lng21
+lat22, lng22
+...
