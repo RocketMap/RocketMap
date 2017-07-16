@@ -31,9 +31,8 @@
       {% if show.custom_css %}
     <link rel="stylesheet" type="text/css" href="static/css/custom.css">
       {% endif %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/skel/3.0.1/skel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.0/jquery-ui.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 </head>
 <body class="statusPage">
 <!-- Header -->
@@ -86,6 +85,6 @@
 </div>
 <script src="{{ url_for('static', filename='dist/js/status.min.js').lstrip('/') }}"></script>
 <script src="{{ url_for('static', filename='dist/js/app.min.js').lstrip('/') }}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment-with-locales.min.js"></script>
 </body>
 </html>

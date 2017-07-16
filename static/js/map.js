@@ -42,7 +42,6 @@ var locationMarker
 var rangeMarkers = ['pokemon', 'pokestop', 'gym']
 var searchMarker
 var storeZoom = true
-var scanPath
 var moves
 
 var oSwLat
@@ -1599,7 +1598,6 @@ function updateMap() {
         showInBoundsMarkers(mapData.pokestops, 'pokestop')
         showInBoundsMarkers(mapData.scanned, 'scanned')
         showInBoundsMarkers(mapData.spawnpoints, 'inbound')
-        //      drawScanPath(result.scanned);
         clearStaleMarkers()
 
         updateScanned()
@@ -1629,27 +1627,6 @@ function updateMap() {
         }
         timestamp = result.timestamp
         lastUpdateTime = Date.now()
-    })
-}
-
-function drawScanPath(points) { // eslint-disable-line no-unused-vars
-    var scanPathPoints = []
-    $.each(points, function (idx, point) {
-        scanPathPoints.push({
-            lat: point['latitude'],
-            lng: point['longitude']
-        })
-    })
-    if (scanPath) {
-        scanPath.setMap(null)
-    }
-    scanPath = new google.maps.Polyline({
-        path: scanPathPoints,
-        geodesic: true,
-        strokeColor: '#FF0000',
-        strokeOpacity: 1.0,
-        strokeWeight: 2,
-        map: map
     })
 }
 

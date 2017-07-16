@@ -22,7 +22,13 @@ module.exports = function(grunt) {
     babel: {
       options: {
         sourceMap: true,
-        presets: ['es2015']
+        presets: [
+          ["env", {
+            "targets": {
+              "browsers": [">0.5%"]
+            }
+          }]
+        ]
       },
       dist: {
         files: {
