@@ -611,7 +611,7 @@ function gymLabel(gym, includeMembers = true) {
                 `
             }
         } else {
-            image = `<img class='gym sprite' src='static/images/raid/${gymTypes[gym.team_id]}_${getGymLevel(gym)}_${raid.level}.png'>`
+            image = `<img class='gym sprite' src='static/images/gym/${gymTypes[gym.team_id]}_${getGymLevel(gym)}_${raid.level}.png'>`
         }
 
         if (isUpcomingRaid) {
@@ -680,8 +680,8 @@ function gymLabel(gym, includeMembers = true) {
                   <div>
                     <span class='gym pokemon'>${member.pokemon_name}</span>
                   </div>
-                  <div class='gym pokemon motivation'>
-                    <img class='gym pokemon motivation heart' src='static/images/gym/Heart.png'> ${member.cp_decayed}
+                  <div>
+                    <img class='gym pokemon motivation heart' src='static/images/gym/Heart.png'> <span class='gym pokemon motivation'>${member.cp_decayed}</span>
                   </div>
                 </div>
               </center>
@@ -1013,18 +1013,18 @@ function updateGymMarker(item, marker) {
     if (item.raid !== null && item.raid.end > Date.now() && item.raid.pokemon_id !== null) {
         marker.setIcon({
             url: 'static/images/raid/' + item.raid.pokemon_id + '.png',
-            scaledSize: new google.maps.Size(36, 36)
+            scaledSize: new google.maps.Size(48, 48)
         })
         marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1)
     } else if (item.raid !== null && item.raid.end > Date.now()) {
         marker.setIcon({
-            url: 'static/images/raid/' + gymTypes[item.team_id] + '_' + getGymLevel(item) + '_' + item['raid']['level'] + '.png',
-            scaledSize: new google.maps.Size(36, 36)
+            url: 'static/images/gym/' + gymTypes[item.team_id] + '_' + getGymLevel(item) + '_' + item['raid']['level'] + '.png',
+            scaledSize: new google.maps.Size(48, 48)
         })
     } else {
         marker.setIcon({
             url: 'static/images/gym/' + gymTypes[item.team_id] + '_' + getGymLevel(item) + '.png',
-            scaledSize: new google.maps.Size(36, 36)
+            scaledSize: new google.maps.Size(48, 48)
         })
         marker.setZIndex(1)
     }
@@ -1035,7 +1035,7 @@ function updateGymMarker(item, marker) {
 function setupPokestopMarker(item) {
     var imagename = item['lure_expiration'] ? 'PokestopLured' : 'Pokestop'
     var image = {
-        url: 'static/images/pokestop/' + '/' + imagename + '.png',
+        url: 'static/images/pokestop/' + imagename + '.png',
         scaledSize: new google.maps.Size(32, 32)
     }
     var marker = new google.maps.Marker({

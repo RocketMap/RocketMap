@@ -15,7 +15,8 @@ src/
 _build
 _build_html
 beehive.*
-static/pixel_icons/*.png
+static/images/raid/*.png
+!static/images/raid/unknown.png
 static/icons-sprite.png
 static/icons-large-sprite.png
 static/icons/*.png

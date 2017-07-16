@@ -90,17 +90,10 @@
       -webkit-font-smoothing: antialiased;
     }
   }
-}
 
-.pokemon.sprite {
-  display: block;
-  height: 48px;
-  width: 48px;
-}
-
-.pokemon.elements {
-  height: 16px;
-  width: 16px;
-  margin-right: 5px;
-  vertical-align: middle;
+  &.sprite {
+    display: block;
+    height: 48px;
+    width: 48px;
+  }
 }

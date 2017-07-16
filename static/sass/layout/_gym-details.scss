@@ -317,6 +317,9 @@
       @media screen and (max-width: 480px) {
         font-size: 10px !important;
       }
+      @media screen and (max-width: 320px) {
+        font-size: 9px !important;
+      }
       color: rgb(93,109,126);
       font-size: 14px;
 
@@ -327,7 +330,7 @@
 
       &.name {
         @media screen and (max-width: 480px) {
-          font-size: 14px !important;
+          font-size: 12px !important;
           margin-bottom: 0px;
         }
         font-size: 16px;
@@ -342,9 +345,8 @@
           width:: 48px !important;
         }
         display: block;
-        height: 72px;
-        width: 72px;
-        margin: 5px 0px 5px 0px;
+        height: 96px;
+        width: 96px;
 
         &.pokemon {
           @media screen and (max-width: 480px) {

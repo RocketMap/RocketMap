@@ -22,9 +22,9 @@
 
   &.sprite {
     display: block;
-    height: 48px;
-    width: 48px;
-    margin: 10px 0px 10px 0px;
+    height: 64px;
+    width: 64px;
+    margin: 5px 0px 5px 0px;
   }
 
   &.info {
@@ -65,15 +65,23 @@
   }
 
   &.pokemon {
+    @media screen and (max-width: 320px) {
+      font-size: 8px !important;
+    }
     font-size: 9px;
+    margin-bottom: 0px;
+    vertical-align: middle;
 
     &.motivation {
 
       &.heart {
+        @media screen and (max-width: 320px) {
+          height: 6px !important;
+          width: 6px !important;
+        }
         height: 8px;
         width: 8px;
         margin-right: -1px;
-        vertical-align: middle;
       }
     }
   }
