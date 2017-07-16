@@ -79,6 +79,11 @@ def get_proxy_test_status(proxy, future_ptc, future_niantic):
                                                  niantic_status)
         check_result = check_result_wrong
 
+    # Explicitly release connection back to the pool, because we don't need
+    # or want to consume the content.
+    ptc_response.close()
+    niantic_response.close()
+
     return (proxy_error, check_result)
 
 
@@ -98,15 +103,14 @@ def start_request_futures(ptc_session, niantic_session, proxy, timeout):
         proxy_test_ptc_url,
         proxies={'http': proxy, 'https': proxy},
         timeout=timeout,
-        headers={'User-Agent':
-                 'pokemongo/1 '
-                 'CFNetwork/811.4.18 '
-                 'Darwin/16.5.0',
-                 'Host':
-                 'sso.pokemon.com',
-                 'X-Unity-Version':
-                 '5.5.1f1'},
-        background_callback=__proxy_check_completed)
+        headers={'User-Agent': ('pokemongo/1 '
+                                'CFNetwork/811.4.18 '
+                                'Darwin/16.5.0'),
+                 'Host': 'sso.pokemon.com',
+                 'X-Unity-Version': '5.5.1f1',
+                 'Connection': 'close'},
+        background_callback=__proxy_check_completed,
+        stream=True)
 
     # Send request to nianticlabs.com.
     future_niantic = niantic_session.post(
@@ -114,7 +118,9 @@ def start_request_futures(ptc_session, niantic_session, proxy, timeout):
         '',
         proxies={'http': proxy, 'https': proxy},
         timeout=timeout,
-        background_callback=__proxy_check_completed)
+        headers={'Connection': 'close'},
+        background_callback=__proxy_check_completed,
+        stream=True)
 
     # Return futures.
     return (future_ptc, future_niantic)
