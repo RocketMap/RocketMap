@@ -113,10 +113,10 @@ function removePokemonMarker(encounterId) { // eslint-disable-line no-unused-var
 function initMap() { // eslint-disable-line no-unused-vars
     map = new google.maps.Map(document.getElementById('map'), {
         center: {
-            lat: centerLat,
-            lng: centerLng
+            lat: Number(getParameterByName('lat')) || centerLat,
+            lng: Number(getParameterByName('lon')) || centerLng
         },
-        zoom: Store.get('zoomLevel'),
+        zoom: Number(getParameterByName('zoom')) || Store.get('zoomLevel'),
         fullscreenControl: true,
         streetViewControl: false,
         mapTypeControl: false,
@@ -2023,8 +2023,25 @@ function toggleGymPokemonDetails(e) { // eslint-disable-line no-unused-vars
     e.nextElementSibling.classList.toggle('visible')
 }
 
+function getParameterByName(name, url) {
+    if (!url) {
+        url = window.location.search
+    }
+    name = name.replace(/[[\]]/g, '\\$&')
+    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)')
+    var results = regex.exec(url)
+    if (!results) {
+        return null
+    }
+    if (!results[2]) {
+        return ''
+    }
+    return decodeURIComponent(results[2].replace(/\+/g, ' '))
+}
+
+
 //
-// Page Ready Exection
+// Page Ready Execution
 //
 
 $(function () {
