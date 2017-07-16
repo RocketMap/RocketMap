@@ -380,7 +380,7 @@ class SpawnScan(BaseScheduler):
 
         # locations.sort(key=itemgetter('time'))
 
-        if self.args.very_verbose:
+        if self.args.verbose:
             for i in self.locations:
                 sec = i['time'] % 60
                 minute = (i['time'] / 60) % 60

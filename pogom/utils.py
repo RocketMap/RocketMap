@@ -413,7 +413,7 @@ def get_args():
     parser.add_argument('-slt', '--stats-log-timer',
                         help='In log view, list per hr stats every X seconds',
                         type=int, default=0)
-    parser.add_argument('-sn', '--status-name', default=None,
+    parser.add_argument('-sn', '--status-name', default=os.getpid(),
                         help=('Enable status page database update using ' +
                               'STATUS_NAME as main worker name.'))
     parser.add_argument('-spp', '--status-page-password', default=None,
@@ -448,19 +448,22 @@ def get_args():
                               'through these trusted proxies.'))
     parser.add_argument('--api-version', default='0.67.2',
                         help=('API version currently in use.'))
-    verbosity = parser.add_mutually_exclusive_group()
-    verbosity.add_argument('-v', '--verbose',
-                           help=('Show debug messages from RocketMap ' +
-                                 'and pgoapi. Optionally specify file ' +
-                                 'to log to.'),
-                           nargs='?', const='nofile', default=False,
-                           metavar='filename.log')
-    verbosity.add_argument('-vv', '--very-verbose',
-                           help=('Like verbose, but show debug messages ' +
-                                 'from all modules as well.  Optionally ' +
-                                 'specify file to log to.'),
-                           nargs='?', const='nofile', default=False,
-                           metavar='filename.log')
+    verbose = parser.add_mutually_exclusive_group()
+    verbose.add_argument('-v',
+                         help=('Show debug messages from RocketMap ' +
+                               'and pgoapi. Can be repeated up to 3 times.'),
+                         action='count', default=0, dest='verbose')
+    verbose.add_argument('--verbosity',
+                         help=('Show debug messages from RocketMap ' +
+                               'and pgoapi.'),
+                         type=int, dest='verbose')
+    parser.add_argument('--no-file-logs',
+                        help=('Disable logging to files. ' +
+                              'Does not disable --access-logs.'),
+                        action='store_true', default=False)
+    parser.add_argument('--log-path',
+                        help=('Defines directory to save log files to.'),
+                        default='logs/')
     parser.set_defaults(DEBUG=False)
 
     args = parser.parse_args()

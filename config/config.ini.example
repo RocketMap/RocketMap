@@ -1,4 +1,4 @@
-# DO NOT USE NOTEPAD TO EDIT CONFIG FILES! USE NOTEPAD++ INSTEAD!
+﻿# DO NOT USE NOTEPAD TO EDIT CONFIG FILES! USE NOTEPAD++ INSTEAD!
 # Uncomment a line when you want to change its default value (Remove # at the beginning)
 # Please ensure to leave a space after the colon if a value is needed ("example-setting" "example-setting-with: value")
 # At least one account with "username", "password" as well as "location" and "gmaps-key" are required
@@ -176,10 +176,9 @@
 # Misc
 ######
 
-#verbose                        # Show debug messages from PokemonGo-Map and pgoapi.
-                                # Optionally specify file to log to by adding ": PATH/FILENAME.log". (default=False)
-#very-verbose                   # Like verbose, but show debug messages from all modules as well.
-                                # Optionally specify file to log to like above mentioned. (default=False)
+#verbosity						          # Show debug messages from RocketMap and PGoApi. Values are 1,2,3 (default=0)
+#no-file-logs					          # Disables logging to files except for access.log. (default=False)
+#log-path						            # Defines the path logs are saved at. (default=logs/)
 #no-version-check               # Disable API version check. (default=False)
 #version-check-interval:        # Interval to check API version in seconds (Default: in range [60, 300]).
 #mock:                          # Mock mode - point to a fpgo endpoint instead of using the real PogoApi,
