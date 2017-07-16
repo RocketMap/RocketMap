@@ -1,4 +1,4 @@
-﻿# DO NOT USE NOTEPAD TO EDIT CONFIG FILES! USE NOTEPAD++ INSTEAD!
+# DO NOT USE NOTEPAD TO EDIT CONFIG FILES! USE NOTEPAD++ INSTEAD!
 # Uncomment a line when you want to change its default value (Remove # at the beginning)
 # Please ensure to leave a space after the colon if a value is needed ("example-setting" "example-setting-with: value")
 # At least one account with "username", "password" as well as "location" and "gmaps-key" are required
