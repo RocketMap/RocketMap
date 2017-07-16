@@ -11,7 +11,8 @@ from pgoapi import PGoApi
 from pgoapi.exceptions import AuthException
 
 from .fakePogoApi import FakePogoApi
-from .utils import (in_radius, generate_device_info, equi_rect_distance)
+from .utils import (in_radius, generate_device_info, equi_rect_distance,
+                    clear_dict_response)
 from .proxy import get_new_proxy
 
 log = logging.getLogger(__name__)
@@ -633,7 +634,7 @@ def encounter_pokemon_request(api, account, encounter_id, spawnpoint_id,
         req.get_inbox(is_history=True)
         response = req.call(False)
         parse_new_timestamp_ms(account, response)
-        return response
+        return clear_dict_response(response)
     except Exception as e:
         log.exception('Exception while encountering Pokémon: %s.', repr(e))
         return False
