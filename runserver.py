@@ -166,11 +166,6 @@ def can_start_scanning(args):
         log.critical('Hash key is required for scanning. Exiting.')
         return False
 
-    # Abort if status name is not alphanumeric.
-    if not args.status_name.isalnum():
-        log.critical('Status name must be alphanumeric.')
-        return False
-
     # Check the PoGo api pgoapi implements against what RM is expecting
     try:
         if PGoApi.get_api_version() != int(args.api_version.replace('.', '0')):
@@ -191,6 +186,11 @@ def main():
     sys.excepthook = handle_exception
 
     args = get_args()
+
+    # Abort if status name is not alphanumeric.
+    if not str(args.status_name).isalnum():
+        log.critical('Status name must be alphanumeric.')
+        sys.exit(1)
 
     set_log_and_verbosity(log)
 
