@@ -1008,7 +1008,18 @@ def gmaps_reverse_geolocate(gmaps_key, locale, location):
 
     try:
         reverse = geolocator.reverse(location)
-        country_code = reverse[-1].raw['address_components'][-1]['short_name']
+        address = reverse[-1].raw['address_components']
+        country_code = 'US'
+
+        # Find country component.
+        for component in address:
+            # Look for country.
+            component_is_country = any([t == 'country'
+                                        for t in component.get('types', [])])
+
+            if component_is_country:
+                country_code = component['short_name']
+                break
 
         try:
             timezone = geolocator.timezone(location)
