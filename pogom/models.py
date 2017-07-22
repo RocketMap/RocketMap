@@ -35,6 +35,7 @@ from .customLog import printPokemon
 
 from .account import (tutorial_pokestop_spin, check_login,
                       setup_api, encounter_pokemon_request)
+from .proxy import get_new_proxy
 
 log = logging.getLogger(__name__)
 
@@ -2385,14 +2386,24 @@ def encounter_pokemon(args, pokemon, account, api, account_sets, status,
         if not hlvl_api:
             hlvl_api = setup_api(args, status, hlvl_account)
 
-            # Hashing key.
-            # TODO: all of this should be handled properly... all
-            # these useless, inefficient threads passing around all
-            # these single-use variables are making me ill.
-            if args.hash_key:
-                key = key_scheduler.next()
-                log.debug('Using hashing key %s for this encounter.', key)
-                hlvl_api.activate_hash_server(key)
+        # If the already existent API is using a proxy but
+        # it's not alive anymore, we need to get a new proxy.
+        elif (args.proxy and
+              (hlvl_api._session.proxies['http'] not in args.proxy)):
+                proxy_idx, proxy_new = get_new_proxy(args)
+                hlvl_api.set_proxy({
+                    'http': proxy_new,
+                    'https': proxy_new})
+                hlvl_api._auth_provider.set_proxy({
+                    'http': proxy_new,
+                    'https': proxy_new})
+
+        # Hashing key.
+        # TODO: Rework inefficient threading.
+        if args.hash_key:
+            key = key_scheduler.next()
+            log.debug('Using hashing key %s for this encounter.', key)
+            hlvl_api.activate_hash_server(key)
 
         # We have an API object now. If necessary, store it.
         if using_accountset and not args.no_api_store:

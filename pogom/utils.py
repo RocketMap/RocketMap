@@ -354,7 +354,7 @@ def get_args():
     parser.add_argument('-pxo', '--proxy-rotation',
                         help=('Enable proxy rotation with account changing ' +
                               'for search threads (none/round/random).'),
-                        type=str, default='none')
+                        type=str, default='round')
     parser.add_argument('--db-type',
                         help='Type of database to be used (default: sqlite).',
                         default='sqlite')

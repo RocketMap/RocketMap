@@ -281,9 +281,8 @@ def proxies_refresher(args):
 def get_new_proxy(args):
     global last_proxy
 
-    # If none/round - simply get next proxy.
-    if ((args.proxy_rotation is None) or (args.proxy_rotation == 'none') or
-            (args.proxy_rotation == 'round')):
+    # If round - simply get next proxy.
+    if (args.proxy_rotation == 'round'):
         if last_proxy >= len(args.proxy) - 1:
             last_proxy = 0
         else:
