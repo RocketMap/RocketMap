@@ -16,17 +16,16 @@ args = get_args()
 try:
     from matplotlib.path import Path
 except ImportError as e:
-    if not args.no_matplotlib:
-        log.error('Exception while importing "matplotlib": %s', e)
-        log.error('Aborting. Install "matplotlib" or enable "-nmptl" or '
-                  '"--no-matplotlib" to circumvent.')
-        sys.exit()
+    # Pass as this is an optional requirement. We're going to check later if it
+    # was properly imported and only use it if it's installed.
+    pass
 
 
 class Geofences:
     def __init__(self):
         self.geofenced_areas = []
         self.excluded_areas = []
+        self.use_matplotlib = 'matplotlib' in sys.modules
 
         if args.geofence_file or args.geofence_excluded_file:
             log.info('Loading geofenced or excluded areas.')
@@ -42,6 +41,7 @@ class Geofences:
         return (self.geofenced_areas or self.excluded_areas)
 
     def get_geofenced_coordinates(self, coordinates):
+        log.info('Using matplotlib: %s.', self.use_matplotlib)
         log.info('Found %d coordinates to geofence.', len(coordinates))
         geofenced_coordinates = []
         startTime = timeit.default_timer()
@@ -77,10 +77,10 @@ class Geofences:
         else:
             point = {'lat': coordinate[0], 'lon': coordinate[1]}
         polygon = area['polygon']
-        if args.no_matplotlib:
-            return self.is_point_in_polygon_custom(point, polygon)
-        else:
+        if self.use_matplotlib:
             return self.is_point_in_polygon_matplotlib(point, polygon)
+        else:
+            return self.is_point_in_polygon_custom(point, polygon)
 
     @staticmethod
     def parse_geofences_file(geofence_file, excluded):
