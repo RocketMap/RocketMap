@@ -98,3 +98,8 @@
       padding: 0 0.5em;
     }
   }
+
+  /* Set proper defaults for sweetalert buttons. */
+  .sweet-alert button {
+      line-height: initial;
+  }

@@ -78,5 +78,9 @@
         </div>
     <script src="{{ url_for('static', filename='dist/js/app.min.js').lstrip('/') }}"></script>
     <script src="{{ url_for('static', filename='dist/js/statistics.min.js').lstrip('/') }}"></script>
+    <!-- Custom JS -->
+      {% if show.custom_js %}
+    <script src="{{ url_for('static', filename='dist/js/custom.min.js').lstrip('/') }}"></script>
+      {% endif %}
 </body>
 </html>

@@ -142,6 +142,15 @@ def validate_assets(args):
         args.custom_css = False
         log.info('No file \"custom.css\" found, using default settings.')
 
+    # Check if custom.js is used otherwise fall back to default.
+    if os.path.exists(os.path.join(root_path, 'static/js/custom.js')):
+        args.custom_js = True
+        log.info(
+            'File \"custom.js\" found, applying user-defined settings.')
+    else:
+        args.custom_js = False
+        log.info('No file \"custom.js\" found, using default settings.')
+
     return True
 
 

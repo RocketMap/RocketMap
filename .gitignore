@@ -23,6 +23,7 @@ static/icons-sprite.png
 static/icons-large-sprite.png
 static/icons/*.png
 static/css/custom.css
+static/js/custom.js
 *.csv
 *.bat
 *.sh
