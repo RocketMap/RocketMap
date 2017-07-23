@@ -21,7 +21,7 @@ var $selectSearchIconMarker
 var $selectLocationIconMarker
 var $switchGymSidebar
 
-var language = document.documentElement.lang === '' ? 'en' : document.documentElement.lang
+const language = document.documentElement.lang === '' ? 'en' : document.documentElement.lang
 var idToPokemon = {}
 var i8lnDictionary = {}
 var languageLookups = 0
@@ -42,7 +42,7 @@ var reids = []
 var map
 var rawDataIsLoading = false
 var locationMarker
-var rangeMarkers = ['pokemon', 'pokestop', 'gym']
+const rangeMarkers = ['pokemon', 'pokestop', 'gym']
 var searchMarker
 var storeZoom = true
 var moves
@@ -63,11 +63,13 @@ var selectedStyle = 'light'
 var updateWorker
 var lastUpdateTime
 
-var gymTypes = ['Uncontested', 'Mystic', 'Valor', 'Instinct']
-var audio = new Audio('static/sounds/ding.mp3')
+const gymTypes = ['Uncontested', 'Mystic', 'Valor', 'Instinct']
 
-var genderType = ['♂', '♀', '⚲']
-var unownForm = ['unset', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '!', '?']
+const audio = new Audio('static/sounds/ding.mp3')
+const cryFileTypes = ['wav', 'mp3']
+
+const genderType = ['♂', '♀', '⚲']
+const unownForm = ['unset', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '!', '?']
 
 
 /*
@@ -929,18 +931,30 @@ function getNotifyText(item) {
     }
 }
 
-function playPokemonSound(pokemonID) {
+function playPokemonSound(pokemonID, cryFileTypes) {
     if (!Store.get('playSound')) {
         return
     }
+
     if (!Store.get('playCries')) {
         audio.play()
     } else {
-        var audioCry = new Audio('static/sounds/cries/' + pokemonID + '.wav')
+        // Stop if we don't have any supported filetypes left.
+        if (cryFileTypes.length === 0) {
+            return
+        }
+
+        // Try to load the first filetype in the list.
+        const filetype = cryFileTypes.shift()
+        const audioCry = new Audio('static/sounds/cries/' + pokemonID + '.' + filetype)
+
         audioCry.play().catch(function (err) {
+            // Try a different filetype.
             if (err) {
-                console.log('Sound for Pokémon ' + pokemonID + ' is missing, using generic sound instead.')
-                audio.play()
+                console.log('Sound filetype %s for Pokémon %s is missing.', filetype, pokemonID)
+
+                // If there's more left, try something else.
+                playPokemonSound(pokemonID, cryFileTypes)
             }
         })
     }
@@ -964,7 +978,7 @@ function customizePokemonMarker(marker, item, skipNotification) {
 
     if (notifiedPokemon.indexOf(item['pokemon_id']) > -1 || notifiedRarity.indexOf(item['pokemon_rarity']) > -1) {
         if (!skipNotification) {
-            playPokemonSound(item['pokemon_id'])
+            playPokemonSound(item['pokemon_id'], cryFileTypes)
             sendNotification(notifyText.fav_title, notifyText.fav_text, 'static/icons/' + item['pokemon_id'] + '.png', item['latitude'], item['longitude'])
         }
         if (marker.animationDisabled !== true) {
@@ -976,7 +990,7 @@ function customizePokemonMarker(marker, item, skipNotification) {
         var perfection = getIv(item['individual_attack'], item['individual_defense'], item['individual_stamina'])
         if (notifiedMinPerfection > 0 && perfection >= notifiedMinPerfection) {
             if (!skipNotification) {
-                playPokemonSound(item['pokemon_id'])
+                playPokemonSound(item['pokemon_id'], cryFileTypes)
                 sendNotification(notifyText.fav_title, notifyText.fav_text, 'static/icons/' + item['pokemon_id'] + '.png', item['latitude'], item['longitude'])
             }
             if (marker.animationDisabled !== true) {
