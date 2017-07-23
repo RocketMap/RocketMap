@@ -91,7 +91,20 @@
   color: rgb(93,109,126);
   font-size: 11px;
   font-weight: 900;
-  margin-bottom: 5px;
+
+  &.container {
+    display: flex;
+    justify-content: center;
+
+    &.content-left {
+      width:64px;
+    }
+
+    &.content-right {
+      margin-bottom: auto;
+      margin-top: auto;
+    }
+  }
 
   &.countdown {
 
@@ -106,15 +119,119 @@
     }
   }
 
-  &.encounter {
-    font-weight: 500;
+  &.pokemon {
+    font-size: 12px;
+    font-weight: 900;
+    float: left;
+  }
 
-    &.info {
-      font-weight: 900;
+  .move {
+    .name {
+      font-size: 12px;
+      float: left;
+      clear: left;
+      margin: 5px 0px 0px 10px;
     }
 
-    &.pokemon.name {
-      font-size: 13px;
+    .type {
+      margin: 5px 0px 0px 10px;
+      font-size: 8px;
+      display: inline-block;
+      text-transform: uppercase;
+      padding: 2px 3px;
+      border-radius: 4px;
+      color: white;
+      float: right;
+      clear: right;
+
+
+      &.fairy {
+          background-color: #e898e8;
+          // color: _get_text_color(#e898e8);
+      }
+
+      &.ghost {
+          background-color: #705898;
+          // color: _get_text_color(#705898);
+      }
+
+      &.normal {
+          background-color: #8a8a59;
+          // color: _get_text_color(#8a8a59);
+      }
+
+      &.grass {
+          background-color: #78c850;
+          // color: _get_text_color(#78c850);
+      }
+
+      &.water {
+          background-color: #6890f0;
+          // color: _get_text_color(#6890f0);
+      }
+
+      &.bug {
+          background-color: #a8b820;
+          // color: _get_text_color(#a8b820);
+      }
+
+      &.fighting {
+          background-color: #c03028;
+          // color: _get_text_color(#c03028);
+      }
+
+      &.electric {
+          background-color: #f8d030;
+          // color: _get_text_color(#f8d030);
+      }
+
+      &.rock {
+          background-color: #b8a038;
+          // color: _get_text_color(#b8a038);
+      }
+
+      &.fire {
+          background-color: #f08030;
+          // color: _get_text_color(#f08030);
+      }
+
+      &.flying {
+          background-color: #a890f0;
+          // color: _get_text_color(#a890f0);
+      }
+
+      &.ice {
+          background-color: #98d8d8;
+          // color: _get_text_color(#98d8d8);
+      }
+
+      &.ground {
+          background-color: #e0c068;
+          // color: _get_text_color(#e0c068);
+      }
+
+      &.steel {
+          background-color: #b8b8d0;
+          // color: _get_text_color(#b8b8d0);
+      }
+
+      &.dragon {
+          background-color: #7038f8;
+          // color: _get_text_color(#7038f8);
+      }
+
+      &.poison {
+          background-color: #a040a0;
+          // color: _get_text_color(#a040a0);
+      }
+
+      &.psychic {
+          background-color: #f85888;
+          // color: _get_text_color(#f85888);
+      }
+      &.dark {
+          background-color: #705848;
+      }
     }
   }
 }

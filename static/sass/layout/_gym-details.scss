@@ -421,12 +421,35 @@
 
     .raid {
       @media screen and (max-width: 480px) {
-        font-size: 11px !important;
+        font-size: 10px !important;
+      }
+      @media screen and (max-width: 320px) {
+        font-size: 9px !important;
       }
       color: rgb(93,109,126);
       font-size: 14px;
       font-weight: 900;
+      @media screen and (max-width: 480px) {
+        margin-bottom: 0px !important;
+      }
       margin-bottom: 5px;
+
+      &.container {
+        display: flex;
+        justify-content: center;
+
+        &.content-left {
+          @media screen and (max-width: 480px) {
+            width: 64px !important;
+          }
+          width:96px;
+        }
+
+        &.content-right {
+          margin-bottom: auto;
+          margin-top: auto;
+        }
+      }
 
       &.countdown {
 
@@ -444,15 +467,131 @@
         }
       }
 
-      &.encounter {
-        font-weight: 500;
-
-        &.info {
-          font-weight: 900;
-        }
+      &.pokemon {
+        font-size: 16px;
+        font-weight: 900;
+        float: left;
       }
 
-      &.pokemon.name {
+      .move {
+        .name {
+          @media screen and (max-width: 480px) {
+            font-size: 10px !important;
+            margin: 0px 0px 2px 0px !important;
+          }
+          @media screen and (max-width: 320px) {
+            font-size: 9px !important;
+          }
+          font-size: 14px;
+          float: left;
+          clear: left;
+          margin: 0px 5px 5px 10px
+        }
+        @media screen and (max-width: 480px) {
+          font-size: 6px !important;
+        }
+        .type {
+          @media screen and (max-width: 480px) {
+            font-size: 6px !important;
+            margin: 0px 0px 2px 0px !important;
+          }
+          margin: 0px 0px 5px 0px;
+          font-size: 10px;
+          padding: 0px 5px;
+          border-radius: 4px;
+          color: white;
+          float: right;
+          clear: right;
+
+
+          &.fairy {
+              background-color: #e898e8;
+              // color: _get_text_color(#e898e8);
+          }
+
+          &.ghost {
+              background-color: #705898;
+              // color: _get_text_color(#705898);
+          }
+
+          &.normal {
+              background-color: #8a8a59;
+              // color: _get_text_color(#8a8a59);
+          }
+
+          &.grass {
+              background-color: #78c850;
+              // color: _get_text_color(#78c850);
+          }
+
+          &.water {
+              background-color: #6890f0;
+              // color: _get_text_color(#6890f0);
+          }
+
+          &.bug {
+              background-color: #a8b820;
+              // color: _get_text_color(#a8b820);
+          }
+
+          &.fighting {
+              background-color: #c03028;
+              // color: _get_text_color(#c03028);
+          }
+
+          &.electric {
+              background-color: #f8d030;
+              // color: _get_text_color(#f8d030);
+          }
+
+          &.rock {
+              background-color: #b8a038;
+              // color: _get_text_color(#b8a038);
+          }
+
+          &.fire {
+              background-color: #f08030;
+              // color: _get_text_color(#f08030);
+          }
+
+          &.flying {
+              background-color: #a890f0;
+              // color: _get_text_color(#a890f0);
+          }
+
+          &.ice {
+              background-color: #98d8d8;
+              // color: _get_text_color(#98d8d8);
+          }
+
+          &.ground {
+              background-color: #e0c068;
+              // color: _get_text_color(#e0c068);
+          }
+
+          &.steel {
+              background-color: #b8b8d0;
+              // color: _get_text_color(#b8b8d0);
+          }
+
+          &.dragon {
+              background-color: #7038f8;
+              // color: _get_text_color(#7038f8);
+          }
+
+          &.poison {
+              background-color: #a040a0;
+              // color: _get_text_color(#a040a0);
+          }
+
+          &.psychic {
+              background-color: #f85888;
+              // color: _get_text_color(#f85888);
+          }
+          &.dark {
+              background-color: #705848;
+          }
+        }
       }
     }
   }

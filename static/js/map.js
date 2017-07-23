@@ -9,6 +9,9 @@ var $textPerfectionNotify
 var $selectStyle
 var $selectIconSize
 var $switchOpenGymsOnly
+var $switchActiveRaidGymsOnly
+var $switchRaidMinLevel
+var $switchRaidMaxLevel
 var $selectTeamGymsOnly
 var $selectLastUpdateGymsOnly
 var $selectMinGymLevel
@@ -359,6 +362,11 @@ function initSidebar() {
     $('#gym-sidebar-wrapper').toggle(Store.get('showGyms'))
     $('#gyms-filter-wrapper').toggle(Store.get('showGyms'))
     $('#team-gyms-only-switch').val(Store.get('showTeamGymsOnly'))
+    $('#raids-switch').prop('checked', Store.get('showRaids'))
+    $('#raid-active-gym-switch').prop('checked', Store.get('showActiveRaidsOnly'))
+    $('#raid-min-level-only-switch').val(Store.get('showRaidMinLevel'))
+    $('#raid-max-level-only-switch').val(Store.get('showRaidMaxLevel'))
+    $('#raids-filter-wrapper').toggle(Store.get('showRaids'))
     $('#open-gyms-only-switch').prop('checked', Store.get('showOpenGymsOnly'))
     $('#min-level-gyms-filter-switch').val(Store.get('minGymLevel'))
     $('#max-level-gyms-filter-switch').val(Store.get('maxGymLevel'))
@@ -539,25 +547,37 @@ function isOngoingRaid(raid) {
     return raid && Date.now() < raid.end && Date.now() > raid.start
 }
 
+function isValidRaid(raid) {
+    return raid && Date.now() < raid.end && Date.now() > raid.spawn
+}
+
+function isGymSatisfiesRaidMinMaxFilter(raid) {
+    if (raid === null) {
+        return 0
+    } else {
+        return (raid['level'] <= Store.get('showRaidMaxLevel') && raid['level'] >= Store.get('showRaidMinLevel')) ? 1 : 0
+    }
+}
+
 function gymLabel(gym, includeMembers = true) {
     const pokemonWithImages = [
         3, 6, 9, 59, 65, 68, 89, 94, 103, 110, 112, 125, 126, 129, 131, 134,
-        135, 136, 143, 153, 156, 159, 248
+        135, 136, 143, 144, 145, 146, 153, 156, 159, 248, 249
     ]
 
     const raid = gym.raid
     var raidStr = ''
     if (raid && raid.end > Date.now()) {
         if (raid.pokemon_id !== null) {
-            let pMove1 = (moves[raid['move_1']] !== undefined) ? i8ln(moves[raid['move_1']]['name']) : 'gen/unknown'
-            let pMove2 = (moves[raid['move_2']] !== undefined) ? i8ln(moves[raid['move_2']]['name']) : 'gen/unknown'
+            let pMove1 = (moves[raid['move_1']] !== undefined) ? i8ln(moves[raid['move_1']]['name']) : 'unknown'
+            let pMove2 = (moves[raid['move_2']] !== undefined) ? i8ln(moves[raid['move_2']]['name']) : 'unknown'
 
             raidStr += `
-                    <div class='raid encounter'>
-                       CP: <span class='raid encounter info'>${raid['cp']}</span>
+                    <div class='move'>
+                      <span class='name'>${pMove1}</span><span class='type ${moves[raid['move_1']]['type'].toLowerCase()}'>${i8ln(moves[raid['move_1']]['type'])}</span>
                     </div>
-                    <div class='raid encounter'>
-                         Moveset: <span class='raid encounter info'>${pMove1}/${pMove2}</span>
+                    <div class='move'>
+                      <span class='name'>${pMove2}</span><span class='type ${moves[raid['move_2']]['type'].toLowerCase()}'>${i8ln(moves[raid['move_2']]['type'])}</span>
                     </div>`
         }
     }
@@ -568,6 +588,7 @@ function gymLabel(gym, includeMembers = true) {
     const teamName = gymTypes[gym.team_id]
     const isUpcomingRaid = raid != null && Date.now() < raid.start
     const isRaidStarted = isOngoingRaid(raid)
+    const isRaidFilterOn = Store.get('showRaids')
 
     var subtitle = ''
     var image = ''
@@ -592,22 +613,45 @@ function gymLabel(gym, includeMembers = true) {
         </div>`
     }
 
-    if (isUpcomingRaid || isRaidStarted) {
-        const raidColor = ['252,112,176', '255,158,22']
+    if ((isUpcomingRaid || isRaidStarted) && isRaidFilterOn && isGymSatisfiesRaidMinMaxFilter(raid)) {
+        const raidColor = ['252,112,176', '255,158,22', '184,165,221']
         const levelStr = '★'.repeat(raid['level'])
 
-        if (isRaidStarted && raid.pokemon_id) {
+        if (isRaidStarted) {
             // Set default image.
             image = `
-                <img class='gym sprite' src='static/images/raid/unknown.png'>
-                ${raidStr}
+                <img class='gym sprite' src='static/images/raid/${gymTypes[gym.team_id]}_${raid.level}_unknown.png'>
+                <div class='raid'>
+                <span style='color:rgb(${raidColor[Math.floor((raid.level - 1) / 2)]})'>
+                ${levelStr}
+                </span>
+                <span class='raid countdown label-countdown' disappears-at='${raid.end}'></span> left
+                </div>
             `
-
             // Use Pokémon-specific image if we have one.
-            if (pokemonWithImages.indexOf(raid.pokemon_id) !== -1) {
+            if (raid.pokemon_id !== null && pokemonWithImages.indexOf(raid.pokemon_id) !== -1) {
                 image = `
-                    <img class='gym sprite' src='static/images/raid/${raid.pokemon_id}.png'>
-                    ${raidStr}
+                    <div class='raid container'>
+                    <div class='raid container content-left'>
+                        <div>
+                        <img class='gym sprite' src='static/icons/${raid.pokemon_id}.png'>
+                        </div>
+                    </div>
+                    <div class='raid container content-right'>
+                        <div>
+                        <div class='raid pokemon'>
+                            ${raid['pokemon_name']} <a href='http://pokemon.gameinfo.io/en/pokemon/${raid['pokemon_id']}' target='_blank' title='View in Pokédex'>#${raid['pokemon_id']}</a> | CP: ${raid['cp']}
+                    </div>
+                        ${raidStr}
+                    </div>
+                    </div>
+                </div>
+                    <div class='raid'>
+                    <span style='color:rgb(${raidColor[Math.floor((raid.level - 1) / 2)]})'>
+                    ${levelStr}
+                    </span>
+                    <span class='raid countdown label-countdown' disappears-at='${raid.end}'></span> left
+                    </div>
                 `
             }
         } else {
@@ -621,25 +665,6 @@ function gymLabel(gym, includeMembers = true) {
                   ${levelStr}
                   </span>
                   Raid in <span class='raid countdown label-countdown' disappears-at='${raid.start}'></span>
-                </div>`
-        } else {
-            let typesDisplay = ''
-
-            $.each(raid.pokemon_types, function (index, type) {
-                typesDisplay += getTypeSpan(type)
-            })
-
-            subtitle = `
-                <div class='raid'>
-                  <span style='color:rgb(${raidColor[Math.floor((raid.level - 1) / 2)]})'>
-                  ${levelStr}
-                  </span>
-                  <span class='raid countdown label-countdown' disappears-at='${raid.end}'></span> left
-                </div>
-                   <div class='raid pokemon name'>
-                        ${raid['pokemon_name']}
-                            <a href='http://pokemon.gameinfo.io/en/pokemon/${raid['pokemon_id']}' target='_blank' title='View in Pokédex'>#${raid['pokemon_id']}</a>
-                        ${typesDisplay}
                 </div>`
         }
     } else {
@@ -666,7 +691,7 @@ function gymLabel(gym, includeMembers = true) {
         </div>`
 
 
-    if (!isRaidStarted && includeMembers) {
+    if (includeMembers) {
         memberStr = '<div>'
 
         gym.pokemon.forEach((member) => {
@@ -841,6 +866,14 @@ function getGymLevel(gym) {
     return 6 - gym['slots_available']
 }
 
+function getRaidLevel(raid) {
+    if (raid === null) {
+        return 0
+    } else {
+        return raid['level']
+    }
+}
+
 function lpad(str, len, padstr) {
     return Array(Math.max(len - String(str).length + 1, 0)).join(padstr) + str
 }
@@ -1010,13 +1043,22 @@ function setupGymMarker(item) {
 }
 
 function updateGymMarker(item, marker) {
-    if (item.raid !== null && item.raid.end > Date.now() && item.raid.pokemon_id !== null) {
+    let raidLevel = getRaidLevel(item.raid)
+    const pokemonWithImages = [
+        3, 6, 9, 59, 65, 68, 89, 94, 103, 110, 112, 125, 126, 129, 131, 134,
+        135, 136, 143, 144, 145, 146, 153, 156, 159, 248, 249
+    ]
+    if (item.raid !== null && isOngoingRaid(item.raid) && Store.get('showRaids') && raidLevel >= Store.get('showRaidMinLevel') && raidLevel <= Store.get('showRaidMaxLevel')) {
+        let markerImage = 'static/images/raid/' + gymTypes[item.team_id] + '_' + item.raid.level + '_unknown.png'
+        if (pokemonWithImages.indexOf(item.raid.pokemon_id) !== -1) {
+            markerImage = 'static/images/raid/' + gymTypes[item.team_id] + '_' + item['raid']['pokemon_id'] + '.png'
+        }
         marker.setIcon({
-            url: 'static/images/raid/' + item.raid.pokemon_id + '.png',
+            url: markerImage,
             scaledSize: new google.maps.Size(48, 48)
         })
         marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1)
-    } else if (item.raid !== null && item.raid.end > Date.now()) {
+    } else if (item.raid !== null && item.raid.end > Date.now() && Store.get('showRaids') && !Store.get('showActiveRaidsOnly') && raidLevel >= Store.get('showRaidMinLevel') && raidLevel <= Store.get('showRaidMaxLevel')) {
         marker.setIcon({
             url: 'static/images/gym/' + gymTypes[item.team_id] + '_' + getGymLevel(item) + '_' + item['raid']['level'] + '.png',
             scaledSize: new google.maps.Size(48, 48)
@@ -1301,7 +1343,7 @@ function showInBoundsMarkers(markers, type) {
 
 function loadRawData() {
     var loadPokemon = Store.get('showPokemon')
-    var loadGyms = Store.get('showGyms')
+    var loadGyms = (Store.get('showGyms') || Store.get('showRaids'))
     var loadPokestops = Store.get('showPokestops')
     var loadScanned = Store.get('showScanned')
     var loadSpawnpoints = Store.get('showSpawnpoints')
@@ -1469,7 +1511,9 @@ function updatePokestops() {
 
 function processGyms(i, item) {
     var gymLevel = getGymLevel(item)
-    if (!Store.get('showGyms')) {
+    var raidLevel = getRaidLevel(item.raid)
+
+    if (!Store.get('showGyms') && !Store.get('showRaids')) {
         return false // in case the checkbox was unchecked in the meantime.
     }
 
@@ -1485,6 +1529,25 @@ function processGyms(i, item) {
 
     if (Store.get('showOpenGymsOnly')) {
         if (item.slots_available === 0) {
+            removeGymFromMap(item['gym_id'])
+            return true
+        }
+    }
+
+    if (!Store.get('showGyms')) {
+        if (Store.get('showRaids') && !isValidRaid(item.raid)) {
+            removeGymFromMap(item['gym_id'])
+            return true
+        }
+
+        if (Store.get('showActiveRaidsOnly')) {
+            if (!isOngoingRaid(item.raid)) {
+                removeGymFromMap(item['gym_id'])
+                return true
+            }
+        }
+
+        if (raidLevel > Store.get('showRaidMaxLevel') || raidLevel < Store.get('showRaidMinLevel')) {
             removeGymFromMap(item['gym_id'])
             return true
         }
@@ -1893,13 +1956,11 @@ function showGymDetails(id) { // eslint-disable-line no-unused-vars
     data.done(function (result) {
         var pokemonHtml = ''
         if (result.pokemon.length) {
-            if (!isOngoingRaid(result.raid)) {
-                result.pokemon.forEach((pokemon) => {
-                    pokemonHtml += getSidebarGymMember(pokemon)
-                })
+            result.pokemon.forEach((pokemon) => {
+                pokemonHtml += getSidebarGymMember(pokemon)
+            })
 
-                pokemonHtml = `<table><tbody>${pokemonHtml}</tbody></table>`
-            }
+            pokemonHtml = `<table><tbody>${pokemonHtml}</tbody></table>`
         } else if (result.team_id === 0) {
             pokemonHtml = ''
         } else {
@@ -2108,6 +2169,41 @@ $(function () {
         lastgyms = false
         updateMap()
     })
+
+    $switchActiveRaidGymsOnly = $('#raid-active-gym-switch')
+
+    $switchActiveRaidGymsOnly.on('change', function () {
+        Store.set('showActiveRaidsOnly', this.checked)
+        lastgyms = false
+        updateMap()
+    })
+
+    $switchRaidMinLevel = $('#raid-min-level-only-switch')
+
+    $switchRaidMinLevel.select2({
+        placeholder: 'Minimum raid level',
+        minimumResultsForSearch: Infinity
+    })
+
+    $switchRaidMinLevel.on('change', function () {
+        Store.set('showRaidMinLevel', this.value)
+        lastgyms = false
+        updateMap()
+    })
+
+    $switchRaidMaxLevel = $('#raid-max-level-only-switch')
+
+    $switchRaidMaxLevel.select2({
+        placeholder: 'Maximum raid level',
+        minimumResultsForSearch: Infinity
+    })
+
+    $switchRaidMaxLevel.on('change', function () {
+        Store.set('showRaidMaxLevel', this.value)
+        lastgyms = false
+        updateMap()
+    })
+
 
     $selectTeamGymsOnly = $('#team-gyms-only-switch')
 
@@ -2358,13 +2454,12 @@ $(function () {
     function buildSwitchChangeListener(data, dataType, storageKey) {
         return function () {
             Store.set(storageKey, this.checked)
+
             if (this.checked) {
                 // When switch is turned on we asume it has been off, makes sure we dont end up in limbo
                 // Without this there could've been a situation where no markers are on map and only newly modified ones are loaded
                 if (storageKey === 'showPokemon') {
                     lastpokemon = false
-                } else if (storageKey === 'showGyms') {
-                    lastgyms = false
                 } else if (storageKey === 'showPokestops') {
                     lastpokestops = false
                 } else if (storageKey === 'showScanned') {
@@ -2373,6 +2468,24 @@ $(function () {
                     lastspawns = false
                 }
                 updateMap()
+            } else if (storageKey === 'showGyms' || storageKey === 'showRaids') {
+                // if any of switch is enable then do not remove gyms markers, only update them
+                if (Store.get('showGyms') || Store.get('showRaids')) {
+                    lastgyms = false
+                    updateMap()
+                } else {
+                    $.each(dataType, function (d, dType) {
+                        $.each(data[dType], function (key, value) {
+                            // for any marker you're turning off, you'll want to wipe off the range
+                            if (data[dType][key].marker.rangeCircle) {
+                                data[dType][key].marker.rangeCircle.setMap(null)
+                                delete data[dType][key].marker.rangeCircle
+                            }
+                            data[dType][key].marker.setMap(null)
+                        })
+                        data[dType] = {}
+                    })
+                }
             } else {
                 $.each(dataType, function (d, dType) {
                     $.each(data[dType], function (key, value) {
@@ -2391,7 +2504,6 @@ $(function () {
             }
         }
     }
-
     // Setup UI element interactions
     $('#gyms-switch').change(function () {
         var options = {
@@ -2414,6 +2526,20 @@ $(function () {
             wrapper2.hide(options)
         }
         buildSwitchChangeListener(mapData, ['gyms'], 'showGyms').bind(this)()
+    })
+    $('#raids-switch').change(function () {
+        var options = {
+            'duration': 500
+        }
+        var wrapper = $('#raids-filter-wrapper')
+        if (this.checked) {
+            lastgyms = false
+            wrapper.show(options)
+        } else {
+            lastgyms = false
+            wrapper.hide(options)
+        }
+        buildSwitchChangeListener(mapData, ['gyms'], 'showRaids').bind(this)()
     })
     $('#pokemon-switch').change(function () {
         buildSwitchChangeListener(mapData, ['pokemons'], 'showPokemon').bind(this)()

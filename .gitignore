@@ -18,7 +18,7 @@ _build
 _build_html
 beehive.*
 static/images/raid/*.png
-!static/images/raid/unknown.png
+!static/images/raid/*_unknown.png
 static/icons-sprite.png
 static/icons-large-sprite.png
 static/icons/*.png

@@ -866,6 +866,22 @@ var StoreOptions = {
         default: '',
         type: StoreTypes.Number
     },
+    'showRaids': {
+        default: false,
+        type: StoreTypes.Boolean
+    },
+    'showActiveRaidsOnly': {
+        default: false,
+        type: StoreTypes.Boolean
+    },
+    'showRaidMinLevel': {
+        default: 1,
+        type: StoreTypes.Number
+    },
+    'showRaidMaxLevel': {
+        default: 5,
+        type: StoreTypes.Number
+    },
     'showGyms': {
         default: false,
         type: StoreTypes.Boolean

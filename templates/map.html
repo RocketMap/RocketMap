@@ -65,6 +65,50 @@
               </div>
             </div>
               {% endif %}
+              {% if show.raids %}
+            <div class="form-control switch-container">
+              <h3>Raids</h3>
+              <div class="onoffswitch">
+                <input id="raids-switch" type="checkbox" name="raids-switch" class="onoffswitch-checkbox" checked>
+                <label class="onoffswitch-label" for="raids-switch">
+                <span class="switch-label" data-on="On" data-off="Off"></span>
+                <span class="switch-handle"></span>
+                </label>
+              </div>
+            </div>            
+            <div id="raids-filter-wrapper" style="display:none">
+              <div class="form-control switch-container" id="raid-active-gym-wrapper">
+                <h3>Show Active Raids only</h3>
+                <div class="onoffswitch">
+                  <input id="raid-active-gym-switch" type="checkbox" name="raid-active-gym-switch" class="onoffswitch-checkbox" checked>
+                  <label class="onoffswitch-label" for="raid-active-gym-switch">
+                  <span class="switch-label" data-on="On" data-off="Off"></span>
+                  <span class="switch-handle"></span>
+                  </label>
+                </div>
+              </div>
+              <div class="form-control switch-container" id="min-raid-level-only-wrapper">
+                <h3>Minimum Raid Level</h3>
+                <select name="raid-min-level-only-switch" id="raid-min-level-only-switch">
+                  <option value="1">Level 1</option>
+                  <option value="2">Level 2</option>
+                  <option value="3">Level 3</option>
+                  <option value="4">Level 4</option>
+                  <option value="5">Level 5</option>
+                </select>
+              </div>
+              <div class="form-control switch-container" id="max-raid-level-only-wrapper">
+                <h3>Maximum Raid Level</h3>
+                <select name="raid-max-level-only-switch" id="raid-max-level-only-switch">
+                  <option value="1">Level 1</option>
+                  <option value="2">Level 2</option>
+                  <option value="3">Level 3</option>
+                  <option value="4">Level 4</option>
+                  <option value="5">Level 5</option>
+                </select>
+              </div>
+            </div>
+              {% endif %}
               {% if show.gyms %}
             <div class="form-control switch-container">
               <h3>Gyms</h3>
@@ -144,7 +188,7 @@
                 </select>
               </div>
             </div>
-              {% endif %}
+              {% endif %}			  
               {% if show.pokestops %}
             <div class="form-control switch-container">
               <h3>Pokéstops</h3>
