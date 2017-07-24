@@ -11,7 +11,6 @@ import random
 import time
 import socket
 import struct
-import zipfile
 import requests
 import hashlib
 
@@ -951,19 +950,6 @@ def generate_device_info(identifier):
 
     device_info['firmware_type'] = ios_pool[pick_hash % len(ios_pool)]
     return device_info
-
-
-def extract_sprites(root_path):
-    zip_path = os.path.join(
-        root_path,
-        'static01.zip')
-    extract_path = os.path.join(
-        root_path,
-        'static')
-    log.debug('Extracting sprites from "%s" to "%s"', zip_path, extract_path)
-    zip = zipfile.ZipFile(zip_path, 'r')
-    zip.extractall(extract_path)
-    zip.close()
 
 
 def clear_dict_response(response):

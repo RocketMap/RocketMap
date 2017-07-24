@@ -5,7 +5,6 @@
   "main": "Gruntfile.js",
   "dependencies": {
     "babel-preset-env": "^1.6.0",
-    "cross-zip-cli": "^1.0.0",
     "eslint": "^3.1.1",
     "eslint-config-standard": "^5.3.5",
     "eslint-plugin-promise": "^2.0.0",
@@ -29,11 +28,11 @@
     "grunt-sass": "latest",
     "grunt-unused": "latest",
     "grunt-usemin": "latest",
+    "grunt-zip": "^0.17.1",
     "jit-grunt": "^0.10.0"
   },
   "scripts": {
-    "unzip": "cross-unzip static01.zip static/",
-    "build": "npm run unzip && grunt build",
+    "build": "grunt build",
     "watch": "grunt default",
     "lint": "grunt lint",
     "grunt": "grunt"

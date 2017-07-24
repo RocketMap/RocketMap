@@ -18,7 +18,7 @@ from flask_cache_bust import init_cache_busting
 
 from pogom import config
 from pogom.app import Pogom
-from pogom.utils import get_args, now, extract_sprites, gmaps_reverse_geolocate
+from pogom.utils import get_args, now, gmaps_reverse_geolocate
 from pogom.altitude import get_gmaps_altitude
 
 from pogom.models import (init_database, create_tables, drop_tables,
@@ -129,9 +129,8 @@ def validate_assets(args):
     # You need custom image files now.
     if not os.path.isfile(
             os.path.join(root_path, 'static/icons-sprite.png')):
-        log.info('Sprite files not present, extracting bundled ones...')
-        extract_sprites(root_path)
-        log.info('Done!')
+        log.critical(assets_error_log)
+        return False
 
     # Check if custom.css is used otherwise fall back to default.
     if os.path.exists(os.path.join(root_path, 'static/css/custom.css')):
