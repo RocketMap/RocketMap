@@ -1,4 +1,4 @@
-# CloudFlare
+# Cloudflare
 
 ## Prerequisites
 
