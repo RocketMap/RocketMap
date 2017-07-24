@@ -1,4 +1,4 @@
-/*eslint no-unused-vars: "off"*/
+/* eslint no-unused-vars: "off" */
 
 var noLabelsStyle = [{
     featureType: 'poi',
@@ -989,6 +989,10 @@ var StoreOptions = {
     'zoomLevel': {
         default: 16,
         type: StoreTypes.Number
+    },
+    'maxClusterZoomLevel': {
+        default: 14,
+        type: StoreTypes.Number
     }
 }
 
@@ -1051,16 +1055,11 @@ function getGoogleSprite(index, sprite, displayHeight) {
 }
 
 function setupPokemonMarker(item, map, isBounceDisabled) {
-    // Scale icon size up with the map exponentially
+    // Scale icon size up with the map exponentially.
     var iconSize = 2 + (map.getZoom() - 3) * (map.getZoom() - 3) * 0.2 + Store.get('iconSizeModifier')
     var pokemonIndex = item['pokemon_id'] - 1
     var sprite = pokemonSprites
     var icon = getGoogleSprite(pokemonIndex, sprite, iconSize)
-
-    var animationDisabled = false
-    if (isBounceDisabled === true) {
-        animationDisabled = true
-    }
 
     var marker = new google.maps.Marker({
         position: {
@@ -1068,12 +1067,22 @@ function setupPokemonMarker(item, map, isBounceDisabled) {
             lng: item['longitude']
         },
         zIndex: 9999,
-        map: map,
         icon: icon,
-        animationDisabled: animationDisabled
+        animationDisabled: isBounceDisabled
     })
 
     return marker
+}
+
+function updatePokemonMarker(item, map) {
+    // Scale icon size up with the map exponentially.
+    const iconSize = 2 + (map.getZoom() - 3) * (map.getZoom() - 3) * 0.2 + Store.get('iconSizeModifier')
+    const pokemonIndex = item['pokemon_id'] - 1
+    const sprite = pokemonSprites
+    const icon = getGoogleSprite(pokemonIndex, sprite, iconSize)
+    const marker = item.marker
+
+    marker.setIcon(icon)
 }
 
 function isTouchDevice() {

@@ -29,19 +29,12 @@
     "swal": true,
     "ga": true,
     "google": true,
-    "mapData": true,
-    "Store": true,
-    "centerLat": true,
-    "centerLng": true,
-    "showConfig": true,
-    "pageLoaded": true,
-    "countMarkers": true,
-    "skel": true,
-    "setupPokemonMarker": true,
+    "moment": false,
+    "MarkerClusterer": true,
 
     "isTouchDevice": true,
     "isMobileDevice": true,
-    "pokemonSprites": true,
+
     "noLabelsStyle": true,
     "darkStyle": true,
     "light2Style": true,
@@ -51,6 +44,20 @@
     "pGoStyleNoLabels": true,
     "pGoStyleDay": true,
     "pGoStyleNight": true,
-    "moment": false
+
+    "Store": true,
+    "mapData": true,
+
+    "pokemonSprites": true,
+    "centerLat": true,
+    "centerLng": true,
+    "clusterImagePath": true,
+    "showConfig": true,
+
+    "pageLoaded": true,
+    "countMarkers": true,
+    "skel": true,
+    "setupPokemonMarker": true,
+    "updatePokemonMarker": true
   }
 }

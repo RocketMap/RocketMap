@@ -40,6 +40,7 @@ var reincludedPokemon = []
 var reids = []
 
 var map
+var markerCluster
 var rawDataIsLoading = false
 var locationMarker
 const rangeMarkers = ['pokemon', 'pokestop', 'gym']
@@ -62,6 +63,7 @@ var selectedStyle = 'light'
 
 var updateWorker
 var lastUpdateTime
+var redrawTimeout = null
 
 const gymTypes = ['Uncontested', 'Mystic', 'Valor', 'Instinct']
 
@@ -147,6 +149,15 @@ function initMap() { // eslint-disable-line no-unused-vars
         }
     })
 
+    // Enable clustering.
+    var clusterOptions = {
+        imagePath: 'static/images/cluster/m',
+        maxZoom: Store.get('maxClusterZoomLevel'),
+        zoomOnClick: false
+    }
+
+    markerCluster = new MarkerClusterer(map, [], clusterOptions)
+
     var styleNoLabels = new google.maps.StyledMapType(noLabelsStyle, {
         name: 'No Labels'
     })
@@ -212,8 +223,18 @@ function initMap() { // eslint-disable-line no-unused-vars
             storeZoom = true
         }
 
-        redrawPokemon(mapData.pokemons)
-        redrawPokemon(mapData.lurePokemons)
+        // User scrolled again, reset our timeout.
+        if (redrawTimeout) {
+            clearTimeout(redrawTimeout)
+            redrawTimeout = null
+        }
+
+        // Don't redraw constantly even if the user scrolls multiple times,
+        // just add it on a timer.
+        redrawTimeout = setTimeout(function () {
+            redrawPokemon(mapData.pokemons, true)
+            redrawPokemon(mapData.lurePokemons, false)
+        }, 600)
     })
 
     searchMarker = createSearchMarker()
@@ -889,7 +910,7 @@ function repArray(text, find, replace) {
 }
 
 function getTimeUntil(time) {
-    var now = +new Date()
+    var now = Date.now()
     var tdiff = time - now
 
     var sec = Math.floor((tdiff / 1000) % 60)
@@ -912,12 +933,7 @@ function getNotifyText(item) {
     var replace = [((iv) ? iv.toFixed(1) : ''), item['pokemon_name'], item['individual_attack'],
         item['individual_defense'], item['individual_stamina']]
     var ntitle = repArray(((iv) ? notifyIvTitle : notifyNoIvTitle), find, replace)
-    var dist = (new Date(item['disappear_time'])).toLocaleString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-    })
+    var dist = moment().format('HH:mm:ss')
     var until = getTimeUntil(item['disappear_time'])
     var udist = (until.hour > 0) ? until.hour + ':' : ''
     udist += lpad(until.min, 2, 0) + 'm' + lpad(until.sec, 2, 0) + 's'
@@ -960,6 +976,18 @@ function playPokemonSound(pokemonID, cryFileTypes) {
     }
 }
 
+function isNotifyPoke(poke) {
+    const isOnNotifyList = notifiedPokemon.indexOf(poke['pokemon_id']) > -1 || notifiedRarity.indexOf(poke['pokemon_rarity']) > -1
+    var hasHighIV = false
+
+    if (poke['individual_attack'] != null) {
+        const perfection = getIv(poke['individual_attack'], poke['individual_defense'], poke['individual_stamina'])
+        hasHighIV = notifiedMinPerfection > 0 && perfection >= notifiedMinPerfection
+    }
+
+    return isOnNotifyList || hasHighIV
+}
+
 function customizePokemonMarker(marker, item, skipNotification) {
     var notifyText = getNotifyText(item)
     marker.addListener('click', function () {
@@ -976,26 +1004,13 @@ function customizePokemonMarker(marker, item, skipNotification) {
         disableAutoPan: true
     })
 
-    if (notifiedPokemon.indexOf(item['pokemon_id']) > -1 || notifiedRarity.indexOf(item['pokemon_rarity']) > -1) {
+    if (isNotifyPoke(item)) {
         if (!skipNotification) {
             playPokemonSound(item['pokemon_id'], cryFileTypes)
             sendNotification(notifyText.fav_title, notifyText.fav_text, 'static/icons/' + item['pokemon_id'] + '.png', item['latitude'], item['longitude'])
         }
         if (marker.animationDisabled !== true) {
             marker.setAnimation(google.maps.Animation.BOUNCE)
-        }
-    }
-
-    if (item['individual_attack'] != null) {
-        var perfection = getIv(item['individual_attack'], item['individual_defense'], item['individual_stamina'])
-        if (notifiedMinPerfection > 0 && perfection >= notifiedMinPerfection) {
-            if (!skipNotification) {
-                playPokemonSound(item['pokemon_id'], cryFileTypes)
-                sendNotification(notifyText.fav_title, notifyText.fav_text, 'static/icons/' + item['pokemon_id'] + '.png', item['latitude'], item['longitude'])
-            }
-            if (marker.animationDisabled !== true) {
-                marker.setAnimation(google.maps.Animation.BOUNCE)
-            }
         }
     }
 
@@ -1276,17 +1291,30 @@ function addListeners(marker) {
 }
 
 function clearStaleMarkers() {
+    const oldPokeMarkers = []
+
     $.each(mapData.pokemons, function (key, value) {
-        if (mapData.pokemons[key]['disappear_time'] < new Date().getTime() ||
-            excludedPokemon.indexOf(mapData.pokemons[key]['pokemon_id']) >= 0) {
-            if (mapData.pokemons[key].marker.rangeCircle) {
-                mapData.pokemons[key].marker.rangeCircle.setMap(null)
-                delete mapData.pokemons[key].marker.rangeCircle
+        const isPokeExpired = mapData.pokemons[key]['disappear_time'] < Date.now()
+        const isPokeExcluded = excludedPokemon.indexOf(mapData.pokemons[key]['pokemon_id']) !== -1
+
+        if (isPokeExpired || isPokeExcluded) {
+            const oldMarker = mapData.pokemons[key].marker
+
+            if (oldMarker.rangeCircle) {
+                oldMarker.rangeCircle.setMap(null)
+                delete oldMarker.rangeCircle
             }
-            mapData.pokemons[key].marker.setMap(null)
+
+            // If it was a Pokémon w/ notification it won't be in a cluster,
+            // but that doesn't matter because the MarkerClusterer will check
+            // for it itself.
+            oldPokeMarkers.push(oldMarker)
+            oldMarker.setMap(null)
             delete mapData.pokemons[key]
         }
     })
+
+    markerCluster.removeMarkers(oldPokeMarkers, true)
 
     $.each(mapData.lurePokemons, function (key, value) {
         if (mapData.lurePokemons[key]['lure_expiration'] < new Date().getTime() ||
@@ -1307,9 +1335,11 @@ function clearStaleMarkers() {
 
 function showInBoundsMarkers(markers, type) {
     $.each(markers, function (key, value) {
-        var marker = markers[key].marker
+        const item = markers[key]
+        const marker = item.marker
         var show = false
-        if (!markers[key].hidden) {
+
+        if (!item.hidden) {
             if (typeof marker.getBounds === 'function') {
                 if (map.getBounds().intersects(marker.getBounds())) {
                     show = true
@@ -1320,16 +1350,17 @@ function showInBoundsMarkers(markers, type) {
                 }
             }
         }
-        // marker has an associated range
+
+        // Marker has an associated range.
         if (show && rangeMarkers.indexOf(type) !== -1) {
-            // no range circle yet...let's create one
+            // No range circle yet... let's create one.
             if (!marker.rangeCircle) {
-                // but only if range is active
+                // But only if range is active.
                 if (isRangeActive(map)) {
-                    if (type === 'gym') marker.rangeCircle = addRangeCircle(marker, map, type, markers[key].team_id)
+                    if (type === 'gym') marker.rangeCircle = addRangeCircle(marker, map, type, item.team_id)
                     else marker.rangeCircle = addRangeCircle(marker, map, type)
                 }
-            } else { // there's already a range circle
+            } else { // There's already a range circle.
                 if (isRangeActive(map)) {
                     marker.rangeCircle.setMap(map)
                 } else {
@@ -1434,26 +1465,74 @@ function loadRawData() {
     })
 }
 
-function processPokemons(i, item) {
+function processPokemons(pokemon) {
     if (!Store.get('showPokemon')) {
-        return false // in case the checkbox was unchecked in the meantime.
+        return false // In case the checkbox was unchecked in the meantime.
     }
 
-    if (!(item['encounter_id'] in mapData.pokemons) &&
-        excludedPokemon.indexOf(item['pokemon_id']) < 0 && item['disappear_time'] > Date.now()) {
-        // add marker to map and item to dict
-        if (item.marker) {
-            item.marker.setMap(null)
+    const oldMarkers = []
+    const newMarkers = []
+
+    $.each(pokemon, function (i, poke) {
+        const markers = processPokemon(poke)
+        const newMarker = markers[0]
+        const oldMarker = markers[1]
+
+        // Don't add Pokémon marker to clusters if we're sending a notification.
+        if (!isNotifyPoke(poke)) {
+            if (newMarker) {
+                newMarkers.push(newMarker)
+            }
+
+            if (oldMarker) {
+                oldMarkers.push(oldMarker)
+            }
+        } else {
+            if (newMarker) {
+                newMarker.setMap(map)
+            }
+
+            if (oldMarker) {
+                oldMarker.setMap(null)
+            }
         }
-        if (!item.hidden) {
-            item.marker = setupPokemonMarker(item, map)
-            customizePokemonMarker(item.marker, item)
-            mapData.pokemons[item['encounter_id']] = item
-        }
-    }
+    })
+
+    // Disable instant redraw, we'll repaint ourselves after we've added the
+    // new markers.
+    markerCluster.removeMarkers(oldMarkers, true)
+    markerCluster.addMarkers(newMarkers, true)
 }
 
-function processPokestops(i, item) {
+function processPokemon(item) {
+    const isExcludedPoke = excludedPokemon.indexOf(item['pokemon_id']) !== -1
+    const isPokeAlive = item['disappear_time'] > Date.now()
+
+    var oldMarker = null
+    var newMarker = null
+
+    if (!(item['encounter_id'] in mapData.pokemons) &&
+         !isExcludedPoke && isPokeAlive) {
+        // Add marker to map and item to dict.
+        if (!item.hidden) {
+            if (item.marker) {
+                updatePokemonMarker(item.marker, map)
+            } else {
+                newMarker = setupPokemonMarker(item, map)
+                customizePokemonMarker(newMarker, item)
+                item.marker = newMarker
+            }
+
+            mapData.pokemons[item['encounter_id']] = item
+        } else {
+            oldMarker = item.marker
+        }
+    }
+
+    return [newMarker, oldMarker]
+}
+
+function processPokestop(i, item) {
     if (!Store.get('showPokestops')) {
         return false
     }
@@ -1523,7 +1602,7 @@ function updatePokestops() {
     }
 }
 
-function processGyms(i, item) {
+function processGym(i, item) {
     var gymLevel = getGymLevel(item)
     var raidLevel = getRaidLevel(item.raid)
 
@@ -1630,7 +1709,7 @@ function updateScanned() {
     })
 }
 
-function processSpawnpoints(i, item) {
+function processSpawnpoint(i, item) {
     if (!Store.get('showSpawnpoints')) {
         return false
     }
@@ -1664,18 +1743,21 @@ function updateSpawnPoints() {
 
 function updateMap() {
     loadRawData().done(function (result) {
-        $.each(result.pokemons, processPokemons)
-        $.each(result.pokestops, processPokestops)
-        $.each(result.gyms, processGyms)
+        processPokemons(result.pokemons)
+        $.each(result.pokestops, processPokestop)
+        $.each(result.gyms, processGym)
         $.each(result.scanned, processScanned)
-        $.each(result.spawnpoints, processSpawnpoints)
-        showInBoundsMarkers(mapData.pokemons, 'pokemon')
+        $.each(result.spawnpoints, processSpawnpoint)
+        // showInBoundsMarkers(mapData.pokemons, 'pokemon')
         showInBoundsMarkers(mapData.lurePokemons, 'pokemon')
         showInBoundsMarkers(mapData.gyms, 'gym')
         showInBoundsMarkers(mapData.pokestops, 'pokestop')
         showInBoundsMarkers(mapData.scanned, 'scanned')
         showInBoundsMarkers(mapData.spawnpoints, 'inbound')
         clearStaleMarkers()
+
+        // We're done processing. Redraw.
+        markerCluster.redraw()
 
         updateScanned()
         updateSpawnPoints()
@@ -1707,18 +1789,20 @@ function updateMap() {
     })
 }
 
-function redrawPokemon(pokemonList) {
-    var skipNotification = true
+function redrawPokemon(pokemonList, useMarkerCluster) {
     $.each(pokemonList, function (key, value) {
         var item = pokemonList[key]
+
         if (!item.hidden) {
-            if (item.marker.rangeCircle) item.marker.rangeCircle.setMap(null)
-            var newMarker = setupPokemonMarker(item, map, this.marker.animationDisabled)
-            customizePokemonMarker(newMarker, item, skipNotification)
-            item.marker.setMap(null)
-            pokemonList[key].marker = newMarker
+            updatePokemonMarker(item, map)
         }
     })
+
+    // We're done processing the list. Redraw.
+    if (useMarkerCluster) {
+        markerCluster.resetViewport()
+        markerCluster.redraw()
+    }
 }
 
 var updateLabelDiffTime = function () {
@@ -2172,8 +2256,8 @@ $(function () {
 
     $selectIconSize.on('change', function () {
         Store.set('iconSizeModifier', this.value)
-        redrawPokemon(mapData.pokemons)
-        redrawPokemon(mapData.lurePokemons)
+        redrawPokemon(mapData.pokemons, true)
+        redrawPokemon(mapData.lurePokemons, false)
     })
 
     $switchOpenGymsOnly = $('#open-gyms-only-switch')
@@ -2502,14 +2586,23 @@ $(function () {
                 }
             } else {
                 $.each(dataType, function (d, dType) {
+                    var oldPokeMarkers = []
                     $.each(data[dType], function (key, value) {
                         // for any marker you're turning off, you'll want to wipe off the range
                         if (data[dType][key].marker.rangeCircle) {
                             data[dType][key].marker.rangeCircle.setMap(null)
                             delete data[dType][key].marker.rangeCircle
                         }
-                        if (storageKey !== 'showRanges') data[dType][key].marker.setMap(null)
+                        if (storageKey !== 'showRanges') {
+                            data[dType][key].marker.setMap(null)
+                            if (dType === 'pokemons') {
+                                oldPokeMarkers.push(data[dType][key].marker)
+                            }
+                        }
                     })
+                    if (dType === 'pokemons') {
+                        markerCluster.removeMarkers(oldPokeMarkers)
+                    }
                     if (storageKey !== 'showRanges') data[dType] = {}
                 })
                 if (storageKey === 'showRanges') {
