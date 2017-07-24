@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends build-essential
  && apt-get purge -y --auto-remove build-essential \
  && rm -rf /var/lib/apt/lists/*
 
-COPY package.json Gruntfile.js /usr/src/app/
+COPY package.json Gruntfile.js static01.zip /usr/src/app/
 COPY static /usr/src/app/static
 
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential curl unzip \
