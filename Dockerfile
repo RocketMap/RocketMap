@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends build-essential
 COPY package.json Gruntfile.js /usr/src/app/
 COPY static /usr/src/app/static
 
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential curl \
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential curl unzip \
  && curl -sL https://deb.nodesource.com/setup_6.x | bash - \
  && apt-get install -y --no-install-recommends nodejs \
  && npm install \
