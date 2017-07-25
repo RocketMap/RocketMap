@@ -933,7 +933,7 @@ function getNotifyText(item) {
     var replace = [((iv) ? iv.toFixed(1) : ''), item['pokemon_name'], item['individual_attack'],
         item['individual_defense'], item['individual_stamina']]
     var ntitle = repArray(((iv) ? notifyIvTitle : notifyNoIvTitle), find, replace)
-    var dist = moment().format('HH:mm:ss')
+    var dist = moment(item['disappear_time']).format('HH:mm:ss')
     var until = getTimeUntil(item['disappear_time'])
     var udist = (until.hour > 0) ? until.hour + ':' : ''
     udist += lpad(until.min, 2, 0) + 'm' + lpad(until.sec, 2, 0) + 's'
