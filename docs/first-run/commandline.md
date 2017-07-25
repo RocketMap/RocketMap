@@ -5,28 +5,31 @@
                         [-ari ACCOUNT_REST_INTERVAL] [-ac ACCOUNTCSV]
                         [-hlvl HIGH_LVL_ACCOUNTS] [-bh] [-wph WORKERS_PER_HIVE]
                         [-l LOCATION] [-alt ALTITUDE] [-altv ALTITUDE_VARIANCE]
-                        [-uac] [-nj] [-al] [-st STEP_LIMIT] [-sd SCAN_DELAY]
+                        [-uac] [-nj] [-al] [-st STEP_LIMIT] [-gf GEOFENCE_FILE]
+                        [-gef GEOFENCE_EXCLUDED_FILE] [-nmpl] [-sd SCAN_DELAY]
                         [--spawn-delay SPAWN_DELAY] [-enc] [-cs] [-ck CAPTCHA_KEY]
                         [-cds CAPTCHA_DSK] [-mcd MANUAL_CAPTCHA_DOMAIN]
                         [-mcr MANUAL_CAPTCHA_REFRESH]
                         [-mct MANUAL_CAPTCHA_TIMEOUT] [-ed ENCOUNTER_DELAY]
-                        [-encwf ENC_WHITELIST_FILE] [-nostore]
+                        [-ignf IGNORELIST_FILE] [-encwf ENC_WHITELIST_FILE]
+                        [-nostore]
                         [-wwht WEBHOOK_WHITELIST | -wblk WEBHOOK_BLACKLIST | -wwhtf WEBHOOK_WHITELIST_FILE | -wblkf WEBHOOK_BLACKLIST_FILE]
                         [-ld LOGIN_DELAY] [-lr LOGIN_RETRIES] [-mf MAX_FAILURES]
                         [-me MAX_EMPTY] [-bsr BAD_SCAN_RETRY]
                         [-msl MIN_SECONDS_LEFT] [-dc] [-H HOST] [-P PORT]
                         [-L LOCALE] [-c] [-m MOCK] [-ns] [-os] [-sc] [-nfl] -k
                         GMAPS_KEY [--skip-empty] [-C] [-D DB] [-cd] [-np] [-ng]
-                        [-nk] [-ss [SPAWNPOINT_SCANNING]] [-speed] [-kph KPH]
-                        [-hkph HLVL_KPH] [-ldur LURE_DURATION]
+                        [-nr] [-nk] [-ss [SPAWNPOINT_SCANNING]] [-speed]
+                        [-kph KPH] [-hkph HLVL_KPH] [-ldur LURE_DURATION]
                         [--dump-spawnpoints] [-pd PURGE_DATA] [-px PROXY] [-pxsc]
                         [-pxt PROXY_TEST_TIMEOUT] [-pxre PROXY_TEST_RETRIES]
-                        [-pxbf PROXY_TEST_BACKOFF_FACTOR] [-pxc PROXY_TEST_CONCURRENCY]
-                        [-pxd PROXY_DISPLAY] [-pxf PROXY_FILE]
-                        [-pxr PROXY_REFRESH] [-pxo PROXY_ROTATION]
-                        [--db-type DB_TYPE] [--db-name DB_NAME]
-                        [--db-user DB_USER] [--db-pass DB_PASS]
-                        [--db-host DB_HOST] [--db-port DB_PORT]
+                        [-pxbf PROXY_TEST_BACKOFF_FACTOR]
+                        [-pxc PROXY_TEST_CONCURRENCY] [-pxd PROXY_DISPLAY]
+                        [-pxf PROXY_FILE] [-pxr PROXY_REFRESH]
+                        [-pxo PROXY_ROTATION] [--db-type DB_TYPE]
+                        [--db-name DB_NAME] [--db-user DB_USER]
+                        [--db-pass DB_PASS] [--db-host DB_HOST]
+                        [--db-port DB_PORT]
                         [--db-max_connections DB_MAX_CONNECTIONS]
                         [--db-threads DB_THREADS] [-wh WEBHOOKS] [-gi]
                         [--disable-clean] [--webhook-updates-only]
@@ -40,16 +43,17 @@
                         [-vci VERSION_CHECK_INTERVAL] [-el ENCRYPT_LIB]
                         [-odt ON_DEMAND_TIMEOUT] [--disable-blacklist]
                         [-tp TRUSTED_PROXIES] [--api-version API_VERSION]
-                        [-v [filename.log] | -vv [filename.log]]
+                        [-v | --verbosity VERBOSE] [--no-file-logs]
+                        [--log-path LOG_PATH]
 
     Args that start with '--' (eg. -a) can also be set in a config file
-    or specified via -cf). The recognized syntax for setting (key, value) pairs
-    is based on the INI and YAML formats (e.g. key=value or foo=TRUE). For full
-    documentation of the differences from the standards please refer to the
-    ConfigArgParse documentation. If an arg is specified in more than one place,
-    then commandline values override environment variables which override config
-    file values which override defaults.
-
+    (/config/config.ini or specified via -cf). The recognized syntax for setting 
+	(key, value) pairs is based on the INI and YAML formats (e.g. key=value 
+	or foo=TRUE). For full documentation of the differences from the standards 
+	please refer to the ConfigArgParse documentation. If an arg is specified in
+	more than one place, then commandline values override environment variables 
+	which override config file values which override defaults.
+    
     optional arguments:
       -h, --help            show this help message and exit [env var:
                             POGOMAP_HELP]
@@ -111,6 +115,18 @@
                             POGOMAP_ACCESS_LOGS]
       -st STEP_LIMIT, --step-limit STEP_LIMIT
                             Steps. [env var: POGOMAP_STEP_LIMIT]
+      -gf GEOFENCE_FILE, --geofence-file GEOFENCE_FILE
+                            Geofence file to define outer borders of the scan
+                            area. [env var: POGOMAP_GEOFENCE_FILE]
+      -gef GEOFENCE_EXCLUDED_FILE, --geofence-excluded-file GEOFENCE_EXCLUDED_FILE
+                            File to define excluded areas inside scan area.
+                            Regarded this as inverted geofence. Can be combined
+                            with geofence-file. [env var:
+                            POGOMAP_GEOFENCE_EXCLUDED_FILE]
+      -nmpl, --no-matplotlib
+                            Prevents the usage of matplotlib when running on
+                            incompatible hardware. [env var:
+                            POGOMAP_NO_MATPLOTLIB]
       -sd SCAN_DELAY, --scan-delay SCAN_DELAY
                             Time delay between requests in scan threads. [env var:
                             POGOMAP_SCAN_DELAY]
@@ -142,9 +158,16 @@
       -ed ENCOUNTER_DELAY, --encounter-delay ENCOUNTER_DELAY
                             Time delay between encounter pokemon in scan threads.
                             [env var: POGOMAP_ENCOUNTER_DELAY]
+      -ignf IGNORELIST_FILE, --ignorelist-file IGNORELIST_FILE
+                            File containing a list of File containing a list of
+                            Pokemon IDs to ignore, one line per ID. Spawnpoints
+                            will be saved, but ignored Pokemon won't be
+                            encountered, sent to webhooks or saved to the DB. [env
+                            var: POGOMAP_IGNORELIST_FILE]
       -encwf ENC_WHITELIST_FILE, --enc-whitelist-file ENC_WHITELIST_FILE
                             File containing a list of Pokemon IDs to encounter for
-                            IV/CP scanning. [env var: POGOMAP_ENC_WHITELIST_FILE]
+                            IV/CP scanning. One line per ID [env var:
+                            POGOMAP_ENC_WHITELIST_FILE]
       -nostore, --no-api-store
                             Don't store the API objects used by the high level
                             accounts in memory. This will increase the number of
@@ -225,6 +248,8 @@
                             into local db.) [env var: POGOMAP_NO_POKEMON]
       -ng, --no-gyms        Disables Gyms from the map (including parsing them
                             into local db). [env var: POGOMAP_NO_GYMS]
+      -nr, --no-raids       Disables Raids from the map (including parsing them
+                            into local db). [env var: POGOMAP_NO_RAIDS]
       -nk, --no-pokestops   Disables PokeStops from the map (including parsing
                             them into local db). [env var: POGOMAP_NO_POKESTOPS]
       -ss [SPAWNPOINT_SCANNING], --spawnpoint-scanning [SPAWNPOINT_SCANNING]
@@ -377,11 +402,12 @@
       --api-version API_VERSION
                             API version currently in use. [env var:
                             POGOMAP_API_VERSION]
-      -v [filename.log], --verbose [filename.log]
-                            Show debug messages from RocketMap and pgoapi.
-                            Optionally specify file to log to. [env var:
-                            POGOMAP_VERBOSE]
-      -vv [filename.log], --very-verbose [filename.log]
-                            Like verbose, but show debug messages from all modules
-                            as well. Optionally specify file to log to. [env var:
-                            POGOMAP_VERY_VERBOSE]
+      -v                    Show debug messages from RocketMap and pgoapi. Can be
+                            repeated up to 3 times.
+      --verbosity VERBOSE   Show debug messages from RocketMap and pgoapi. [env
+                            var: POGOMAP_VERBOSITY]
+      --no-file-logs        Disable logging to files. Does not disable --access-
+                            logs. [env var: POGOMAP_NO_FILE_LOGS]
+      --log-path LOG_PATH   Defines directory to save log files to. [env var:
+                            POGOMAP_LOG_PATH]
+    

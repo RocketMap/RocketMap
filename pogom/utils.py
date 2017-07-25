@@ -164,10 +164,16 @@ def get_args():
                         help=('Time delay between encounter pokemon ' +
                               'in scan threads.'),
                         type=float, default=1)
+    parser.add_argument('-ignf', '--ignorelist-file',
+                        default='', help='File containing a list of ' +
+                        'Pokemon IDs to ignore, one line per ID. ' +
+                        'Spawnpoints will be saved, but ignored ' +
+                        'Pokemon won\'t be encountered, sent to ' +
+                        'webhooks or saved to the DB.')
     parser.add_argument('-encwf', '--enc-whitelist-file',
                         default='', help='File containing a list of '
                         'Pokemon IDs to encounter for'
-                        ' IV/CP scanning.')
+                        ' IV/CP scanning. One line per ID.')
     parser.add_argument('-nostore', '--no-api-store',
                         help=("Don't store the API objects used by the high"
                               + ' level accounts in memory. This will increase'
@@ -733,6 +739,12 @@ def get_args():
                 [int(i) for i in args.webhook_blacklist])
             args.webhook_whitelist = frozenset(
                 [int(i) for i in args.webhook_whitelist])
+
+        # create an empty set
+        args.ignorelist = []
+        if args.ignorelist_file:
+            with open(args.ignorelist_file) as f:
+                args.ignorelist = frozenset([int(l.strip()) for l in f])
 
         # Decide which scanning mode to use.
         if args.spawnpoint_scanning:

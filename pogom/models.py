@@ -1845,6 +1845,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
     gyms = {}
     raids = {}
     skipped = 0
+    filtered = 0
     stopsskipped = 0
     forts = []
     forts_count = 0
@@ -1996,6 +1997,15 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                 timedelta(seconds=seconds_until_despawn)
 
             pokemon_id = p.pokemon_data.pokemon_id
+
+            # If this is an ignored pokemon, skip this whole section.
+            # We want the stuff above or we will impact spawn detection
+            # but we don't want to insert it, or send it to webhooks.
+            if args.ignorelist_file and pokemon_id in args.ignorelist:
+                log.debug('Ignoring Pokemon id: %i.', pokemon_id)
+                filtered += 1
+                continue
+
             printPokemon(pokemon_id, p.latitude, p.longitude,
                          disappear_time)
 
@@ -2257,9 +2267,10 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
         # Helping out the GC.
         del forts
 
-    log.info('Parsing found Pokemon: %d, nearby: %d, pokestops: %d,' +
-             ' gyms: %d, raids: %d.',
+    log.info('Parsing found Pokemon: %d (%d filtered), nearby: %d, ' +
+             'pokestops: %d, gyms: %d, raids: %d.',
              len(pokemon) + skipped,
+             filtered,
              nearby_pokemon,
              len(pokestops) + stopsskipped,
              len(gyms),
