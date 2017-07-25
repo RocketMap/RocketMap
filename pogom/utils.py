@@ -409,6 +409,10 @@ def get_args():
     parser.add_argument('-whlfu', '--wh-lfu-size',
                         help='Webhook LFU cache max size.', type=int,
                         default=2500)
+    parser.add_argument('-whfi', '--wh-frame-interval',
+                        help=('Minimum time (in ms) to wait before sending the'
+                              + ' next webhook data frame.'), type=int,
+                        default=500)
     parser.add_argument('-whsu', '--webhook-scheduler-updates',
                         help=('Send webhook updates with scheduler status ' +
                               '(use with -wh).'),
