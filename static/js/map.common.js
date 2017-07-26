@@ -993,6 +993,22 @@ var StoreOptions = {
     'maxClusterZoomLevel': {
         default: 14,
         type: StoreTypes.Number
+    },
+    'clusterZoomOnClick': {
+        default: false,
+        type: StoreTypes.Boolean
+    },
+    'clusterGridSize': {
+        default: 60,
+        type: StoreTypes.Number
+    },
+    'processPokemonChunkSize': {
+        default: 100,
+        type: StoreTypes.Number
+    },
+    'processPokemonIntervalMs': {
+        default: 100,
+        type: StoreTypes.Number
     }
 }
 

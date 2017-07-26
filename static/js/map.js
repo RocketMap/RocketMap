@@ -153,7 +153,8 @@ function initMap() { // eslint-disable-line no-unused-vars
     var clusterOptions = {
         imagePath: 'static/images/cluster/m',
         maxZoom: Store.get('maxClusterZoomLevel'),
-        zoomOnClick: false
+        zoomOnClick: Store.get('clusterZoomOnClick'),
+        gridSize: Store.get('clusterGridSize')
     }
 
     markerCluster = new MarkerClusterer(map, [], clusterOptions)
@@ -1476,10 +1477,23 @@ function processPokemons(pokemon) {
         return false // In case the checkbox was unchecked in the meantime.
     }
 
+    // Process Pokémon per chunk of total so we don't overwhelm the client and
+    // allow redraws in between. We enable redraw in addMarkers, which doesn't
+    // repaint/reset all previous markers but only draws new ones.
+    processPokemonChunked(pokemon, Store.get('processPokemonChunkSize'))
+}
+
+function processPokemonChunked(pokemon, chunkSize) {
+    // Early skip if we have none to process.
+    if (pokemon.length === 0) {
+        return
+    }
+
     const oldMarkers = []
     const newMarkers = []
+    const chunk = pokemon.splice(-1 * chunkSize)
 
-    $.each(pokemon, function (i, poke) {
+    $.each(chunk, function (i, poke) {
         const markers = processPokemon(poke)
         const newMarker = markers[0]
         const oldMarker = markers[1]
@@ -1507,7 +1521,14 @@ function processPokemons(pokemon) {
     // Disable instant redraw, we'll repaint ourselves after we've added the
     // new markers.
     markerCluster.removeMarkers(oldMarkers, true)
-    markerCluster.addMarkers(newMarkers, true)
+    markerCluster.addMarkers(newMarkers, false)
+
+    // Any left?
+    if (pokemon.length > 0) {
+        setTimeout(function () {
+            processPokemonChunked(pokemon, chunkSize)
+        }, Store.get('processPokemonIntervalMs'))
+    }
 }
 
 function processPokemon(item) {
