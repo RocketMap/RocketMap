@@ -417,21 +417,21 @@ function initSidebar() {
     if (elSearchBox) {
         var searchBox = new google.maps.places.Autocomplete(elSearchBox)
         $(elSearchBox).css('background-color', $('#geoloc-switch').prop('checked') ? '#e0e0e0' : '#ffffff')
+
+        searchBox.addListener('place_changed', function () {
+            var place = searchBox.getPlace()
+
+            if (!place.geometry) return
+
+            var loc = place.geometry.location
+            changeLocation(loc.lat(), loc.lng())
+        })
     }
 
     if ($('#search-switch').length) {
         updateSearchStatus()
         setInterval(updateSearchStatus, 5000)
     }
-
-    searchBox.addListener('place_changed', function () {
-        var place = searchBox.getPlace()
-
-        if (!place.geometry) return
-
-        var loc = place.geometry.location
-        changeLocation(loc.lat(), loc.lng())
-    })
 
     $('#pokemon-icon-size').val(Store.get('iconSizeModifier'))
 }
