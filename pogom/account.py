@@ -327,19 +327,22 @@ def rpc_login_sequence(args, api, account):
                                 + ' login sequence for account %s.',
                                 account['username'])
 
-    # Needs updated PGoApi to be used.
-    # log.debug('Retrieving Store Items...')
-    # try:  # 7 - Make an empty request to retrieve store items.
-    #    request = api.create_request()
-    #    request.get_store_items()
-    #    response = request.call()
-    #    total_req += 1
-    #    time.sleep(random.uniform(.6, 1.1))
-    # except Exception as e:
-    #    log.exception('Login for account %s failed. Exception in ' +
-    #                  'retrieving Store Items: %s.', account['username'],
-    #                  e)
-    #    raise LoginSequenceFail('Failed during login sequence.')
+    log.debug('Retrieving Store Items...')
+    try:  # 7 - Make an empty request to retrieve store items.
+        request = api.create_request()
+        request.get_store_items()
+        response = request.call()
+        total_req += 1
+        time.sleep(random.uniform(.6, 1.1))
+    except Exception as e:
+        log.exception('Login for account %s failed.' +
+                      ' Exception occurred while fetching store items:' +
+                      ' %s.',
+                      account['username'],
+                      e)
+        raise LoginSequenceFail('Failed while getting store items in login' +
+                                ' sequence for account %s.',
+                                account['username'])
 
     # 8 - Check if there are level up rewards to claim.
     log.debug('Checking if there are level up rewards to claim...')
