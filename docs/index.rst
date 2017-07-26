@@ -3,7 +3,7 @@ Welcome to RocketMap's Documentation!
 
 RocketMap gives you a live visualization map of nearby Pokémon, Pokéstops, and gyms in a form of a web-app as well as native phone application
 
-.. image:: _static/img/cover.png
+.. image:: _static/RocketMap.png
     :align: center
 
 [ Wanting to install and run RocketMap for the first time? `Start here! <https://rocketmap.readthedocs.io/en/develop/basic-install/index.html>`_ ]
