@@ -410,8 +410,14 @@ function initSidebar() {
     $('#sound-switch').prop('checked', Store.get('playSound'))
     $('#pokemoncries').toggle(Store.get('playSound'))
     $('#cries-switch').prop('checked', Store.get('playCries'))
-    var searchBox = new google.maps.places.Autocomplete(document.getElementById('next-location'))
-    $('#next-location').css('background-color', $('#geoloc-switch').prop('checked') ? '#e0e0e0' : '#ffffff')
+
+    // Only create the Autocomplete element if it's enabled in template.
+    var elSearchBox = document.getElementById('next-location')
+
+    if (elSearchBox) {
+        var searchBox = new google.maps.places.Autocomplete(elSearchBox)
+        $(elSearchBox).css('background-color', $('#geoloc-switch').prop('checked') ? '#e0e0e0' : '#ffffff')
+    }
 
     if ($('#search-switch').length) {
         updateSearchStatus()
