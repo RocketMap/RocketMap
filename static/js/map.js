@@ -1490,8 +1490,8 @@ function processPokemons(pokemon) {
 }
 
 function processPokemonChunked(pokemon, chunkSize) {
-    // Early skip if we have none to process.
-    if (pokemon.length === 0) {
+    // Early skip if we have nothing to process.
+    if (typeof pokemon === 'undefined' || pokemon.length === 0) {
         return
     }
 
