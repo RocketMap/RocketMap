@@ -385,9 +385,15 @@ def get_args():
                         action='store_true', default=False)
     parser.add_argument('--disable-clean', help='Disable clean db loop.',
                         action='store_true', default=False)
-    parser.add_argument('--webhook-updates-only',
-                        help='Only send updates (Pokemon & lured pokestops).',
-                        action='store_true', default=False)
+    parser.add_argument(
+        '--wh-types',
+        help=('Defines the type of messages to send to webhooks.'),
+        choices=[
+            'pokemon', 'gym', 'raid', 'egg', 'tth', 'gym-info',
+            'pokestop', 'lure'
+        ],
+        action='append',
+        default=[])
     parser.add_argument('--wh-threads',
                         help=('Number of webhook threads; increase if the ' +
                               'webhook queue falls behind.'),
@@ -413,10 +419,6 @@ def get_args():
                         help=('Minimum time (in ms) to wait before sending the'
                               + ' next webhook data frame.'), type=int,
                         default=500)
-    parser.add_argument('-whsu', '--webhook-scheduler-updates',
-                        help=('Send webhook updates with scheduler status ' +
-                              '(use with -wh).'),
-                        action='store_true', default=True)
     parser.add_argument('--ssl-certificate',
                         help='Path to SSL certificate file.')
     parser.add_argument('--ssl-privatekey',
@@ -762,7 +764,9 @@ def get_args():
 
         # Disable webhook scheduler updates if webhooks are disabled
         if args.webhooks is None:
-            args.webhook_scheduler_updates = False
+            args.wh_types = frozenset()
+        else:
+            args.wh_types = frozenset([i for i in args.wh_types])
 
     return args
 

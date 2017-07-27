@@ -566,7 +566,7 @@ def search_overseer_thread(args, new_location_queue, control_flags, heartb,
         threadStatus['Overseer']['accounts_captcha'] = len(account_captchas)
 
         # Send webhook updates when scheduler status changes.
-        if args.webhook_scheduler_updates:
+        if args.speed_scan and 'tth' in args.wh_types:
             wh_status_update(args, threadStatus['Overseer'], wh_queue,
                              scheduler_array[0])
 
@@ -593,17 +593,16 @@ def get_scheduler_tth_found_pct(scheduler):
 def wh_status_update(args, status, wh_queue, scheduler):
     scheduler_name = status['scheduler']
 
-    if args.speed_scan:
-        tth_found = get_scheduler_tth_found_pct(scheduler)
-        spawns_found = getattr(scheduler, 'spawns_found', 0)
+    tth_found = get_scheduler_tth_found_pct(scheduler)
+    spawns_found = getattr(scheduler, 'spawns_found', 0)
 
-        if (tth_found - status['scheduler_status']['tth_found']) > 0.01:
-            log.debug('Scheduler update is due, sending webhook message.')
-            wh_queue.put(('scheduler', {'name': scheduler_name,
-                                        'instance': args.status_name,
-                                        'tth_found': tth_found,
-                                        'spawns_found': spawns_found}))
-            status['scheduler_status']['tth_found'] = tth_found
+    if (tth_found - status['scheduler_status']['tth_found']) > 0.01:
+        log.debug('Scheduler update is due, sending webhook message.')
+        wh_queue.put(('scheduler', {'name': scheduler_name,
+                                    'instance': args.status_name,
+                                    'tth_found': tth_found,
+                                    'spawns_found': spawns_found}))
+        status['scheduler_status']['tth_found'] = tth_found
 
 
 def get_stats_message(threadStatus, search_items_queue_array, db_updates_queue,
