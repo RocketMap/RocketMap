@@ -82,8 +82,9 @@ def init_database(app):
                                    ('cache_size', 10000),
                                    ('journal_size_limit', 1024 * 1024 * 4),))
 
-    app.config['DATABASE'] = db
-    flaskDb.init_app(app)
+    # Using internal method as the other way would be using internal var, we
+    # could use initializer but db is initialized later
+    flaskDb._load_database(app, db)
 
     return db
 
