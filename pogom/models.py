@@ -85,7 +85,8 @@ def init_database(app):
     # Using internal method as the other way would be using internal var, we
     # could use initializer but db is initialized later
     flaskDb._load_database(app, db)
-
+    if app is not None:
+        flaskDb._register_handlers(app)
     return db
 
 
