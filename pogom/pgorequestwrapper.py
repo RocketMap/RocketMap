@@ -36,37 +36,43 @@ class PGoRequestWrapper:
         else:
             return orig_attr
 
-    def do_call(self, retries_left, *args, **kwargs):
-        try:
-            log.debug('Sending API request w/ %d retries left.', retries_left)
-            return self.request.call(*args, **kwargs)
-        except HashingQuotaExceededException:
-            # Sleep a minimum to free some RPM.
-            time.sleep(random.uniform(0.75, 1.5))
-        except:
-            pass
-
-        # If we've reached here, an exception was raised and the function
-        # hasn't returned yet.
-
-        # Try again if we have retries left.
-        if retries_left > 0:
-            if self.args.proxy:
-                # Rotate proxy.
-                proxy_idx, proxy_url = get_new_proxy(get_args())
-
-                if proxy_url:
-                    log.debug('Changed to proxy: %s.', proxy_url)
-                    proxy_config = {'http': proxy_url, 'https': proxy_url}
-                    parent = self.request.__parent__
-                    parent.set_proxy(proxy_config)
-                    parent._auth_provider.set_proxy(proxy_config)
-
-            log.debug('API request failed. Retrying...')
-            return self.do_call(retries_left - 1, *args, **kwargs)
-        else:
-            raise
-
     def call(self, *args, **kwargs):
         # Retry x times on failure.
-        return self.do_call(self.retries, *args, **kwargs)
+        retries_left = self.retries
+
+        while retries_left > 0:
+            try:
+                log.debug('Sending API request w/ %d retries left.',
+                          retries_left)
+                return self.request.call(*args, **kwargs)
+            except HashingQuotaExceededException:
+                # Sleep a minimum to free some RPM and don't use one of our
+                # retries, just retry until we have RPM left.
+                time.sleep(random.uniform(0.75, 1.5))
+                log.debug('Hashing quota exceeded. If this delays requests for'
+                          ' too long, consider adding more RPM. Retrying...')
+            except:
+                if retries_left > 0:
+                    retries_left -= 1
+
+                    log.debug('API request failed. Retrying...')
+
+                    # Rotate proxy. Not necessary on
+                    # HashingQuotaExceededException, because it's proof that
+                    # the proxy worked.
+                    if self.args.proxy:
+                        proxy_idx, proxy_url = get_new_proxy(get_args())
+
+                        if proxy_url:
+                            log.debug('Changed to proxy: %s.', proxy_url)
+                            proxy_config = {
+                                'http': proxy_url,
+                                'https': proxy_url
+                            }
+                            parent = self.request.__parent__
+                            parent.set_proxy(proxy_config)
+                            parent._auth_provider.set_proxy(proxy_config)
+
+        # If we've reached here, we have no retries left and an exception
+        # still occurred.
+        raise
