@@ -180,6 +180,9 @@ def get_args():
                               + ' the number of logins per account, but '
                               + ' decreases memory usage.'),
                         action='store_true', default=False)
+    parser.add_argument('-apir', '--api-retries',
+                        help=('Number of times to retry an API request.'),
+                        type=int, default=3)
     webhook_list = parser.add_mutually_exclusive_group()
     webhook_list.add_argument('-wwht', '--webhook-whitelist',
                               action='append', default=[],

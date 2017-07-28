@@ -22,6 +22,7 @@ from threading import Thread
 
 from pgoapi import PGoApi
 from .fakePogoApi import FakePogoApi
+from .pgoapiwrapper import PGoApiWrapper
 
 from .models import Token
 from .transform import jitter_location
@@ -115,7 +116,7 @@ def captcha_solver_thread(args, account_queue, account_captchas, hash_key,
     if args.mock != '':
         api = FakePogoApi(args.mock)
     else:
-        api = PGoApi()
+        api = PGoApiWrapper(PGoApi())
 
     if hash_key:
         log.debug('Using key {} for solving this captcha.'.format(hash_key))

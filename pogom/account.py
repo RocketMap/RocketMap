@@ -11,6 +11,7 @@ from pgoapi import PGoApi
 from pgoapi.exceptions import AuthException
 
 from .fakePogoApi import FakePogoApi
+from .pgoapiwrapper import PGoApiWrapper
 from .utils import (in_radius, generate_device_info, equi_rect_distance,
                     clear_dict_response)
 from .proxy import get_new_proxy
@@ -41,7 +42,7 @@ def setup_api(args, status, account):
     else:
         identifier = account['username'] + account['password']
         device_info = generate_device_info(identifier)
-        api = PGoApi(device_info=device_info)
+        api = PGoApiWrapper(PGoApi(device_info=device_info))
 
     # New account - new proxy.
     if args.proxy:
