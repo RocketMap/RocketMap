@@ -58,7 +58,7 @@ Using a [hashing  key](https://hashing.pogodev.org/) is mandatory at this point.
 
 ### Is there anything I can do to lower captchas?
 
-Yes, you can run with `-tut` to level your workers to level two (spinning a single pokéstop), this reduces captchas a lot. You may also consider scanning a smaller area, using less workers or encountering less pokemon for IV.
+Yes, you can enable pokestop spinning to level your workers to level two (spinning a single pokéstop), this reduces captchas a lot. You may also consider scanning a smaller area, using less workers or encountering less pokemon for IV.
 
 ### How many workers do I need?
 
@@ -145,7 +145,7 @@ cells = map_dict['responses']['GET_MAP_OBJECTS']['map_cells']
 KeyError: 'map_cells'
 ```
 
-The account is banned or hasn't completed the tutorial.
+The account is banned.
 
 #### Database error
 

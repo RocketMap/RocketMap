@@ -41,7 +41,7 @@
                     [--ssl-certificate SSL_CERTIFICATE]
                     [--ssl-privatekey SSL_PRIVATEKEY] [-ps [logs]]
                     [-slt STATS_LOG_TIMER] [-sn STATUS_NAME]
-                    [-spp STATUS_PAGE_PASSWORD] [-hk HASH_KEY] [-tut] [-novc]
+                    [-spp STATUS_PAGE_PASSWORD] [-hk HASH_KEY] [-novc]
                     [-vci VERSION_CHECK_INTERVAL] [-el ENCRYPT_LIB]
                     [-odt ON_DEMAND_TIMEOUT] [--disable-blacklist]
                     [-tp TRUSTED_PROXIES] [--api-version API_VERSION]
@@ -376,9 +376,6 @@
                             POGOMAP_STATUS_PAGE_PASSWORD]
       -hk HASH_KEY, --hash-key HASH_KEY
                             Key for hash server [env var: POGOMAP_HASH_KEY]
-      -tut, --complete-tutorial
-                            Complete ToS and tutorial steps on accounts if they
-                            haven't already. [env var: POGOMAP_COMPLETE_TUTORIAL]
       -novc, --no-version-check
                             Disable API version check. [env var:
                             POGOMAP_NO_VERSION_CHECK]

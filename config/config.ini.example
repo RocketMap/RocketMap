@@ -13,6 +13,7 @@
 #auth-service:                  # ptc (default) or google
 #username:                      # Usernames, one per account. (default=[])
 #password:                      # Passwords, either single one for all accounts or one per account. (default=[])
+#hash-key:                      # Key for hash server (default=None)
 
 
 # Common settings
@@ -20,7 +21,6 @@
 
 #host:                          # Address to listen on (default='127.0.0.1')
 #port:                          # Port to listen on (default=5000)
-#hash-key:                      # Key for hash server (default=None)
 #accountcsv:                    # Load accounts instead from a CSV file containing "auth-service,username,password" lines.
 #speed-scan                     # Use speed-scan as the search scheduler.
 #location:                      # Location, can be an address or coordinates.
@@ -87,7 +87,6 @@
 #gym-info                       # Enables detailed gym info collection. (default=False)
 #pokestop-spinning              # Spin Pokestops with "50%" Chance (default=False)
 #account-max-spins              # Maximum number of Pokestop spins per hour (default=80)
-#complete-tutorial              # Complete ToS and tutorial steps on accounts if they haven't already.
 #on-demand_timeout:             # Pause searching while web UI is inactive for this timeout (in seconds). (default=0)
 
 

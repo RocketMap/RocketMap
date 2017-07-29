@@ -119,7 +119,7 @@ The most basic config you could use would look something like this:
 
 .. code-block:: bash
 
- python ./runserver.py -ac accounts.csv -tut -st 10 \
+ python ./runserver.py -ac accounts.csv -st 10 \
  -l "a street address or lat/lng coords here" -k "MAPS_KEY_HERE" \
  -hk "HASH_KEY_HERE" -cs -ck "CAPTCHA_KEY"
 
@@ -128,8 +128,6 @@ Let's run through this startup command to make sure you understand what flags ar
 * -ac accounts.csv
 Load accounts from CSV (Comma Seperated Values) file containing "auth_service,username,password" lines. `More Info <http://rocketmap.readthedocs.io/en/develop/first-run/multi-account.html>`_
 
-* -tut
-Complete ToS and tutorial steps on accounts if they haven't already. `More Info <http://rocketmap.readthedocs.io/en/develop/first-run/tutorial.html>`_
 
 * -hk "HASH_KEY_HERE"
 Key used to access the hash server. `More Info <http://rocketmap.readthedocs.io/en/develop/first-run/hashing.html>`_
