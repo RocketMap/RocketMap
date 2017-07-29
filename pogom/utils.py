@@ -308,7 +308,7 @@ def get_args():
                               'and then scan closest spawns.'),
                         action='store_true', default=False)
     parser.add_argument('-spin', '--pokestop-spinning',
-                        help=('Spin Pokestops with "50%" Chance'),
+                        help=('Spin Pokestops with 50%% probability.'),
                         action='store_true', default=False)
     parser.add_argument('-ams', '--account-max-spins',
                         help='Maximum number of Pokestop spins per hour.',
