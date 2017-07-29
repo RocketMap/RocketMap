@@ -31,7 +31,7 @@
     "google": true,
     "moment": false,
     "MarkerClusterer": true,
-
+    "isNotifyPoke": true,
     "isTouchDevice": true,
     "isMobileDevice": true,
 
