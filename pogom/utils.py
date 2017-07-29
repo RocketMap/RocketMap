@@ -953,11 +953,13 @@ def generate_device_info(identifier):
                    'firmware_brand': 'iPhone OS'}
     devices = tuple(IPHONES.keys())
 
-    ios8 = ('8.0', '8.0.1', '8.0.2', '8.1', '8.1.1',
-            '8.1.2', '8.1.3', '8.2', '8.3', '8.4', '8.4.1')
-    ios9 = ('9.0', '9.0.1', '9.0.2', '9.1', '9.2', '9.2.1',
-            '9.3', '9.3.1', '9.3.2', '9.3.3', '9.3.4', '9.3.5')
-    ios10 = ('10.0', '10.0.1', '10.0.2', '10.0.3', '10.1', '10.1.1')
+    ios8 = ('8.0', '8.0.1', '8.0.2', '8.1', '8.1.1', '8.1.2', '8.1.3', '8.2',
+            '8.3', '8.4', '8.4.1')
+    ios9 = ('9.0', '9.0.1', '9.0.2', '9.1', '9.2', '9.2.1', '9.3', '9.3.1',
+            '9.3.2', '9.3.3', '9.3.4', '9.3.5')
+    # 10.0 was only for iPhone 7 and 7 Plus, and is rare.
+    ios10 = ('10.0.1', '10.0.2', '10.0.3', '10.1', '10.1.1', '10.2', '10.2.1',
+             '10.3', '10.3.1', '10.3.2', '10.3.3')
 
     device_pick = devices[pick_hash % len(devices)]
     device_info['device_model_boot'] = device_pick
@@ -966,8 +968,11 @@ def generate_device_info(identifier):
 
     if device_pick in ('iPhone9,1', 'iPhone9,2', 'iPhone9,3', 'iPhone9,4'):
         ios_pool = ios10
-    elif device_pick in ('iPhone8,1', 'iPhone8,2', 'iPhone8,4'):
+    elif device_pick in ('iPhone8,1', 'iPhone8,2'):
         ios_pool = ios9 + ios10
+    elif device_pick == 'iPhone8,4':
+        # iPhone SE started on 9.3.
+        ios_pool = ('9.3', '9.3.1', '9.3.2', '9.3.3', '9.3.4', '9.3.5') + ios10
     else:
         ios_pool = ios8 + ios9 + ios10
 
