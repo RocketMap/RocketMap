@@ -51,11 +51,12 @@ class PGoRequestWrapper:
                 time.sleep(random.uniform(0.75, 1.5))
                 log.debug('Hashing quota exceeded. If this delays requests for'
                           ' too long, consider adding more RPM. Retrying...')
-            except:
+            except Exception as ex:
                 if retries_left > 0:
                     retries_left -= 1
 
-                    log.debug('API request failed. Retrying...')
+                    log.debug('API request failed with exception type %s.'
+                              ' Retrying...', type(ex).__name__)
 
                     # Rotate proxy. Not necessary on
                     # HashingQuotaExceededException, because it's proof that
