@@ -41,11 +41,11 @@ def get_proxy_test_status(proxy, future_ptc, future_niantic):
     try:
         ptc_response = future_ptc.result()
         niantic_response = future_niantic.result()
-    except requests.ConnectTimeout:
+    except requests.exceptions.ConnectTimeout:
         proxy_error = ('Connection timeout for'
                        + ' proxy {}.').format(proxy)
         check_result = check_result_timeout
-    except requests.ConnectionError:
+    except requests.exceptions.ConnectionError:
         proxy_error = 'Failed to connect to proxy {}.'.format(proxy)
         check_result = check_result_failed
     except Exception as e:
