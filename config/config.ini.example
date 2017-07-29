@@ -85,6 +85,8 @@
 #skip-empty                     # Enables skipping of empty cells in normal scans - requires previously populated database. (not to be used with -ss)
 #min-seconds-left:              # Time that must be left on a spawn before considering it too late and skipping it. (default=0)
 #gym-info                       # Enables detailed gym info collection. (default=False)
+#pokestop-spinning              # Spin Pokestops with "50%" Chance (default=False)
+#account-max-spins              # Maximum number of Pokestop spins per hour (default=80)
 #complete-tutorial              # Complete ToS and tutorial steps on accounts if they haven't already.
 #on-demand_timeout:             # Pause searching while web UI is inactive for this timeout (in seconds). (default=0)
 

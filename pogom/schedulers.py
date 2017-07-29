@@ -1026,7 +1026,6 @@ class SpeedScan(HexSearch):
                 'invalid': ('Invalid response at step {}, abandoning ' +
                             'location.').format(step)
             }
-
             try:
                 item = q[i]
             except IndexError:

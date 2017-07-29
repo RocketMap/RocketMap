@@ -10,6 +10,7 @@ import gc
 import time
 import geopy
 import math
+
 from peewee import (InsertQuery, Check, CompositeKey, ForeignKeyField,
                     SmallIntegerField, IntegerField, CharField, DoubleField,
                     BooleanField, DateTimeField, fn, DeleteQuery, FloatField,
@@ -33,8 +34,8 @@ from .utils import (get_pokemon_name, get_pokemon_rarity, get_pokemon_types,
 from .transform import transform_from_wgs_to_gcj, get_new_coords
 from .customLog import printPokemon
 
-from .account import (tutorial_pokestop_spin, check_login,
-                      setup_api, encounter_pokemon_request)
+from .account import (check_login, setup_api, encounter_pokemon_request,
+                      pokestop_spinnable, spin_pokestop)
 from .proxy import get_new_proxy
 
 log = logging.getLogger(__name__)
@@ -2091,16 +2092,6 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                     (f['last_modified'] -
                      datetime(1970, 1, 1)).total_seconds())) for f in query]
 
-        # Complete tutorial with a Pokestop spin
-        if args.complete_tutorial:
-            if config['parse_pokestops']:
-                tutorial_pokestop_spin(
-                    api, level, forts, step_location, account)
-            else:
-                log.error(
-                    'Pokestop can not be spun since parsing Pokestops is ' +
-                    'not active. Check if \'-nk\' flag is accidentally set.')
-
         for f in forts:
             if config['parse_pokestops'] and f.type == 1:  # Pokestops.
                 if len(f.active_fort_modifier) > 0:
@@ -2252,6 +2243,13 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                                 'longitude': f.longitude
                             })
                             wh_update_queue.put(('raid', wh_raid))
+
+        # Let db do it's things while we try to spin.
+        if args.pokestop_spinning:
+            for f in forts:
+                # Spin Pokestop with 50% chance.
+                if f.type == 1 and pokestop_spinnable(f, step_location):
+                    spin_pokestop(api, account, args, f, step_location)
 
         # Helping out the GC.
         del forts
