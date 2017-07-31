@@ -51,6 +51,7 @@ html, body {
   @include icon('\f002');
   position: fixed;
   left: 50%;
+  cursor: pointer;
   margin-left: -15px;
   bottom: 1.5em;
   &.disabled {
