@@ -23,8 +23,13 @@ def send_to_webhooks(args, session, message_frame):
 
     for w in args.webhooks:
         try:
-            session.post(w, json=message_frame, timeout=(None, req_timeout),
-                         background_callback=__wh_completed)
+            # Disable keep-alive and set streaming to True, so we can skip
+            # the response content.
+            session.post(w, json=message_frame,
+                         timeout=(None, req_timeout),
+                         background_callback=__wh_completed,
+                         headers={'Connection': 'close'},
+                         stream=True)
         except requests.exceptions.ReadTimeout:
             log.exception('Response timeout on webhook endpoint %s.', w)
         except requests.exceptions.RequestException as e:
@@ -134,7 +139,7 @@ def wh_updater(args, queue, key_caches):
             if num_messages > 0 and (time_passed_sec >
                                      frame_interval_sec):
                 log.debug('Sending %d items to %d webhook(s).',
-                          len(frame_messages),
+                          num_messages,
                           len(args.webhooks))
                 send_to_webhooks(args, session, frame_messages)
 
@@ -168,9 +173,9 @@ def wh_updater(args, queue, key_caches):
 # Helpers
 
 # Background handler for completed webhook requests.
-# Currently doesn't do anything.
-def __wh_completed():
-    pass
+def __wh_completed(sess, resp):
+    # Instantly close the response to release the connection back to the pool.
+    resp.close()
 
 
 def __get_key_fields(whtype):
