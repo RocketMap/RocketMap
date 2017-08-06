@@ -1058,11 +1058,13 @@ def gmaps_reverse_geolocate(gmaps_key, locale, location):
 # speed up requests to the same host, as it'll re-use the underlying TCP
 # connection.
 def get_async_requests_session(num_retries, backoff_factor, pool_size,
-                               status_forcelist=[500, 502, 503, 504]):
+                               status_forcelist=None):
     # Use requests & urllib3 to auto-retry.
     # If the backoff_factor is 0.1, then sleep() will sleep for [0.1s, 0.2s,
     # 0.4s, ...] between retries. It will also force a retry if the status
     # code returned is in status_forcelist.
+    if status_forcelist is None:
+        status_forcelist = [500, 502, 503, 504]
     session = FuturesSession(max_workers=pool_size)
 
     # If any regular response is generated, no retry is done. Without using

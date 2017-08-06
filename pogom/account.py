@@ -74,7 +74,7 @@ def setup_api(args, status, account):
 
 
 # Use API to check the login status, and retry the login if possible.
-def check_login(args, account, api, position, proxy_url):
+def check_login(args, account, api, proxy_url):
     # Logged in? Enough time left? Cool!
     if api._auth_provider and api._auth_provider._ticket_expire:
         remaining_time = api._auth_provider._ticket_expire / 1000 - time.time()
@@ -189,7 +189,7 @@ def rpc_login_sequence(args, api, account):
 
         parse_download_settings(account, response)
         parse_new_timestamp_ms(account, response)
-        parse_inventory(api, account, response)
+        parse_inventory(account, response)
 
         total_req += 1
         time.sleep(random.uniform(.53, 1.1))
@@ -340,7 +340,7 @@ def rpc_login_sequence(args, api, account):
     try:  # 7 - Make an empty request to retrieve store items.
         req = api.create_request()
         req.get_store_items()
-        response = req.call(False)
+        req.call(False)
 
         total_req += 1
         time.sleep(random.uniform(.6, 1.1))
@@ -641,7 +641,7 @@ def parse_get_player(account, api_response):
 
 
 # Parse player stats and inventory into account.
-def parse_inventory(api, account, api_response):
+def parse_inventory(account, api_response):
     inventory = api_response['responses']['GET_INVENTORY']
     parsed_items = 0
     parsed_pokemons = 0
@@ -707,7 +707,7 @@ def parse_inventory(api, account, api_response):
         parsed_incubators)
     log.debug('Total amount in Inventory:' +
               ' {} Items, {} pokemon, {} eggs, {} Incubator'.format(
-                int(parsed_items + item_count), len(account['pokemons']),
+                int(parsed_items), len(account['pokemons']),
                 len(account['eggs']), len(account['incubators'])))
 
 
@@ -720,7 +720,6 @@ def clear_inventory(api, account):
              (1101, 'Sun Stone'), (1102, 'Kings Rock'), (1103, 'Metal Coat'),
              (1104, 'Dragon Scale'), (1105, 'Upgrade')]
 
-    release_ids = []
     total_pokemon = len(account['pokemons'])
     release_count = int(total_pokemon - 5)
     if total_pokemon > random.randint(5, 10):
@@ -818,7 +817,7 @@ def spin_pokestop_request(api, account, fort, step_location):
         req.get_inbox(is_history=True)
         response = req.call(False)
         parse_new_timestamp_ms(account, response)
-        parse_inventory(api, account, response)
+        parse_inventory(account, response)
         return response
 
     except Exception as e:
@@ -884,7 +883,7 @@ def clear_inventory_request(api, account, item_id, drop_count):
         clear_inventory_response = req.call(False)
 
         parse_new_timestamp_ms(account, clear_inventory_response)
-        parse_inventory(api, account, clear_inventory_response)
+        parse_inventory(account, clear_inventory_response)
 
         return clear_inventory_response
 
@@ -917,7 +916,9 @@ def request_use_item_egg_incubator(api, account, incubator_id, egg_id):
     return False
 
 
-def request_release_pokemon(api, account, pokemon_id, release_ids=[]):
+def request_release_pokemon(api, account, pokemon_id, release_ids=None):
+    if release_ids is None:
+        release_ids = []
     try:
         req = api.create_request()
         req.release_pokemon(pokemon_id=pokemon_id,
@@ -987,7 +988,7 @@ class AccountSet(object):
         self.next_lock = Lock()
 
     # Set manipulation.
-    def create_set(self, name, values=[]):
+    def create_set(self, name, values=None):
         if values is None:
             values = []
         if name in self.sets:

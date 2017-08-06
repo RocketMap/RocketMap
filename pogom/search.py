@@ -457,9 +457,9 @@ def search_overseer_thread(args, new_location_queue, control_flags, heartb,
                    name='search-worker-{}'.format(i),
                    args=(args, account_queue, account_sets,
                          account_failures, account_captchas,
-                         search_items_queue, control_flags,
-                         threadStatus[workerId], db_updates_queue,
-                         wh_queue, scheduler, key_scheduler))
+                         control_flags, threadStatus[workerId],
+                         db_updates_queue, wh_queue,
+                         scheduler, key_scheduler))
         t.daemon = True
         t.start()
 
@@ -754,7 +754,7 @@ def generate_hive_locations(current_location, step_distance,
 
 def search_worker_thread(args, account_queue, account_sets,
                          account_failures, account_captchas,
-                         search_items_queue, control_flags, status, dbq, whq,
+                         control_flags, status, dbq, whq,
                          scheduler, key_scheduler):
 
     log.debug('Search worker thread starting...')
@@ -935,8 +935,7 @@ def search_worker_thread(args, account_queue, account_sets,
 
                 # Ok, let's get started -- check our login status.
                 status['message'] = 'Logging in...'
-                check_login(args, account, api, step_location,
-                            status['proxy_url'])
+                check_login(args, account, api, status['proxy_url'])
 
                 # Only run this when it's the account's first login, after
                 # check_login().
@@ -1034,7 +1033,7 @@ def search_worker_thread(args, account_queue, account_sets,
                             # Get them if not.
                             try:
                                 record = GymDetails.get(gym_id=gym['gym_id'])
-                            except GymDetails.DoesNotExist as e:
+                            except GymDetails.DoesNotExist:
                                 gyms_to_update[gym['gym_id']] = gym
                                 continue
 
@@ -1073,7 +1072,7 @@ def search_worker_thread(args, account_queue, account_sets,
                                     step_location[0], step_location[1])
                             time.sleep(random.random() + 2)
                             response = gym_request(api, account, step_location,
-                                                   gym, args.api_version)
+                                                   gym)
 
                             # Make sure the gym was in range. (Sometimes the
                             # API gets cranky about gyms that are ALMOST 1km
@@ -1208,9 +1207,9 @@ def map_request(api, account, position, no_jitter=False):
         response = clear_dict_response(response)
         return response
 
-    except HashingOfflineException as e:
+    except HashingOfflineException:
         log.error('Hashing server is unreachable, it might be offline.')
-    except BadHashRequestException as e:
+    except BadHashRequestException:
         log.error('Invalid or expired hashing key: %s.',
                   api._hash_server_token)
     except Exception as e:
@@ -1218,7 +1217,7 @@ def map_request(api, account, position, no_jitter=False):
         return False
 
 
-def gym_request(api, account, position, gym, api_version):
+def gym_request(api, account, position, gym):
     try:
         log.info('Getting details for gym @ %f/%f (%fkm away)',
                  gym['latitude'], gym['longitude'],
@@ -1307,7 +1306,7 @@ def check_forced_version(args, api_check_time, api_watchdog_flag):
                 log.debug("API check was successful. Continue scanning.")
                 api_watchdog_flag.clear()
 
-        except ValueError as e:
+        except ValueError:
             # Unknown version format. Pause scanning as well.
             api_watchdog_flag.set()
             log.warning('Niantic forced unknown API version format: %s.',

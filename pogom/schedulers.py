@@ -750,7 +750,6 @@ class SpeedScan(HexSearch):
                 self.tth_found = 0
                 self.active_sp = 0
                 found_percent = 100.0
-                good_percent = 100.0
                 spawns_reached = 100.0
                 spawnpoints = SpawnPoint.select_in_hex_by_cellids(
                     self.scans.keys(), self.location_change_date)
@@ -1103,7 +1102,6 @@ class SpeedScan(HexSearch):
                 log.info('Step item has changed since queue refresh')
                 return
             item = self.queues[0][status['index_of_queue_item']]
-            safety_buffer = item['end'] - scan_secs
             start_secs = item['start']
             if item['kind'] == 'spawn':
                 start_secs -= self.args.spawn_delay

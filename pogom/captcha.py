@@ -138,7 +138,7 @@ def captcha_solver_thread(args, account_queue, account_captchas, hash_key,
         location = jitter_location(location)
 
     api.set_position(*location)
-    check_login(args, account, api, location, proxy_url)
+    check_login(args, account, api, proxy_url)
 
     wh_message = {'status_name': args.status_name,
                   'status': 'error',

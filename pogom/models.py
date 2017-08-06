@@ -2345,11 +2345,12 @@ def encounter_pokemon(args, pokemon, account, api, account_sets, status,
                       key_scheduler):
     using_accountset = False
     hlvl_account = None
+    pokemon_id = None
+    result = False
     try:
         hlvl_api = None
         pokemon_id = pokemon.pokemon_data.pokemon_id
         scan_location = [pokemon.latitude, pokemon.longitude]
-        result = False
         # If the host has L30s in the regular account pool, we
         # can just use the current account.
         if account['level'] >= 30:
@@ -2411,8 +2412,7 @@ def encounter_pokemon(args, pokemon, account, api, account_sets, status,
         hlvl_api.set_position(*scan_location)
 
         # Log in.
-        check_login(args, hlvl_account, hlvl_api, scan_location,
-                    status['proxy_url'])
+        check_login(args, hlvl_account, hlvl_api, status['proxy_url'])
         encounter_level = hlvl_account['level']
 
         # User error -> we skip freeing the account.
@@ -2597,7 +2597,7 @@ def parse_gyms(args, gym_responses, wh_update_queue, db_update_queue):
              len(gym_members))
 
 
-def db_updater(args, q, db):
+def db_updater(q, db):
     # The forever loop.
     while True:
         try:
@@ -2849,7 +2849,6 @@ def database_migrate(db, old_ver):
              old_ver, db_schema_version)
 
     # Perform migrations here.
-    migrator = None
     if args.db_type == 'mysql':
         migrator = MySQLMigrator(db)
     else:
