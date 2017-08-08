@@ -533,7 +533,7 @@ def can_spin(account, max_h_spins):
     if elapsed_time == 0:
         elapsed_time = 1
 
-    return (account['session_spins'] * 3600.0 / elapsed_time) > max_h_spins
+    return (account['session_spins'] * 3600.0 / elapsed_time) <= max_h_spins
 
 
 # Check if Pokestop is spinnable and not on cooldown.
@@ -550,7 +550,7 @@ def pokestop_spinnable(fort, step_location):
 
 
 def spin_pokestop(api, account, args, fort, step_location):
-    if can_spin(account, args.account_max_spins):
+    if not can_spin(account, args.account_max_spins):
         log.warning('Account %s has reached its Pokestop spinning limits.',
                     account['username'])
         return False
