@@ -258,7 +258,9 @@ def main():
 
     app = None
     if not args.no_server and not args.clear_db:
-        app = Pogom(__name__, root_path=os.path.dirname(__file__))
+        app = Pogom(__name__,
+                    root_path=os.path.dirname(
+                              os.path.abspath(__file__)).decode('utf8'))
         app.before_request(app.validate_request)
         app.set_current_location(position)
 
