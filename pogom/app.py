@@ -119,8 +119,8 @@ class Pogom(Flask):
 
         return start <= dottedQuadToNum(ip) <= end
 
-    def set_search_control(self, control):
-        self.search_control = control
+    def set_control_flags(self, control):
+        self.control_flags = control
 
     def set_heartbeat_control(self, heartb):
         self.heartbeat = heartb
@@ -132,7 +132,8 @@ class Pogom(Flask):
         self.current_location = location
 
     def get_search_control(self):
-        return jsonify({'status': not self.search_control.is_set()})
+        return jsonify({
+            'status': not self.control_flags['search_control'].is_set()})
 
     def post_search_control(self):
         args = get_args()
@@ -140,10 +141,10 @@ class Pogom(Flask):
             return 'Search control is disabled', 403
         action = request.args.get('action', 'none')
         if action == 'on':
-            self.search_control.clear()
+            self.control_flags['search_control'].clear()
             log.info('Search thread resumed')
         elif action == 'off':
-            self.search_control.set()
+            self.control_flags['search_control'].set()
             log.info('Search thread paused')
         else:
             return jsonify({'message': 'invalid use of api'})
@@ -153,7 +154,7 @@ class Pogom(Flask):
         self.heartbeat[0] = now()
         args = get_args()
         if args.on_demand_timeout > 0:
-            self.search_control.clear()
+            self.control_flags['on_demand'].clear()
 
         search_display = True if (args.search_control and
                                   args.on_demand_timeout <= 0) else False
@@ -190,7 +191,7 @@ class Pogom(Flask):
         self.heartbeat[0] = now()
         args = get_args()
         if args.on_demand_timeout > 0:
-            self.search_control.clear()
+            self.control_flags['on_demand'].clear()
         d = {}
 
         # Request time of this request.

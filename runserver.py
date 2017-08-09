@@ -420,7 +420,7 @@ def main():
         # No more stale JS.
         init_cache_busting(app)
 
-        app.set_search_control(control_flags['search_control'])
+        app.set_control_flags(control_flags)
         app.set_heartbeat_control(heartbeat)
         app.set_location_queue(new_location_queue)
         ssl_context = None
