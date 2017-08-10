@@ -194,9 +194,10 @@ def main():
 
     args = get_args()
 
-    # Abort if status name is not alphanumeric.
-    if not str(args.status_name).isalnum():
-        log.critical('Status name must be alphanumeric.')
+    # Abort if status name is not valid.
+    regexp = re.compile('^([\w\s\-.]+)$')
+    if not regexp.match(args.status_name):
+        log.critical('Status name contains illegal characters.')
         sys.exit(1)
 
     set_log_and_verbosity(log)
@@ -442,9 +443,10 @@ def main():
 def set_log_and_verbosity(log):
     # Always write to log file.
     args = get_args()
+    # Create directory for log files.
+    if not os.path.exists(args.log_path):
+        os.mkdir(args.log_path)
     if not args.no_file_logs:
-        if not os.path.exists(args.log_path):
-            os.mkdir(args.log_path)
         date = strftime('%Y%m%d_%H%M')
         filename = os.path.join(
             args.log_path, '{}_{}.log'.format(date, args.status_name))
@@ -479,8 +481,12 @@ def set_log_and_verbosity(log):
 
     # Web access logs.
     if args.access_logs:
+        date = strftime('%Y%m%d_%H%M')
+        filename = os.path.join(
+            args.log_path, '{}_{}_access.log'.format(date, args.status_name))
+
         logger = logging.getLogger('werkzeug')
-        handler = logging.FileHandler('access.log')
+        handler = logging.FileHandler(filename)
         logger.setLevel(logging.INFO)
         logger.addHandler(handler)
 
