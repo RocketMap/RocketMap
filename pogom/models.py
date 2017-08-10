@@ -2204,7 +2204,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                 }
 
                 if config['parse_raids'] and f.type == 0:
-                    if raid_info:
+                    if f.HasField('raid_info'):
                         raids[f.id] = {
                             'gym_id': f.id,
                             'level': raid_info.raid_level,
