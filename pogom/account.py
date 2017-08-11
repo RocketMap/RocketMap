@@ -154,9 +154,8 @@ def rpc_login_sequence(args, api, account):
     try:
         req = api.create_request()
         req.get_player(player_locale=args.player_locale)
-        response = req.call(False)
-
-        parse_get_player(account, response)
+        resp = req.call(False)
+        parse_get_player(account, resp)
 
         total_req += 1
         time.sleep(random.uniform(.53, 1.1))
@@ -180,16 +179,8 @@ def rpc_login_sequence(args, api, account):
         req = api.create_request()
         req.download_remote_config_version(platform=1,
                                            app_version=app_version)
-        req.check_challenge()
-        req.get_hatched_eggs()
-        req.get_inventory(last_timestamp_ms=0)
-        req.check_awarded_badges()
-        req.download_settings()
-        response = req.call(False)
-
-        parse_download_settings(account, response)
-        parse_new_timestamp_ms(account, response)
-        parse_inventory(account, response)
+        send_generic_request(req, account, settings=True, buddy=False,
+                             inbox=False)
 
         total_req += 1
         time.sleep(random.uniform(.53, 1.1))
@@ -220,16 +211,8 @@ def rpc_login_sequence(args, api, account):
                 paginate=True,
                 page_offset=page_offset,
                 page_timestamp=page_timestamp)
-            req.check_challenge()
-            req.get_hatched_eggs()
-            req.get_inventory(last_timestamp_ms=account[
-                'last_timestamp_ms'])
-            req.check_awarded_badges()
-            req.download_settings(hash=account[
-                'remote_config']['hash'])
-            response = req.call(False)
-
-            parse_new_timestamp_ms(account, response)
+            resp = send_generic_request(req, account, settings=True,
+                                        buddy=False, inbox=False)
 
             req_count += 1
             total_req += 1
@@ -243,13 +226,13 @@ def rpc_login_sequence(args, api, account):
 
             try:
                 # Re-use variable name. Also helps GC.
-                response = response['responses']['GET_ASSET_DIGEST']
+                resp = resp['responses']['GET_ASSET_DIGEST']
             except KeyError:
                 break
 
-            result = response.result
-            page_offset = response.page_offset
-            page_timestamp = response.timestamp_ms
+            result = resp.result
+            page_offset = resp.page_offset
+            page_timestamp = resp.timestamp_ms
             log.debug('Completed %d requests to get asset digest.',
                       req_count)
 
@@ -269,16 +252,8 @@ def rpc_login_sequence(args, api, account):
                 paginate=True,
                 page_offset=page_offset,
                 page_timestamp=page_timestamp)
-            req.check_challenge()
-            req.get_hatched_eggs()
-            req.get_inventory(
-                last_timestamp_ms=account['last_timestamp_ms'])
-            req.check_awarded_badges()
-            req.download_settings(
-                hash=account['remote_config']['hash'])
-            response = req.call(False)
-
-            parse_new_timestamp_ms(account, response)
+            resp = send_generic_request(req, account, settings=True,
+                                        buddy=False, inbox=False)
 
             req_count += 1
             total_req += 1
@@ -292,13 +267,13 @@ def rpc_login_sequence(args, api, account):
 
             try:
                 # Re-use variable name. Also helps GC.
-                response = response['responses']['DOWNLOAD_ITEM_TEMPLATES']
+                resp = resp['responses']['DOWNLOAD_ITEM_TEMPLATES']
             except KeyError:
                 break
 
-            result = response.result
-            page_offset = response.page_offset
-            page_timestamp = response.timestamp_ms
+            result = resp.result
+            page_offset = resp.page_offset
+            page_timestamp = resp.timestamp_ms
             log.debug('Completed %d requests to download'
                       + ' item templates.', req_count)
 
@@ -308,33 +283,22 @@ def rpc_login_sequence(args, api, account):
         complete_tutorial(args, api, account)
     else:
         log.debug('Account %s already did the tutorials.', account['username'])
-
-    # 6 - Get player profile.
-    log.debug('Fetching player profile...')
-
-    try:
-        req = api.create_request()
-        req.get_player_profile()
-        req.check_challenge()
-        req.get_hatched_eggs()
-        req.get_inventory(last_timestamp_ms=account['last_timestamp_ms'])
-        req.check_awarded_badges()
-        req.download_settings(hash=account['remote_config']['hash'])
-        req.get_buddy_walked()
-        response = req.call(False)
-
-        parse_new_timestamp_ms(account, response)
-
-        total_req += 1
-        time.sleep(random.uniform(.2, .3))
-    except Exception as e:
-        log.exception('Login for account %s failed. Exception occurred ' +
-                      'while fetching player profile: %s.',
-                      account['username'],
-                      e)
-        raise LoginSequenceFail('Failed while getting player profile in'
-                                + ' login sequence for account {}.'.format(
-                                    account['username']))
+        # 6 - Get player profile.
+        log.debug('Fetching player profile...')
+        try:
+            req = api.create_request()
+            req.get_player_profile()
+            send_generic_request(req, account, settings=True, inbox=False)
+            total_req += 1
+            time.sleep(random.uniform(.2, .3))
+        except Exception as e:
+            log.exception('Login for account %s failed. Exception occurred ' +
+                          'while fetching player profile: %s.',
+                          account['username'],
+                          e)
+            raise LoginSequenceFail('Failed while getting player profile in'
+                                    + ' login sequence for account {}.'.format(
+                                        account['username']))
 
     log.debug('Retrieving Store Items...')
     try:  # 7 - Make an empty request to retrieve store items.
@@ -356,16 +320,7 @@ def rpc_login_sequence(args, api, account):
     try:
         req = api.create_request()
         req.level_up_rewards(level=account['level'])
-        req.check_challenge()
-        req.get_hatched_eggs()
-        req.get_inventory(last_timestamp_ms=account['last_timestamp_ms'])
-        req.check_awarded_badges()
-        req.download_settings(hash=account['remote_config']['hash'])
-        req.get_buddy_walked()
-        req.get_inbox(is_history=True)
-        response = req.call(False)
-
-        parse_new_timestamp_ms(account, response)
+        send_generic_request(req, account, settings=True)
 
         total_req += 1
         time.sleep(random.uniform(.45, .7))
@@ -381,6 +336,16 @@ def rpc_login_sequence(args, api, account):
     log.info('RPC login sequence for account %s successful with %s requests.',
              account['username'],
              total_req)
+
+    time.sleep(random.uniform(3, 5))
+
+    if account['buddy'] == 0 and len(account['pokemons']) > 0:
+        poke_id = random.choice(account['pokemons'].keys())
+        req = api.create_request()
+        req.set_buddy_pokemon(pokemon_id=poke_id)
+        log.debug('Setting buddy pokemon for %s.', account['username'])
+        send_generic_request(req, account)
+
     time.sleep(random.uniform(10, 20))
 
 
@@ -394,7 +359,12 @@ def complete_tutorial(args, api, account):
         req = api.create_request()
         req.mark_tutorial_complete(tutorials_completed=0)
         log.debug('Sending 0 tutorials_completed for %s.', account['username'])
-        req.call(False)
+        send_generic_request(req, account, buddy=False, inbox=False)
+
+        time.sleep(random.uniform(0.5, 0.6))
+        req = api.create_request()
+        req.get_player(player_locale=args.player_locale)
+        send_generic_request(req, account, buddy=False, inbox=False)
 
     if 1 not in tutorial_state:
         time.sleep(random.uniform(5, 12))
@@ -410,22 +380,20 @@ def complete_tutorial(args, api, account):
         })
         log.debug('Sending set random player character request for %s.',
                   account['username'])
-        req.call(False)
+        send_generic_request(req, account, buddy=False, inbox=False)
 
         time.sleep(random.uniform(0.3, 0.5))
-
         req = api.create_request()
         req.mark_tutorial_complete(tutorials_completed=1)
         log.debug('Sending 1 tutorials_completed for %s.', account['username'])
-        req.call(False)
+        send_generic_request(req, account, buddy=False, inbox=False)
 
-    time.sleep(random.uniform(0.5, 0.6))
-    req = api.create_request()
-    req.get_player_profile()
-    log.debug('Fetching player profile for %s...', account['username'])
-    req.call(False)
+        time.sleep(random.uniform(0.5, 0.6))
+        req = api.create_request()
+        req.get_player_profile()
+        log.debug('Fetching player profile for %s...', account['username'])
+        send_generic_request(req, account, inbox=False)
 
-    starter_id = None
     if 3 not in tutorial_state:
         time.sleep(random.uniform(1, 1.5))
         req = api.create_request()
@@ -434,65 +402,44 @@ def complete_tutorial(args, api, account):
             'aa8f7687-a022-4773-b900-3a8c170e9aea/1477084794890000',
             'e89109b0-9a54-40fe-8431-12f7826c8194/1477084802881000'])
         log.debug('Grabbing some game assets.')
-        req.call(False)
-
-        time.sleep(random.uniform(1, 1.6))
-        req = api.create_request()
-        req.call(False)
+        send_generic_request(req, account, inbox=False)
 
         time.sleep(random.uniform(6, 13))
         req = api.create_request()
         starter = random.choice((1, 4, 7))
         req.encounter_tutorial_complete(pokemon_id=starter)
         log.debug('Catching the starter for %s.', account['username'])
-        req.call(False)
+        send_generic_request(req, account, inbox=False)
 
         time.sleep(random.uniform(0.5, 0.6))
         req = api.create_request()
-        req.get_player(
-            player_locale=args.player_locale)
-        responses = req.call(False).get('responses', {})
-
-        if 'GET_INVENTORY' in responses:
-            for item in (responses['GET_INVENTORY'].inventory_delta
-                         .inventory_items):
-                pokemon = item.inventory_item_data.pokemon_data
-                if pokemon:
-                    starter_id = pokemon.id
+        req.get_player(player_locale=args.player_locale)
+        send_generic_request(req, account, inbox=False)
 
     if 4 not in tutorial_state:
         time.sleep(random.uniform(5, 12))
         req = api.create_request()
         req.claim_codename(codename=account['username'])
         log.debug('Claiming codename for %s.', account['username'])
-        req.call(False)
+        send_generic_request(req, account, inbox=False)
+
+        time.sleep(0.1)
+        req = api.create_request()
+        req.get_player(player_locale=args.player_locale)
+        send_generic_request(req, account, inbox=False)
 
         time.sleep(random.uniform(1, 1.3))
         req = api.create_request()
         req.mark_tutorial_complete(tutorials_completed=4)
         log.debug('Sending 4 tutorials_completed for %s.', account['username'])
-        req.call(False)
-
-        time.sleep(0.1)
-        req = api.create_request()
-        req.get_player(
-            player_locale=args.player_locale)
-        req.call(False)
+        send_generic_request(req, account, inbox=False)
 
     if 7 not in tutorial_state:
         time.sleep(random.uniform(4, 10))
         req = api.create_request()
         req.mark_tutorial_complete(tutorials_completed=7)
         log.debug('Sending 7 tutorials_completed for %s.', account['username'])
-        req.call(False)
-
-    if starter_id:
-        time.sleep(random.uniform(3, 5))
-        req = api.create_request()
-        req.set_buddy_pokemon(pokemon_id=starter_id)
-        log.debug('Setting buddy pokemon for %s.', account['username'])
-        req.call(False)
-        time.sleep(random.uniform(0.8, 1.8))
+        send_generic_request(req, account, inbox=False)
 
     # Sleeping before we start scanning to avoid Niantic throttling.
     log.debug('And %s is done. Wait for a second, to avoid throttle.',
@@ -523,6 +470,7 @@ def reset_account(account):
     account['spins'] = 0
     account['session_spins'] = 0
     account['walked'] = 0.0
+    account['last_timestamp_ms'] = 0
 
 
 def can_spin(account, max_h_spins):
@@ -638,10 +586,13 @@ def parse_get_player(account, api_response):
 
         account['warning'] = api_response['responses']['GET_PLAYER'].warn
         account['tutorials'] = player_data.tutorial_state
+        account['buddy'] = player_data.buddy_pokemon.id
 
 
 # Parse player stats and inventory into account.
 def parse_inventory(account, api_response):
+    if 'GET_INVENTORY' not in api_response['responses']:
+        return
     inventory = api_response['responses']['GET_INVENTORY']
     parsed_items = 0
     parsed_pokemons = 0
@@ -700,15 +651,17 @@ def parse_inventory(account, api_response):
                     'km_target': p_data.egg_km_walked_target
                 })
                 parsed_eggs += 1
-    log.debug(
-        'Parsed %s player inventory: %d items, %d pokemons, %d available ' +
-        'eggs and %d available incubators.',
-        account['username'], parsed_items, parsed_pokemons, parsed_eggs,
-        parsed_incubators)
-    log.debug('Total amount in Inventory:' +
-              ' {} Items, {} pokemon, {} eggs, {} Incubator'.format(
-                int(parsed_items), len(account['pokemons']),
-                len(account['eggs']), len(account['incubators'])))
+    if log.isEnabledFor(logging.DEBUG):
+        log.debug(
+            'Parsed %s player inventory: %d items, %d pokemons, %d available' +
+            ' eggs and %d available incubators.',
+            account['username'], parsed_items, parsed_pokemons, parsed_eggs,
+            parsed_incubators)
+        total_items = reduce(lambda x, value: x + value,
+                             account['items'].itervalues(), 0)
+        log.debug('Total amount in Inventory: %d Items, %d pokemon, %d eggs,' +
+                  ' %d Incubator', total_items, len(account['pokemons']),
+                  len(account['eggs']), len(account['incubators']))
 
 
 def clear_inventory(api, account):
@@ -724,6 +677,8 @@ def clear_inventory(api, account):
     release_count = int(total_pokemon - 5)
     if total_pokemon > random.randint(5, 10):
         release_ids = random.sample(account['pokemons'].keys(), release_count)
+        if account['buddy'] in release_ids:
+            release_ids.remove(account['buddy'])
         # Don't let Niantic throttle.
         time.sleep(random.uniform(2, 4))
         release_p_response = request_release_pokemon(api, account, 0,
@@ -965,6 +920,30 @@ def parse_level_up_rewards(api, account):
                       account['username'])
     except Exception as e:
         log.exception('Error during getting Level Up Rewards %s.', e)
+
+
+def send_generic_request(req, account, settings=False, buddy=True, inbox=True):
+    req.check_challenge()
+    req.get_hatched_eggs()
+    req.get_inventory(last_timestamp_ms=account['last_timestamp_ms'])
+    req.check_awarded_badges()
+
+    if settings:
+        if 'remote_config' in account:
+            req.download_settings(hash=account['remote_config']['hash'])
+        else:
+            req.download_settings()
+    if buddy:
+        req.get_buddy_walked()
+    if inbox:
+        req.get_inbox(is_history=True)
+    resp = req.call(False)
+    parse_inventory(account, resp)
+    parse_new_timestamp_ms(account, resp)
+    if settings:
+        parse_download_settings(account, resp)
+    clear_dict_response(resp)
+    return resp
 
 
 # The AccountSet returns a scheduler that cycles through different
