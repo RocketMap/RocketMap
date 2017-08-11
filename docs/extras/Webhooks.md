@@ -28,6 +28,45 @@ Add `-wh http://my-webhook/location` argument when starting RocketMap (runserver
 python runserver.py -a ptc -u [username] -p [password] -l "Location or lat/lon" -st 15 -k [google maps api key] -wh http://localhost:9876
 ```
 
+## Configuring Webhook filter types
+Use `wh-types` to configure webhook types that should get sent.
+
+The list of valid types are:
+* `pokemon`
+* `gym`
+* `raid`
+* `egg`
+* `tth`
+* `gym-info`
+* `pokestop`
+* `lure`
+
+Example to send the webhook messages pokemon, gym, raid and gym-info:
+
+```
+wh-types: [pokemon, gym, raid, gym-info]
+```
+
+## Filtering Pokémon
+To filter what Pokémon get sent to the webhooks, you can configure a whitelist of Pokémon IDs (one per line).
+
+For example, if we only want to sent data on dratini, dragonair, dragonite, larvitar, pupitar and tyranitar, add this to your configuration:
+
+```
+webhook-whitelist-file: pokemon-whitelist.txt
+```
+
+And add the Pokémon IDs to the pokemon-whitelist.txt file:
+
+```
+147
+148
+149
+246
+247
+248
+```
+
 ## RocketMap Public Webhook
 
 RM is collecting data for an upcoming project. If you would like to donate your data, please fill out [this form](https://goo.gl/forms/ZCx6mQNngr0bAvRY2) and add `-wh [your webhook URL here]` to your command line. 

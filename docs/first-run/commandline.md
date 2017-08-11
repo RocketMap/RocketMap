@@ -19,9 +19,10 @@
                     [-msl MIN_SECONDS_LEFT] [-dc] [-H HOST] [-P PORT]
                     [-L LOCALE] [-c] [-m MOCK] [-ns] [-os] [-sc] [-nfl] -k
                     GMAPS_KEY [--skip-empty] [-C] [-D DB] [-cd] [-np] [-ng]
-                    [-nr] [-nk] [-ss [SPAWNPOINT_SCANNING]] [-speed]
-                    [-kph KPH] [-hkph HLVL_KPH] [-ldur LURE_DURATION]
-                    [--dump-spawnpoints] [-pd PURGE_DATA] [-px PROXY] [-pxsc]
+                    [-nr] [-nk] [-ss [SPAWNPOINT_SCANNING]] [-speed] [-spin]
+                    [-ams ACCOUNT_MAX_SPINS] [-kph KPH] [-hkph HLVL_KPH]
+                    [-ldur LURE_DURATION] [--dump-spawnpoints]
+                    [-pd PURGE_DATA] [-px PROXY] [-pxsc]
                     [-pxt PROXY_TEST_TIMEOUT] [-pxre PROXY_TEST_RETRIES]
                     [-pxbf PROXY_TEST_BACKOFF_FACTOR]
                     [-pxc PROXY_TEST_CONCURRENCY] [-pxd PROXY_DISPLAY]
@@ -256,6 +257,12 @@
                             POGOMAP_SPAWNPOINT_SCANNING]
       -speed, --speed-scan  Use speed scanning to identify spawn points and then
                             scan closest spawns. [env var: POGOMAP_SPEED_SCAN]
+      -spin, --pokestop-spinning
+                            Spin Pokestops with 50% probability. [env var:
+                            POGOMAP_POKESTOP_SPINNING]
+      -ams ACCOUNT_MAX_SPINS, --account-max-spins ACCOUNT_MAX_SPINS
+                            Maximum number of Pokestop spins per hour. [env var:
+                            POGOMAP_ACCOUNT_MAX_SPINS]
       -kph KPH, --kph KPH   Set a maximum speed in km/hour for scanner movement.
                             [env var: POGOMAP_KPH]
       -hkph HLVL_KPH, --hlvl-kph HLVL_KPH

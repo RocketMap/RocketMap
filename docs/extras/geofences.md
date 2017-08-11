@@ -20,7 +20,8 @@ You can see in the logs if RM is using ``matplotlib`` or not for the calculation
 While this is a powerful tool, it also has its downsides that it may not be supported on certain devices, for example older Raspberry Pi.
 
 ## How to use?
-1. Define areas which you like geofence or exclude, from your standard hex. Best done via an online tool. The resulting format needs to match the content of ``geofences/geofence.txt.example`` or ``geofences/excluded.txt.example``.
+1. Define areas which you like geofence or exclude, from your standard hex. Best done via an online tool like [this](https://codepen.io/jennerpalacios/full/mWWVeJ) or [this one](http://geo.jasparke.net/).
+The resulting format needs to match the content of ``geofences/geofence.txt.example`` or ``geofences/excluded.txt.example``.
 2. You may exactly use one file per instance for geofenced areas and one file for excluded areas. Put all areas into the correct file like it is done in the examples.
 3. Activate geofencing by adding these file paths as flag arguments to either ``-gf`` / ``--geofence-file`` or ``-gef``/ ``--geofence-excluded-file`` in CLI. This can be done via the configuration file, as well.
 4. Best, place your scan location  ``-l`` / ``--location`` on top of a valid area of your geofence file and adjust ``-st`` / ``--step-limit`` to a value which just exceeds the maximum desired scan radius by a bit.
