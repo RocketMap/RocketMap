@@ -2130,7 +2130,7 @@ def parse_map(args, map_dict, step_location, db_update_queue, wh_update_queue,
                     wh_pokestop = pokestops[f.id].copy()
                     wh_pokestop.update({
                         'pokestop_id': b64encode(str(f.id)),
-                        'last_modified_time': f.last_modified_timestamp_ms,
+                        'last_modified': f.last_modified_timestamp_ms,
                         'lure_expiration': l_e,
                     })
                     wh_update_queue.put(('pokestop', wh_pokestop))

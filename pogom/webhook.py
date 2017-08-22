@@ -68,6 +68,7 @@ def wh_updater(args, queue, key_caches):
     frame_interval_sec = (args.wh_frame_interval / 1000)
     frame_first_message_time_sec = default_timer()
     frame_messages = []
+    first_message = True
 
     # How low do we want the queue size to stay?
     wh_warning_threshold = 100
@@ -130,8 +131,9 @@ def wh_updater(args, queue, key_caches):
             now = default_timer()
             num_messages = len(frame_messages)
 
-            if num_messages == 1:
+            if num_messages == 1 and first_message:
                 frame_first_message_time_sec = now
+                first_message = False
 
             # If enough time has passed, send the message frame.
             time_passed_sec = now - frame_first_message_time_sec
@@ -144,6 +146,7 @@ def wh_updater(args, queue, key_caches):
                 send_to_webhooks(args, session, frame_messages)
 
                 frame_messages = []
+                first_message = True
 
             # Webhook queue moving too slow.
             if (not wh_over_threshold) and (
