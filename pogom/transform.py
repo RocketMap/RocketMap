@@ -60,6 +60,7 @@ def transform_long(x, y):
     return lon
 
 
+# Returns destination coords given origin coords, distance (Kms) and bearing.
 def get_new_coords(init_loc, distance, bearing):
     """
     Given an initial lat/lng, a distance(in kms), and a bearing (degrees),
@@ -71,10 +72,31 @@ def get_new_coords(init_loc, distance, bearing):
     return (destination.latitude, destination.longitude)
 
 
+# Returns destination coords given origin coords, distance (Ms) and bearing.
+# This version is less precise and almost 1 order of magnitude faster than
+# using geopy.
+def fast_get_new_coords(origin, distance, bearing):
+    R = 6371009  # IUGG mean earth radius in kilometers.
+
+    oLat = math.radians(origin[0])
+    oLon = math.radians(origin[1])
+    b = math.radians(bearing)
+
+    Lat = math.asin(
+        math.sin(oLat) * math.cos(distance / R) +
+        math.cos(oLat) * math.sin(distance / R) * math.cos(b))
+
+    Lon = oLon + math.atan2(
+        math.sin(bearing) * math.sin(distance / R) * math.cos(oLat),
+        math.cos(distance / R) - math.sin(oLat) * math.sin(Lat))
+
+    return math.degrees(Lat), math.degrees(Lon)
+
+
 # Apply a location jitter.
 def jitter_location(location=None, maxMeters=10):
     origin = geopy.Point(location[0], location[1])
-    b = random.randint(0, 360)
-    d = math.sqrt(random.random()) * (float(maxMeters) / 1000)
-    destination = geopy.distance.distance(kilometers=d).destination(origin, b)
-    return (destination.latitude, destination.longitude, location[2])
+    bearing = random.randint(0, 360)
+    distance = math.sqrt(random.random()) * (float(maxMeters))
+    destination = fast_get_new_coords(origin, distance, bearing)
+    return (destination[0], destination[1], location[2])

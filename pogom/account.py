@@ -12,7 +12,7 @@ from pgoapi.exceptions import AuthException
 
 from .fakePogoApi import FakePogoApi
 from .pgoapiwrapper import PGoApiWrapper
-from .utils import (in_radius, generate_device_info, equi_rect_distance,
+from .utils import (in_radius, generate_device_info, distance,
                     clear_dict_response)
 from .proxy import get_new_proxy
 
@@ -489,7 +489,7 @@ def pokestop_spinnable(fort, step_location):
     if not fort.enabled:
         return False
 
-    spinning_radius = 0.038
+    spinning_radius = 38
     in_range = in_radius((fort.latitude, fort.longitude),
                          step_location, spinning_radius)
     now = time.time()
@@ -993,7 +993,6 @@ class AccountSet(object):
 
             # Loop all accounts for a good one.
             now = default_timer()
-            max_speed_kmph = self.kph
 
             for i in range(len(account_set)):
                 account = account_set[i]
@@ -1013,10 +1012,8 @@ class AccountSet(object):
                     seconds_passed = now - last_scanned
                     old_coords = account.get('last_coords', coords_to_scan)
 
-                    distance_km = equi_rect_distance(
-                        old_coords,
-                        coords_to_scan)
-                    cooldown_time_sec = distance_km / max_speed_kmph * 3600
+                    distance_m = distance(old_coords, coords_to_scan)
+                    cooldown_time_sec = distance_m / self.kph * 3.6
 
                     # Not enough time has passed for this one.
                     if seconds_passed < cooldown_time_sec:

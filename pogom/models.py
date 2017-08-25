@@ -868,7 +868,7 @@ class ScannedLocation(BaseModel):
                         abs(sp['longitude'] - scan['loc'][1]) > deg_at_lat):
                     continue
                 if in_radius((sp['latitude'], sp['longitude']),
-                             scan['loc'], distance):
+                             scan['loc'], distance * 1000):
                     scan_spawn_point[cell + sp['id']] = {
                         'spawnpoint': sp['id'],
                         'scannedlocation': cell}
