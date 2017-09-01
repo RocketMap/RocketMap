@@ -20,8 +20,6 @@ from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 from cHaversine import haversine
 
-from . import config
-
 log = logging.getLogger(__name__)
 
 
@@ -237,9 +235,8 @@ def get_args():
     parser.add_argument('-P', '--port', type=int,
                         help='Set web server listening port.', default=5000)
     parser.add_argument('-L', '--locale',
-                        help=('Locale for Pokemon names (default: {}, check ' +
-                              '{} for more).').format(config['LOCALE'],
-                                                      config['LOCALES_DIR']),
+                        help=('Locale for Pokemon names (check' +
+                              ' static/dist/locales for more).'),
                         default='en')
     parser.add_argument('-c', '--china',
                         help='Coordinates transformer for China.',
@@ -773,6 +770,8 @@ def get_args():
         else:
             args.wh_types = frozenset([i for i in args.wh_types])
 
+    args.locales_dir = 'static/dist/locales'
+    args.data_dir = 'static/dist/data'
     return args
 
 
@@ -814,52 +813,41 @@ def in_radius(loc1, loc2, radius):
 
 
 def i8ln(word):
-    if config['LOCALE'] == "en":
-        return word
     if not hasattr(i8ln, 'dictionary'):
+        args = get_args()
         file_path = os.path.join(
-            config['ROOT_PATH'],
-            config['LOCALES_DIR'],
-            '{}.min.json'.format(config['LOCALE']))
+            args.root_path,
+            args.locales_dir,
+            '{}.min.json'.format(args.locale))
         if os.path.isfile(file_path):
             with open(file_path, 'r') as f:
                 i8ln.dictionary = json.loads(f.read())
         else:
-            log.warning(
-                'Skipping translations - unable to find locale file: %s',
-                file_path)
-            return word
+            # If locale file is not found we set an empty dict to avoid
+            # checking the file every time, we skip the warning for English as
+            # it is not expected to exist.
+            if not args.locale == 'en':
+                log.warning(
+                    'Skipping translations - unable to find locale file: %s',
+                    file_path)
+            i8ln.dictionary = {}
     if word in i8ln.dictionary:
         return i8ln.dictionary[word]
     else:
-        log.debug('Unable to find translation for "%s" in locale %s!',
-                  word, config['LOCALE'])
         return word
 
 
 def get_pokemon_data(pokemon_id):
     if not hasattr(get_pokemon_data, 'pokemon'):
+        args = get_args()
         file_path = os.path.join(
-            config['ROOT_PATH'],
-            config['DATA_DIR'],
+            args.root_path,
+            args.data_dir,
             'pokemon.min.json')
 
         with open(file_path, 'r') as f:
             get_pokemon_data.pokemon = json.loads(f.read())
     return get_pokemon_data.pokemon[str(pokemon_id)]
-
-
-def get_pokemon_id(pokemon_name):
-    if not hasattr(get_pokemon_id, 'ids'):
-        if not hasattr(get_pokemon_data, 'pokemon'):
-            # initialize from file
-            get_pokemon_data(1)
-
-        get_pokemon_id.ids = {}
-        for pokemon_id, data in get_pokemon_data.pokemon.iteritems():
-            get_pokemon_id.ids[data['name']] = int(pokemon_id)
-
-    return get_pokemon_id.ids.get(pokemon_name, -1)
 
 
 def get_pokemon_name(pokemon_id):
@@ -878,9 +866,10 @@ def get_pokemon_types(pokemon_id):
 
 def get_moves_data(move_id):
     if not hasattr(get_moves_data, 'moves'):
+        args = get_args()
         file_path = os.path.join(
-            config['ROOT_PATH'],
-            config['DATA_DIR'],
+            args.root_path,
+            args.data_dir,
             'moves.min.json')
 
         with open(file_path, 'r') as f:
@@ -902,7 +891,7 @@ def get_move_energy(move_id):
 
 def get_move_type(move_id):
     move_type = get_moves_data(move_id)['type']
-    return {"type": i8ln(move_type), "type_en": move_type}
+    return {'type': i8ln(move_type), 'type_en': move_type}
 
 
 def dottedQuadToNum(ip):

@@ -16,7 +16,6 @@ from queue import Queue
 from flask_cors import CORS
 from flask_cache_bust import init_cache_busting
 
-from pogom import config
 from pogom.app import Pogom
 from pogom.utils import get_args, now, gmaps_reverse_geolocate
 from pogom.altitude import get_gmaps_altitude
@@ -202,11 +201,6 @@ def main():
 
     set_log_and_verbosity(log)
 
-    config['parse_pokemon'] = not args.no_pokemon
-    config['parse_pokestops'] = not args.no_pokestops
-    config['parse_gyms'] = not args.no_gyms
-    config['parse_raids'] = not args.no_raids
-
     # Let's not forget to run Grunt / Only needed when running with webserver.
     if not args.no_server and not validate_assets(args):
         sys.exit(1)
@@ -254,9 +248,6 @@ def main():
     if args.encounter:
         log.info('Encountering pokemon enabled.')
 
-    config['LOCALE'] = args.locale
-    config['CHINA'] = args.china
-
     app = None
     if not args.no_server and not args.clear_db:
         app = Pogom(__name__,
@@ -284,6 +275,8 @@ def main():
         log.info(
             'Drop and recreate is complete. Now remove -cd and restart.')
         sys.exit()
+
+    args.root_path = os.path.dirname(os.path.abspath(__file__))
 
     # Control the search status (running or not) across threads.
     control_flags = {
@@ -412,8 +405,6 @@ def main():
         while search_thread.is_alive():
             time.sleep(60)
     else:
-        config['ROOT_PATH'] = app.root_path
-        config['GMAPS_KEY'] = args.gmaps_key
 
         if args.cors:
             CORS(app)

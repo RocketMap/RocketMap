@@ -1,14 +1,24 @@
 import unittest
+import os
 from pogom import utils
 
 
-class UtilsTest(unittest.TestCase):
-    def test_get_pokemon_id(self):
-        self.assertEqual(1, utils.get_pokemon_id("Bulbasaur"))
-        self.assertEqual(149, utils.get_pokemon_id("Dragonite"))
+# Mock get_args function to work with tests
+class Args:
+    locale = 'en'
+    root_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
+    data_dir = 'static/dist/data'
+    locales_dir = 'static/dist/locales'
 
-        # Unknown name returns -1
-        self.assertEqual(-1, utils.get_pokemon_id("Unknown"))
+
+def mock_get_args():
+    return Args()
+
+
+utils.get_args = mock_get_args
+
+
+class UtilsTest(unittest.TestCase):
 
     def test_get_pokemon_name(self):
         self.assertEqual("Bulbasaur", utils.get_pokemon_name(1))
