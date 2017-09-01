@@ -519,7 +519,7 @@ function pokemonLabel(item) {
           <div class='pokemon container content-right'>
             <div>
               <div class='pokemon disappear'>
-                <span class='label-countdown' disappears-at='${disappearTime}'>00m00s</span> left
+                <span class='label-countdown' disappears-at='${disappearTime}'>00m00s</span> left (${moment(disappearTime).format('HH:mm')})
               </div>
               <div class='pokemon'>
                 CP: <span class='pokemon encounter'>${cp}/${iv.toFixed(1)}%</span> (A${atk}/D${def}/S${sta})
@@ -551,7 +551,7 @@ function pokemonLabel(item) {
       <div class='pokemon container content-right'>
         <div>
           <div class='pokemon disappear'>
-            <span class='label-countdown' disappears-at='${disappearTime}'>00m00s</span> left
+            <span class='label-countdown' disappears-at='${disappearTime}'>00m00s</span> left (${moment(disappearTime).format('HH:mm')})
           </div>
           <div class='pokemon'>
             CP: <span class='pokemon no-encounter'>No information</span>
@@ -658,7 +658,7 @@ function gymLabel(gym, includeMembers = true) {
                 <span style='color:rgb(${raidColor[Math.floor((raid.level - 1) / 2)]})'>
                 ${levelStr}
                 </span>
-                <span class='raid countdown label-countdown' disappears-at='${raid.end}'></span> left
+                <span class='raid countdown label-countdown' disappears-at='${raid.end}'></span> left (${moment(raid.end).format('HH:mm')})
                 </div>
             `
             // Use Pokémon-specific image if we have one.
@@ -683,7 +683,7 @@ function gymLabel(gym, includeMembers = true) {
                     <span style='color:rgb(${raidColor[Math.floor((raid.level - 1) / 2)]})'>
                     ${levelStr}
                     </span>
-                    <span class='raid countdown label-countdown' disappears-at='${raid.end}'></span> left
+                    <span class='raid countdown label-countdown' disappears-at='${raid.end}'></span> left (${moment(raid.end).format('HH:mm')})
                     </div>
                 `
             }
@@ -697,7 +697,7 @@ function gymLabel(gym, includeMembers = true) {
                   <span style='color:rgb(${raidColor[Math.floor((raid.level - 1) / 2)]})'>
                   ${levelStr}
                   </span>
-                  Raid in <span class='raid countdown label-countdown' disappears-at='${raid.start}'></span>
+                  Raid in <span class='raid countdown label-countdown' disappears-at='${raid.start}'> (${moment(raid.start).format('HH:mm')})</span>
                 </div>`
         }
     } else {
@@ -773,7 +773,7 @@ function pokestopLabel(expireTime, latitude, longitude) {
                 Lured Pokéstop
               </div>
               <div class='pokestop-expire'>
-                  <span class='label-countdown' disappears-at='${expireTime}'>00m00s</span> left
+                  <span class='label-countdown' disappears-at='${expireTime}'>00m00s</span> left (${moment(expireTime).format('HH:mm')})
               </div>
               <div>
                 <img class='pokestop sprite' src='static/images/pokestop//PokestopLured.png'>
@@ -1851,14 +1851,7 @@ var updateLabelDiffTime = function () {
         if (disappearsAt.ttime < disappearsAt.now) {
             timestring = '(expired)'
         } else {
-            timestring = ''
-            if (hours > 0) {
-                timestring = hours + 'hour '
-            }
-
-            timestring += lpad(minutes, 2, 0) + 'min '
-            timestring += lpad(seconds, 2, 0) + 'sec '
-            timestring += ''
+            timestring = lpad(hours, 2, 0) + ':' + lpad(minutes, 2, 0) + ':' + lpad(seconds, 2, 0)
         }
 
         $(element).text(timestring)
