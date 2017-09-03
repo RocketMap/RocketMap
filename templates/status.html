@@ -83,12 +83,13 @@
         </form>
     </div>
 </div>
-<script src="{{ url_for('static', filename='dist/js/status.min.js').lstrip('/') }}"></script>
-<script src="{{ url_for('static', filename='dist/js/app.min.js').lstrip('/') }}"></script>
+<!-- Load JS libs before custom scripts. -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment-with-locales.min.js"></script>
-<!-- Custom JS -->
+<!-- Load custom JS before status.js so it can change Store defaults. -->
   {% if show.custom_js %}
 <script src="{{ url_for('static', filename='dist/js/custom.min.js').lstrip('/') }}"></script>
   {% endif %}
+<script src="{{ url_for('static', filename='dist/js/status.min.js').lstrip('/') }}"></script>
+<script src="{{ url_for('static', filename='dist/js/app.min.js').lstrip('/') }}"></script>
 </body>
 </html>

@@ -73,7 +73,7 @@ $(function () {
     Store.set('upscalePokemon', upscalePokemon)
     Store.set('upscaledPokemon', upscaledPokemon)
 
-    if (typeof window.orientation !== "undefined" || isMobileDevice()) {
+    if (typeof window.orientation !== 'undefined' || isMobileDevice()) {
         Store.set('maxClusterZoomLevel', maxClusterZoomLevelMobile)
         Store.set('clusterZoomOnClick', clusterZoomOnClickMobile)
         Store.set('clusterGridSize', clusterGridSizeMobile)

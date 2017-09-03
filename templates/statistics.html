@@ -30,13 +30,6 @@
       {% if show.custom_css %}
     <link rel="stylesheet" type="text/css" href="static/css/custom.css">
       {% endif %}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
-    <script>
-      var centerLat = {{lat}};
-      var centerLng = {{lng}};
-    </script>
-    <script src="{{ url_for('static', filename='dist/js/map.common.min.js').lstrip('/') }}"></script>
 </head>
 <body class="statisticsPage">
         <!-- Header -->
@@ -76,11 +69,19 @@
                 </div>
             </div>
         </div>
-    <script src="{{ url_for('static', filename='dist/js/app.min.js').lstrip('/') }}"></script>
-    <script src="{{ url_for('static', filename='dist/js/statistics.min.js').lstrip('/') }}"></script>
-    <!-- Custom JS -->
+    <!-- Load JS libs before custom scripts. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+    <script>
+      var centerLat = {{lat}};
+      var centerLng = {{lng}};
+    </script>
+    <script src="{{ url_for('static', filename='dist/js/map.common.min.js').lstrip('/') }}"></script>
+    <!-- Load custom JS before statistics.js so it can change Store defaults. -->
       {% if show.custom_js %}
     <script src="{{ url_for('static', filename='dist/js/custom.min.js').lstrip('/') }}"></script>
       {% endif %}
+    <script src="{{ url_for('static', filename='dist/js/app.min.js').lstrip('/') }}"></script>
+    <script src="{{ url_for('static', filename='dist/js/statistics.min.js').lstrip('/') }}"></script>
 </body>
 </html>

@@ -2,7 +2,6 @@
 <head>
 	<title>Nearby Pokémon</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<script>var pageLoaded = new Date().getTime();</script>
 	<link rel="stylesheet" href="{{ url_for('static', filename='dist/css/mobile.min.css').lstrip('/') }}" type="text/css" />
 	<!-- Custom CSS code-->
 		{% if show.custom_css %}
@@ -33,11 +32,13 @@
 		</div>
 	</div>
 
+	<!-- Load JS libs before custom scripts. -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-	<script src="{{ url_for('static', filename='dist/js/mobile.min.js').lstrip('/') }}"></script>
-    <!-- Custom JS -->
+    <script>var pageLoaded = new Date().getTime();</script>
+    <!-- Load custom JS before mobile.js so it can change Store defaults. -->
       {% if show.custom_js %}
     <script src="{{ url_for('static', filename='dist/js/custom.min.js').lstrip('/') }}"></script>
       {% endif %}
+	<script src="{{ url_for('static', filename='dist/js/mobile.min.js').lstrip('/') }}"></script>
 </body>
 </html>
