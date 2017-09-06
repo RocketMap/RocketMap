@@ -38,18 +38,15 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from distutils.version import StrictVersion
 
-from pgoapi.utilities import f2i
-from pgoapi import utilities as util
-from pgoapi.hash_server import (HashServer, BadHashRequestException,
-                                HashingOfflineException)
+from pgoapi.hash_server import HashServer
 from .models import (parse_map, GymDetails, parse_gyms, MainWorker,
                      WorkerStatus, HashKeys)
-from .utils import now, clear_dict_response, distance
-from .transform import get_new_coords, jitter_location
-from .account import (setup_api, check_login, AccountSet,
-                      parse_new_timestamp_ms)
+from .utils import now, distance
+from .transform import get_new_coords
+from .account import setup_api, check_login, AccountSet
 from .captcha import captcha_overseer_thread, handle_captcha
 from .proxy import get_new_proxy
+from .apiRequests import gym_get_info, get_map_objects as gmo
 
 log = logging.getLogger(__name__)
 
@@ -949,8 +946,8 @@ def search_worker_thread(args, account_queue, account_sets,
 
                 # Make the actual request.
                 scan_date = datetime.utcnow()
-                response_dict = map_request(api, account, step_location,
-                                            args.no_jitter)
+                response_dict = gmo(
+                    api, account, step_location, args.no_jitter)
                 status['last_scan_date'] = datetime.utcnow()
 
                 # Record the time and the place that the worker made the
@@ -979,9 +976,8 @@ def search_worker_thread(args, account_queue, account_sets,
                         # Make another request for the same location
                         # since the previous one was captcha'd.
                         scan_date = datetime.utcnow()
-                        response_dict = map_request(api, account,
-                                                    step_location,
-                                                    args.no_jitter)
+                        response_dict = gmo(
+                            api, account, step_location, args.no_jitter)
                     elif captcha is not None:
                         account_queue.task_done()
                         time.sleep(3)
@@ -1066,14 +1062,22 @@ def search_worker_thread(args, account_queue, account_sets,
                         log.debug(status['message'])
 
                         for gym in gyms_to_update.values():
+                            time.sleep(random.random() + 2)
                             status['message'] = (
                                 'Getting details for gym {} of {} for ' +
                                 'location {:6f},{:6f}...').format(
-                                    current_gym, len(gyms_to_update),
-                                    step_location[0], step_location[1])
-                            time.sleep(random.random() + 2)
-                            response = gym_request(api, account, step_location,
-                                                   gym)
+                                    current_gym,
+                                    len(gyms_to_update), step_location[0],
+                                    step_location[1])
+                            log.info('Getting details for gym @ %f/%f ' +
+                                     '(%.0fm away)', gym['latitude'],
+                                     gym['longitude'],
+                                     distance(step_location, [
+                                         gym['latitude'], gym['longitude']
+                                     ]))
+
+                            response = gym_get_info(api, account,
+                                                    step_location, gym)
 
                             # Make sure the gym was in range. (Sometimes the
                             # API gets cranky about gyms that are ALMOST 1km
@@ -1174,75 +1178,6 @@ def upsertKeys(keys, key_scheduler, db_updates_queue):
         hashkeys[key]['peak'] = max(key_instance['peak'],
                                     HashKeys.getStoredPeak(key))
     db_updates_queue.put((HashKeys, hashkeys))
-
-
-def map_request(api, account, position, no_jitter=False):
-    # Create scan_location to send to the api based off of position, because
-    # tuples aren't mutable.
-    if no_jitter:
-        # Just use the original coordinates.
-        scan_location = position
-    else:
-        # Jitter it, just a little bit.
-        scan_location = jitter_location(position)
-        log.debug('Jittered to: %f/%f/%f',
-                  scan_location[0], scan_location[1], scan_location[2])
-
-    try:
-        cell_ids = util.get_cell_ids(scan_location[0], scan_location[1])
-        timestamps = [0, ] * len(cell_ids)
-        req = api.create_request()
-        req.get_map_objects(latitude=f2i(scan_location[0]),
-                            longitude=f2i(scan_location[1]),
-                            since_timestamp_ms=timestamps,
-                            cell_id=cell_ids)
-        req.check_challenge()
-        req.get_hatched_eggs()
-        req.get_inventory(last_timestamp_ms=account['last_timestamp_ms'])
-        req.check_awarded_badges()
-        req.get_buddy_walked()
-        req.get_inbox(is_history=True)
-        response = req.call(False)
-        parse_new_timestamp_ms(account, response)
-        response = clear_dict_response(response)
-        return response
-
-    except HashingOfflineException:
-        log.error('Hashing server is unreachable, it might be offline.')
-    except BadHashRequestException:
-        log.error('Invalid or expired hashing key: %s.',
-                  api._hash_server_token)
-    except Exception as e:
-        log.exception('Exception while downloading map: %s', repr(e))
-        return False
-
-
-def gym_request(api, account, position, gym):
-    try:
-        log.info('Getting details for gym @ %f/%f (%.0fm away)',
-                 gym['latitude'], gym['longitude'],
-                 distance(position, [gym['latitude'], gym['longitude']]))
-        req = api.create_request()
-        req.gym_get_info(
-            gym_id=gym['gym_id'],
-            player_lat_degrees=f2i(position[0]),
-            player_lng_degrees=f2i(position[1]),
-            gym_lat_degrees=gym['latitude'],
-            gym_lng_degrees=gym['longitude'])
-        req.check_challenge()
-        req.get_hatched_eggs()
-        req.get_inventory(last_timestamp_ms=account['last_timestamp_ms'])
-        req.check_awarded_badges()
-        req.get_buddy_walked()
-        req.get_inbox(is_history=True)
-        response = req.call(False)
-        parse_new_timestamp_ms(account, response)
-        response = clear_dict_response(response)
-        return response
-
-    except Exception as e:
-        log.exception('Exception while downloading gym details: %s.', repr(e))
-        return False
 
 
 # Delay each thread start time so that logins occur after delay.

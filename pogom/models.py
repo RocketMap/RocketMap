@@ -33,9 +33,9 @@ from .utils import (get_pokemon_name, get_pokemon_rarity, get_pokemon_types,
 from .transform import transform_from_wgs_to_gcj, get_new_coords
 from .customLog import printPokemon
 
-from .account import (check_login, setup_api, encounter_pokemon_request,
-                      pokestop_spinnable, spin_pokestop)
+from .account import check_login, setup_api, pokestop_spinnable, spin_pokestop
 from .proxy import get_new_proxy
+from .apiRequests import encounter
 
 log = logging.getLogger(__name__)
 
@@ -2422,7 +2422,7 @@ def encounter_pokemon(args, pokemon, account, api, account_sets, status,
             return False
 
         # Encounter Pokémon.
-        encounter_result = encounter_pokemon_request(
+        encounter_result = encounter(
             hlvl_api, hlvl_account, pokemon.encounter_id,
             pokemon.spawn_point_id, scan_location)
 

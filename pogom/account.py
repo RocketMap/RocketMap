@@ -12,9 +12,11 @@ from pgoapi.exceptions import AuthException
 
 from .fakePogoApi import FakePogoApi
 from .pgoapiwrapper import PGoApiWrapper
-from .utils import (in_radius, generate_device_info, distance,
-                    clear_dict_response)
+from .utils import in_radius, generate_device_info, distance
 from .proxy import get_new_proxy
+from .apiRequests import (send_generic_request, fort_details,
+                          recycle_inventory_item, use_item_egg_incubator,
+                          release_pokemon, level_up_rewards, fort_search)
 
 log = logging.getLogger(__name__)
 
@@ -25,13 +27,6 @@ class TooManyLoginAttempts(Exception):
 
 class LoginSequenceFail(Exception):
     pass
-
-
-class NullTimeException(Exception):
-
-    def __init__(self, type):
-        self.type = type
-        super(NullTimeException, self).__init__(NullTimeException.__name__)
 
 
 # Create the API object that'll be used to scan.
@@ -448,16 +443,6 @@ def complete_tutorial(args, api, account):
     return True
 
 
-def get_player_level(map_dict):
-    if 'responses' in map_dict and 'GET_INVENTORY' in map_dict['responses']:
-        for item in (map_dict['responses']['GET_INVENTORY'].inventory_delta
-                     .inventory_items):
-            if item.inventory_item_data.HasField("player_stats"):
-                return item.inventory_item_data.player_stats.level
-
-    return 0
-
-
 def reset_account(account):
     account['start_time'] = time.time()
     account['warning'] = None
@@ -505,9 +490,9 @@ def spin_pokestop(api, account, args, fort, step_location):
     # Set 50% Chance to spin a Pokestop.
     if random.random() > 0.5 or account['level'] == 1:
         time.sleep(random.uniform(0.8, 1.8))
-        fort_details_request(api, account, fort)
+        fort_details(api, account, fort)
         time.sleep(random.uniform(0.8, 1.8))  # Don't let Niantic throttle.
-        response = spin_pokestop_request(api, account, fort, step_location)
+        response = fort_search(api, account, fort, step_location)
         time.sleep(random.uniform(2, 4))  # Don't let Niantic throttle.
 
         # Check for reCaptcha.
@@ -517,7 +502,7 @@ def spin_pokestop(api, account, args, fort, step_location):
             return False
 
         spin_result = response['responses']['FORT_SEARCH'].result
-        if spin_result is 1:
+        if spin_result == 1:
             log.info('Successful Pokestop spin with %s.',
                      account['username'])
             # Update account stats and clear inventory if necessary.
@@ -526,14 +511,14 @@ def spin_pokestop(api, account, args, fort, step_location):
             account['session_spins'] += 1
             incubate_eggs(api, account)
             return True
-        elif spin_result is 2:
+        elif spin_result == 2:
             log.debug('Pokestop was not in range to spin.')
-        elif spin_result is 3:
+        elif spin_result == 3:
             log.debug('Failed to spin Pokestop. Has recently been spun.')
-        elif spin_result is 4:
+        elif spin_result == 4:
             log.debug('Failed to spin Pokestop. Inventory is full.')
             clear_inventory(api, account)
-        elif spin_result is 5:
+        elif spin_result == 5:
             log.debug('Maximum number of Pokestops spun for this day.')
         else:
             log.debug(
@@ -543,43 +528,6 @@ def spin_pokestop(api, account, args, fort, step_location):
     return False
 
 
-def parse_download_settings(account, api_response):
-    if 'DOWNLOAD_REMOTE_CONFIG_VERSION' in api_response['responses']:
-        remote_config = (api_response['responses']
-                         .get('DOWNLOAD_REMOTE_CONFIG_VERSION', 0))
-        asset_time = remote_config.asset_digest_timestamp_ms / 1000000
-        template_time = remote_config.item_templates_timestamp_ms / 1000
-
-        if asset_time == 0 or asset_time is None:
-            raise NullTimeException(type="asset")
-        if template_time == 0 or template_time is None:
-            raise NullTimeException(type="template")
-
-        download_settings = {}
-        download_settings['hash'] = api_response['responses'][
-            'DOWNLOAD_SETTINGS'].hash
-        download_settings['asset_time'] = asset_time
-        download_settings['template_time'] = template_time
-
-        account['remote_config'] = download_settings
-
-        log.debug('Download settings for account %s: %s.',
-                  account['username'],
-                  download_settings)
-        return True
-
-
-# Parse new timestamp from the GET_INVENTORY response.
-def parse_new_timestamp_ms(account, api_response):
-    if 'GET_INVENTORY' in api_response['responses']:
-        account['last_timestamp_ms'] = api_response['responses'][
-            'GET_INVENTORY'].inventory_delta.new_timestamp_ms
-
-        player_level = get_player_level(api_response)
-        if player_level:
-            account['level'] = player_level
-
-
 def parse_get_player(account, api_response):
     if 'GET_PLAYER' in api_response['responses']:
         player_data = api_response['responses']['GET_PLAYER'].player_data
@@ -587,81 +535,6 @@ def parse_get_player(account, api_response):
         account['warning'] = api_response['responses']['GET_PLAYER'].warn
         account['tutorials'] = player_data.tutorial_state
         account['buddy'] = player_data.buddy_pokemon.id
-
-
-# Parse player stats and inventory into account.
-def parse_inventory(account, api_response):
-    if 'GET_INVENTORY' not in api_response['responses']:
-        return
-    inventory = api_response['responses']['GET_INVENTORY']
-    parsed_items = 0
-    parsed_pokemons = 0
-    parsed_eggs = 0
-    parsed_incubators = 0
-    for item in inventory.inventory_delta.inventory_items:
-        item_data = item.inventory_item_data
-        if item_data.HasField('player_stats'):
-            stats = item_data.player_stats
-            account['level'] = stats.level
-            account['spins'] = stats.poke_stop_visits
-            account['walked'] = stats.km_walked
-
-            log.debug('Parsed %s player stats: level %d, %f km ' +
-                      'walked, %d spins.', account['username'],
-                      account['level'], account['walked'], account['spins'])
-        elif item_data.HasField('item'):
-            item_id = item_data.item.item_id
-            item_count = item_data.item.count
-            account['items'][item_id] = item_count
-            parsed_items += item_count
-        elif item_data.HasField('egg_incubators'):
-            incubators = item_data.egg_incubators.egg_incubator
-            for incubator in incubators:
-                if incubator.pokemon_id != 0:
-                    left = (incubator.target_km_walked - account['walked'])
-                    log.debug('Egg kms remaining: %.2f', left)
-                else:
-                    account['incubators'].append({
-                        'id': incubator.id,
-                        'item_id': incubator.item_id,
-                        'uses_remaining': incubator.uses_remaining
-                    })
-                    parsed_incubators += 1
-        elif item_data.HasField('pokemon_data'):
-            p_data = item_data.pokemon_data
-            p_id = p_data.id
-            if not p_data.is_egg:
-                account['pokemons'][p_id] = {
-                    'pokemon_id': p_data.pokemon_id,
-                    'move_1': p_data.move_1,
-                    'move_2': p_data.move_2,
-                    'height': p_data.height_m,
-                    'weight': p_data.weight_kg,
-                    'gender': p_data.pokemon_display.gender,
-                    'cp': p_data.cp,
-                    'cp_multiplier': p_data.cp_multiplier
-                }
-                parsed_pokemons += 1
-            else:
-                if p_data.egg_incubator_id:
-                    # Egg is already incubating.
-                    continue
-                account['eggs'].append({
-                    'id': p_id,
-                    'km_target': p_data.egg_km_walked_target
-                })
-                parsed_eggs += 1
-    if log.isEnabledFor(logging.DEBUG):
-        log.debug(
-            'Parsed %s player inventory: %d items, %d pokemons, %d available' +
-            ' eggs and %d available incubators.',
-            account['username'], parsed_items, parsed_pokemons, parsed_eggs,
-            parsed_incubators)
-        total_items = reduce(lambda x, value: x + value,
-                             account['items'].itervalues(), 0)
-        log.debug('Total amount in Inventory: %d Items, %d pokemon, %d eggs,' +
-                  ' %d Incubator', total_items, len(account['pokemons']),
-                  len(account['eggs']), len(account['incubators']))
 
 
 def clear_inventory(api, account):
@@ -681,8 +554,7 @@ def clear_inventory(api, account):
             release_ids.remove(account['buddy'])
         # Don't let Niantic throttle.
         time.sleep(random.uniform(2, 4))
-        release_p_response = request_release_pokemon(api, account, 0,
-                                                     release_ids)
+        release_p_response = release_pokemon(api, account, 0, release_ids)
 
         captcha_url = release_p_response[
             'responses']['CHECK_CHALLENGE'].challenge_url
@@ -693,11 +565,11 @@ def clear_inventory(api, account):
         release_response = release_p_response['responses']['RELEASE_POKEMON']
         release_result = release_response.result
 
-        if release_result is 1:
+        if release_result == 1:
             log.info('Sucessfully Released %s Pokemon', len(release_ids))
             for p_id in release_ids:
                 account['pokemons'].pop(p_id, None)
-        elif release_result != 1:
+        else:
             log.error('Failed to release Pokemon.')
 
     for item_id, item_name in items:
@@ -708,24 +580,21 @@ def clear_inventory(api, account):
 
             # Don't let Niantic throttle.
             time.sleep(random.uniform(2, 4))
-            clear_inventory_response = clear_inventory_request(
-                api, account, item_id, drop_count)
+            resp = recycle_inventory_item(api, account, item_id, drop_count)
 
-            captcha_url = clear_inventory_response['responses'][
-                'CHECK_CHALLENGE'].challenge_url
+            captcha_url = resp['responses']['CHECK_CHALLENGE'].challenge_url
             if len(captcha_url) > 1:
                 log.info('Account encountered a reCaptcha.')
                 return False
 
-            clear_response = clear_inventory_response[
-                'responses']['RECYCLE_INVENTORY_ITEM']
+            clear_response = resp['responses']['RECYCLE_INVENTORY_ITEM']
             clear_result = clear_response.result
-            if clear_result is 1:
+            if clear_result == 1:
                 log.info('Clearing %s %ss succeeded.', item_count,
                          item_name)
-            elif clear_result is 2:
+            elif clear_result == 2:
                 log.debug('Not enough items to clear, parsing failed.')
-            elif clear_result is 3:
+            elif clear_result == 3:
                 log.debug('Tried to recycle incubator, parsing failed.')
             else:
                 log.warning('Failed to clear inventory.')
@@ -744,8 +613,7 @@ def incubate_eggs(api, account):
             break
         egg = account['eggs'].pop(0)
         time.sleep(random.uniform(2.0, 4.0))
-        if request_use_item_egg_incubator(
-           api, account, incubator['id'], egg['id']):
+        if use_item_egg_incubator(api, account, incubator['id'], egg['id']):
             log.info('Egg #%s (%.0f km) is on incubator #%s.',
                      egg['id'], egg['km_target'], incubator['id'])
             account['incubators'].remove(incubator)
@@ -755,195 +623,18 @@ def incubate_eggs(api, account):
     return
 
 
-def spin_pokestop_request(api, account, fort, step_location):
-    try:
-        req = api.create_request()
-        req.fort_search(
-            fort_id=fort.id,
-            fort_latitude=fort.latitude,
-            fort_longitude=fort.longitude,
-            player_latitude=step_location[0],
-            player_longitude=step_location[1])
-        req.check_challenge()
-        req.get_hatched_eggs()
-        req.get_inventory(last_timestamp_ms=account['last_timestamp_ms'])
-        req.check_awarded_badges()
-        req.get_buddy_walked()
-        req.get_inbox(is_history=True)
-        response = req.call(False)
-        parse_new_timestamp_ms(account, response)
-        parse_inventory(account, response)
-        return response
-
-    except Exception as e:
-        log.exception('Exception while spinning Pokestop: %s.', e)
-        return False
-
-
-def fort_details_request(api, account, fort):
-    try:
-        req = api.create_request()
-        req.fort_details(
-            fort_id=fort.id,
-            latitude=fort.latitude,
-            longitude=fort.longitude)
-        req.check_challenge()
-        req.get_hatched_eggs()
-        req.get_inventory(last_timestamp_ms=account['last_timestamp_ms'])
-        req.check_awarded_badges()
-        req.get_buddy_walked()
-        req.get_inbox(is_history=True)
-        response = req.call(False)
-        parse_new_timestamp_ms(account, response)
-        return response
-    except Exception as e:
-        log.exception('Exception while getting Pokestop details: %s.', e)
-        return False
-
-
-def encounter_pokemon_request(api, account, encounter_id, spawnpoint_id,
-                              scan_location):
-    try:
-        # Setup encounter request envelope.
-        req = api.create_request()
-        req.encounter(
-            encounter_id=encounter_id,
-            spawn_point_id=spawnpoint_id,
-            player_latitude=scan_location[0],
-            player_longitude=scan_location[1])
-        req.check_challenge()
-        req.get_hatched_eggs()
-        req.get_inventory(last_timestamp_ms=account['last_timestamp_ms'])
-        req.check_awarded_badges()
-        req.get_buddy_walked()
-        req.get_inbox(is_history=True)
-        response = req.call(False)
-        parse_new_timestamp_ms(account, response)
-        return clear_dict_response(response)
-    except Exception as e:
-        log.exception('Exception while encountering Pokémon: %s.', e)
-        return False
-
-
-def clear_inventory_request(api, account, item_id, drop_count):
-    try:
-        req = api.create_request()
-        req.recycle_inventory_item(item_id=item_id, count=drop_count)
-        req.check_challenge()
-        req.get_hatched_eggs()
-        req.get_inventory(last_timestamp_ms=account['last_timestamp_ms'])
-        req.check_awarded_badges()
-        req.get_buddy_walked()
-        req.get_inbox(is_history=True)
-        clear_inventory_response = req.call(False)
-
-        parse_new_timestamp_ms(account, clear_inventory_response)
-        parse_inventory(account, clear_inventory_response)
-
-        return clear_inventory_response
-
-    except Exception as e:
-        log.exception('Exception while clearing Inventory: %s', e)
-        return False
-
-
-def request_use_item_egg_incubator(api, account, incubator_id, egg_id):
-    try:
-        req = api.create_request()
-        req.use_item_egg_incubator(
-            item_id=incubator_id,
-            pokemon_id=egg_id
-        )
-        req.check_challenge()
-        req.get_hatched_eggs()
-        req.get_inventory(last_timestamp_ms=account['last_timestamp_ms'])
-        req.check_awarded_badges()
-        req.get_buddy_walked()
-        req.get_inbox(is_history=True)
-        response = req.call(False)
-
-        parse_new_timestamp_ms(account, response)
-
-        return True
-
-    except Exception as e:
-        log.exception('Exception while putting an egg in incubator: %s', e)
-    return False
-
-
-def request_release_pokemon(api, account, pokemon_id, release_ids=None):
-    if release_ids is None:
-        release_ids = []
-    try:
-        req = api.create_request()
-        req.release_pokemon(pokemon_id=pokemon_id,
-                            pokemon_ids=release_ids)
-        req.check_challenge()
-        req.get_hatched_eggs()
-        req.get_inventory(last_timestamp_ms=account['last_timestamp_ms'])
-        req.check_awarded_badges()
-        req.get_buddy_walked()
-        req.get_inbox(is_history=True)
-        release_p_response = req.call(False)
-
-        parse_new_timestamp_ms(account, release_p_response)
-
-        return release_p_response
-
-    except Exception as e:
-        log.exception('Exception while releasing Pokemon: %s', e)
-
-    return False
-
-
 def parse_level_up_rewards(api, account):
-    try:
-        req = api.create_request()
-        req.level_up_rewards(level=account['level'])
-        req.check_challenge()
-        req.get_hatched_eggs()
-        req.get_inventory(last_timestamp_ms=account['last_timestamp_ms'])
-        req.check_awarded_badges()
-        req.get_buddy_walked()
-        req.get_inbox(is_history=True)
-        response = req.call(False)
-
-        parse_new_timestamp_ms(account, response)
-
-        response = response['responses']['LEVEL_UP_REWARDS']
-        result = response.result
-        if result is 1:
-            log.info('Account %s collected its level up rewards.',
-                     account['username'])
-        elif result != 1:
-            log.debug('Account %s already collected its level up rewards.',
-                      account['username'])
-    except Exception as e:
-        log.exception('Error during getting Level Up Rewards %s.', e)
-
-
-def send_generic_request(req, account, settings=False, buddy=True, inbox=True):
-    req.check_challenge()
-    req.get_hatched_eggs()
-    req.get_inventory(last_timestamp_ms=account['last_timestamp_ms'])
-    req.check_awarded_badges()
-
-    if settings:
-        if 'remote_config' in account:
-            req.download_settings(hash=account['remote_config']['hash'])
-        else:
-            req.download_settings()
-    if buddy:
-        req.get_buddy_walked()
-    if inbox:
-        req.get_inbox(is_history=True)
-    resp = req.call(False)
-    parse_inventory(account, resp)
-    parse_new_timestamp_ms(account, resp)
-    if settings:
-        parse_download_settings(account, resp)
-    clear_dict_response(resp)
-    return resp
+    resp = level_up_rewards(api, account)
+    result = resp['responses']['LEVEL_UP_REWARDS'].result
+    if result == 1:
+        log.info('Account %s collected its level up rewards.',
+                 account['username'])
+    elif result == 2:
+        log.debug('Account %s already collected its level up rewards.',
+                  account['username'])
+    else:
+        log.error('Error collecting rewards of account %s.',
+                  account['username'])
 
 
 # The AccountSet returns a scheduler that cycles through different

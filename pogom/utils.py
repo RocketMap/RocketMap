@@ -965,21 +965,6 @@ def generate_device_info(identifier):
     return device_info
 
 
-def clear_dict_response(response):
-    del response['envelope'].platform_returns[:]
-    if 'responses' not in response:
-        return response
-    responses = [
-        'GET_HATCHED_EGGS', 'GET_INVENTORY', 'CHECK_AWARDED_BADGES',
-        'DOWNLOAD_SETTINGS', 'GET_BUDDY_WALKED', 'GET_INBOX'
-    ]
-    for item in responses:
-        if item in response['responses']:
-            del response['responses'][item]
-
-    return response
-
-
 def calc_pokemon_level(cp_multiplier):
     if cp_multiplier < 0.734:
         pokemon_level = (58.35178527 * cp_multiplier * cp_multiplier -

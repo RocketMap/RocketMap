@@ -48,7 +48,7 @@ stdout_hdlr = logging.StreamHandler(sys.stdout)
 stdout_hdlr.setFormatter(formatter)
 log_filter = LogFilter(logging.WARNING)
 stdout_hdlr.addFilter(log_filter)
-stdout_hdlr.setLevel(logging.DEBUG)
+stdout_hdlr.setLevel(5)
 
 # Redirect messages equal or higher than WARNING to stderr
 stderr_hdlr = logging.StreamHandler(sys.stderr)
@@ -458,17 +458,21 @@ def set_log_and_verbosity(log):
     logging.getLogger('pgoapi.pgoapi').setLevel(logging.WARNING)
     logging.getLogger('pgoapi.rpc_api').setLevel(logging.INFO)
     logging.getLogger('werkzeug').setLevel(logging.ERROR)
+    logging.getLogger('pogom.apiRequests').setLevel(logging.INFO)
 
     # Turn these back up if debugging.
-    if args.verbose == 2:
+    if args.verbose >= 2:
         logging.getLogger('pgoapi').setLevel(logging.DEBUG)
         logging.getLogger('pgoapi.pgoapi').setLevel(logging.DEBUG)
         logging.getLogger('requests').setLevel(logging.DEBUG)
-    elif args.verbose >= 3:
+
+    if args.verbose >= 3:
         logging.getLogger('peewee').setLevel(logging.DEBUG)
         logging.getLogger('rpc_api').setLevel(logging.DEBUG)
         logging.getLogger('pgoapi.rpc_api').setLevel(logging.DEBUG)
         logging.getLogger('werkzeug').setLevel(logging.DEBUG)
+        logging.addLevelName(5, 'TRACE')
+        logging.getLogger('pogom.apiRequests').setLevel(5)
 
     # Web access logs.
     if args.access_logs:
