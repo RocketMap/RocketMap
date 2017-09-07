@@ -5,7 +5,7 @@ import calendar
 import logging
 
 from flask import Flask, abort, jsonify, render_template, request,\
-    make_response
+    make_response, send_from_directory
 from flask.json import JSONEncoder
 from flask_compress import Compress
 from datetime import datetime
@@ -64,9 +64,14 @@ class Pogom(Flask):
         self.route("/submit_token", methods=['POST'])(self.submit_token)
         self.route("/get_stats", methods=['GET'])(self.get_account_stats)
         self.route("/robots.txt", methods=['GET'])(self.render_robots_txt)
+        self.route("/serviceWorker.min.js", methods=['GET'])(
+            self.render_service_worker_js)
 
     def render_robots_txt(self):
         return render_template('robots.txt')
+
+    def render_service_worker_js(self):
+        return send_from_directory('static/dist/js', 'serviceWorker.min.js')
 
     def get_bookmarklet(self):
         args = get_args()

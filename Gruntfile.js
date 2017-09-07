@@ -45,7 +45,8 @@ module.exports = function (grunt) {
                     'static/dist/js/statistics.built.js': 'static/js/statistics.js',
                     'static/dist/js/status.built.js': 'static/js/status.js',
                     'static/dist/js/custom.built.js': 'static/js/custom.js',
-                    'static/dist/js/vendor/markerclusterer.built.js': 'static/js/vendor/markerclusterer.js'
+                    'static/dist/js/vendor/markerclusterer.built.js': 'static/js/vendor/markerclusterer.js',
+                    'static/dist/js/serviceWorker.built.js': 'static/js/serviceWorker.js'
                 }
             }
         },
@@ -67,7 +68,8 @@ module.exports = function (grunt) {
                     'static/dist/js/statistics.min.js': 'static/dist/js/statistics.built.js',
                     'static/dist/js/status.min.js': 'static/dist/js/status.built.js',
                     'static/dist/js/custom.min.js': 'static/dist/js/custom.built.js',
-                    'static/dist/js/vendor/markerclusterer.min.js': 'static/dist/js/vendor/markerclusterer.built.js'
+                    'static/dist/js/vendor/markerclusterer.min.js': 'static/dist/js/vendor/markerclusterer.built.js',
+                    'static/dist/js/serviceWorker.min.js': 'static/dist/js/serviceWorker.built.js'
                 }
             }
         },

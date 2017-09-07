@@ -26,6 +26,7 @@
   },
   "globals": {
     "toastr": true,
+    "Push": true,
     "swal": true,
     "ga": true,
     "google": true,
