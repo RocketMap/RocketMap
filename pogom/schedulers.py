@@ -974,7 +974,7 @@ class SpeedScan(HexSearch):
 
                 # For spawns, score is purely based on how close they are to
                 # last worker position
-                score = score / (meters + 10)
+                score = score / (meters + 10.0)
 
                 if score > best.get('score', 0):
                     best = {'score': score, 'i': i,
