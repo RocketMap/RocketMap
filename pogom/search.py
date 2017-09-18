@@ -28,6 +28,7 @@ import requests
 import schedulers
 import terminalsize
 import timeit
+import threading
 
 from datetime import datetime
 from threading import Thread, Lock
@@ -37,6 +38,7 @@ from collections import deque
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from distutils.version import StrictVersion
+from cachetools import TTLCache
 
 from pgoapi.hash_server import HashServer
 from .models import (parse_map, GymDetails, parse_gyms, MainWorker,
@@ -51,6 +53,7 @@ from .apiRequests import gym_get_info, get_map_objects as gmo
 log = logging.getLogger(__name__)
 
 loginDelayLock = Lock()
+gym_cache_lock = threading.Lock()
 
 
 # Thread to handle user input.
@@ -335,6 +338,10 @@ def search_overseer_thread(args, new_location_queue, control_flags, heartb,
     api_check_time = 0
     hashkeys_last_upsert = timeit.default_timer()
     hashkeys_upsert_min_delay = 5.0
+    gym_cache = None
+
+    if args.gym_info:
+        gym_cache = TTLCache(maxsize=10000, ttl=60)
 
     '''
     Create a queue of accounts for workers to pull from. When a worker has
@@ -449,14 +456,14 @@ def search_overseer_thread(args, new_location_queue, control_flags, heartb,
             'proxy_display': proxy_display,
             'proxy_url': proxy_url,
         }
+        argset = (
+            args, account_queue, account_sets, account_failures,
+            account_captchas, control_flags, threadStatus[workerId],
+            db_updates_queue, wh_queue, scheduler, key_scheduler, gym_cache)
 
         t = Thread(target=search_worker_thread,
                    name='search-worker-{}'.format(i),
-                   args=(args, account_queue, account_sets,
-                         account_failures, account_captchas,
-                         control_flags, threadStatus[workerId],
-                         db_updates_queue, wh_queue,
-                         scheduler, key_scheduler))
+                   args=argset)
         t.daemon = True
         t.start()
 
@@ -749,10 +756,9 @@ def generate_hive_locations(current_location, step_distance,
     return results
 
 
-def search_worker_thread(args, account_queue, account_sets,
-                         account_failures, account_captchas,
-                         control_flags, status, dbq, whq,
-                         scheduler, key_scheduler):
+def search_worker_thread(args, account_queue, account_sets, account_failures,
+                         account_captchas, control_flags, status, dbq, whq,
+                         scheduler, key_scheduler, gym_cache):
 
     log.debug('Search worker thread starting...')
 
@@ -1021,6 +1027,18 @@ def search_worker_thread(args, account_queue, account_sets,
                     # Build a list of gyms to update.
                     gyms_to_update = {}
                     for gym in parsed['gyms'].values():
+                        with gym_cache_lock:
+                            if gym['gym_id'] in gym_cache:
+                                log.debug(
+                                    ('Skipping update of gym @ %f/%f, ' +
+                                     'already in progress.'),
+                                    gym['latitude'], gym['longitude'])
+                                continue
+                            else:
+                                # Set the gym as in progress it will just be
+                                # locked for 60 seconds due to TTL eviction.
+                                gym_cache[gym['gym_id']] = True
+
                         # Can only get gym details within 1km of our position.
                         gym_distance = distance(
                             step_location, [gym['latitude'], gym['longitude']])
