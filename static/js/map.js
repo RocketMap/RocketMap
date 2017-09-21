@@ -2717,11 +2717,29 @@ $(function () {
             }
         }
     }
+
+    function resetGymFilter() {
+        Store.set('showTeamGymsOnly', 0)
+        Store.set('minGymLevel', 0)
+        Store.set('maxGymLevel', 6)
+        Store.set('showOpenGymsOnly', false)
+
+        $('#team-gyms-only-switch').val(Store.get('showTeamGymsOnly'))
+        $('#open-gyms-only-switch').prop('checked', Store.get('showOpenGymsOnly'))
+        $('#min-level-gyms-filter-switch').val(Store.get('minGymLevel'))
+        $('#max-level-gyms-filter-switch').val(Store.get('maxGymLevel'))
+
+        $('#team-gyms-only-switch').trigger('change')
+        $('#min-level-gyms-filter-switch').trigger('change')
+        $('#max-level-gyms-filter-switch').trigger('change')
+    }
+
     // Setup UI element interactions
     $('#gyms-switch').change(function () {
         var options = {
             'duration': 500
         }
+        resetGymFilter()
         var wrapper = $('#gym-sidebar-wrapper')
         if (this.checked) {
             lastgyms = false
