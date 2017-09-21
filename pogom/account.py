@@ -71,8 +71,8 @@ def setup_api(args, status, account):
 # Use API to check the login status, and retry the login if possible.
 def check_login(args, account, api, proxy_url):
     # Logged in? Enough time left? Cool!
-    if api._auth_provider and api._auth_provider._ticket_expire:
-        remaining_time = api._auth_provider._ticket_expire / 1000 - time.time()
+    if api._auth_provider and api._auth_provider._access_token:
+        remaining_time = api._auth_provider._access_token_expiry - time.time()
 
         if remaining_time > 60:
             log.debug(
