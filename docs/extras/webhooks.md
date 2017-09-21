@@ -75,7 +75,7 @@ RM is collecting data for an upcoming project. If you would like to donate your 
 
 PokeAlarm is an example of a script you can run to accept webhook data and send it elsewhere. In PokeAlarm's usage it is publishing that information on Facebook, Twitter, Discord, etc. 
 
-[Learn More Here](https://github.com/kvangent/PokeAlarm)
+[Learn More Here](https://github.com/RocketMap/PokeAlarm)
 
 
 ## Webhook Data
