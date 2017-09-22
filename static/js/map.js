@@ -616,7 +616,7 @@ function isGymSatisfiesRaidMinMaxFilter(raid) {
 function gymLabel(gym, includeMembers = true) {
     const pokemonWithImages = [
         3, 6, 9, 59, 65, 68, 89, 94, 103, 110, 112, 125, 126, 129, 131, 134,
-        135, 136, 143, 144, 145, 146, 153, 156, 159, 243, 244, 245, 248, 249
+        135, 136, 143, 144, 145, 146, 150, 153, 156, 159, 243, 244, 245, 248, 249
     ]
 
     const raid = gym.raid
@@ -1106,7 +1106,7 @@ function updateGymMarker(item, marker) {
     let raidLevel = getRaidLevel(item.raid)
     const pokemonWithImages = [
         3, 6, 9, 59, 65, 68, 89, 94, 103, 110, 112, 125, 126, 129, 131, 134,
-        135, 136, 143, 144, 145, 146, 153, 156, 159, 243, 244, 245, 248, 249
+        135, 136, 143, 144, 145, 146, 150, 153, 156, 159, 243, 244, 245, 248, 249
     ]
     if (item.raid !== null && isOngoingRaid(item.raid) && Store.get('showRaids') && raidLevel >= Store.get('showRaidMinLevel') && raidLevel <= Store.get('showRaidMaxLevel')) {
         let markerImage = 'static/images/raid/' + gymTypes[item.team_id] + '_' + item.raid.level + '_unknown.png'
