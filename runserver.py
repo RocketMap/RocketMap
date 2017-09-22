@@ -89,7 +89,10 @@ def install_thread_excepthook():
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
-            sys.excepthook(*sys.exc_info())
+            exc_type, exc_value, exc_trace = sys.exc_info()
+            log.critical('Unhandled patched exception (%s): "%s".',
+                         exc_type, exc_value)
+            sys.excepthook(exc_type, exc_value, exc_trace)
     Thread.run = run
 
 
