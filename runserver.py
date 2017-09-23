@@ -167,7 +167,7 @@ def can_start_scanning(args):
     api_version_error = (
         'The installed pgoapi is out of date. Please refer to ' +
         'http://rocketmap.readthedocs.io/en/develop/common-issues/' +
-        'faq.html#i-get-an-error-about-pgooapi-version'
+        'faq.html#i-get-an-error-about-pgoapi-version'
     )
 
     # Assert pgoapi >= pgoapi_version.
