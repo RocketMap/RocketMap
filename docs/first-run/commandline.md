@@ -33,7 +33,7 @@
                     [--db-port DB_PORT]
                     [--db-max_connections DB_MAX_CONNECTIONS]
                     [--db-threads DB_THREADS] [-wh WEBHOOKS] [-gi]
-                    [--disable-clean]
+                    [--enable-clean]
                     [--wh-types {pokemon,gym,raid,egg,tth,gym-info,pokestop,lure}]
                     [--wh-threads WH_THREADS] [-whc WH_CONCURRENCY]
                     [-whr WH_RETRIES] [-wht WH_TIMEOUT]
@@ -333,8 +333,7 @@
                             var: POGOMAP_WEBHOOK]
       -gi, --gym-info       Get all details about gyms (causes an additional API
                             hit for every gym). [env var: POGOMAP_GYM_INFO]
-      --disable-clean       Disable clean db loop. [env var:
-                            POGOMAP_DISABLE_CLEAN]
+      -DC, --enable-clean   Enable DB cleaner. [env var: POGOMAP_ENABLE_CLEAN]
       --wh-types {pokemon,gym,raid,egg,tth,gym-info,pokestop,lure}
                             Defines the type of messages to send to webhooks. [env
                             var: POGOMAP_WH_TYPES]
