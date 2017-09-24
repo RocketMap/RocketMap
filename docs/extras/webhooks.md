@@ -413,7 +413,7 @@ Note: at present it is not possible to disable `captcha` events: they will be se
 
 | Field         | Details                                                   | Example           |
 | ------------- | --------------------------------------------------------- | ----------------- |
-| `status_name` | The status name of the account which received the captcha |      '"New York"` |
+| `status_name` | The status name of the account which received the captcha |      `"New York"` |
 | `account`     | The name of the account that received the captcha         | `"silverwind268"` |
 | `status`      | The captchas status<sup>1</sup>                           |       `"success"` |
 | `captcha`     | The number of captchas that the account has received      |               `1` |
