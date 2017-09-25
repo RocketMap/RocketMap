@@ -468,7 +468,7 @@ def get_args():
                         help=('Enables the use of X-FORWARDED-FOR headers ' +
                               'to identify the IP of clients connecting ' +
                               'through these trusted proxies.'))
-    parser.add_argument('--api-version', default='0.69.1',
+    parser.add_argument('--api-version', default='0.75.0',
                         help=('API version currently in use.'))
     verbose = parser.add_mutually_exclusive_group()
     verbose.add_argument('-v',
