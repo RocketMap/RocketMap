@@ -34,7 +34,7 @@
                     [--db-max_connections DB_MAX_CONNECTIONS]
                     [--db-threads DB_THREADS] [-wh WEBHOOKS] [-gi]
                     [--enable-clean]
-                    [--wh-types {pokemon,gym,raid,egg,tth,gym-info,pokestop,lure}]
+                    [--wh-types {pokemon,gym,raid,egg,tth,gym-info,pokestop,lure,captcha}]
                     [--wh-threads WH_THREADS] [-whc WH_CONCURRENCY]
                     [-whr WH_RETRIES] [-wht WH_TIMEOUT]
                     [-whbf WH_BACKOFF_FACTOR] [-whlfu WH_LFU_SIZE]
@@ -57,7 +57,7 @@
     ConfigArgParse documentation. If an arg is specified in more than one place,
     then commandline values override environment variables which override config
     file values which override defaults.
-    
+
     optional arguments:
       -h, --help            show this help message and exit [env var:
                             POGOMAP_HELP]
@@ -334,7 +334,7 @@
       -gi, --gym-info       Get all details about gyms (causes an additional API
                             hit for every gym). [env var: POGOMAP_GYM_INFO]
       -DC, --enable-clean   Enable DB cleaner. [env var: POGOMAP_ENABLE_CLEAN]
-      --wh-types {pokemon,gym,raid,egg,tth,gym-info,pokestop,lure}
+      --wh-types {pokemon,gym,raid,egg,tth,gym-info,pokestop,lure,captcha}
                             Defines the type of messages to send to webhooks. [env
                             var: POGOMAP_WH_TYPES]
       --wh-threads WH_THREADS
@@ -412,4 +412,3 @@
                             logs. [env var: POGOMAP_NO_FILE_LOGS]
       --log-path LOG_PATH   Defines directory to save log files to. [env var:
                             POGOMAP_LOG_PATH]
-    

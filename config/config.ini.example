@@ -150,7 +150,7 @@
 
 #webhook:                       # Webhook URL e.g. http://127.0.0.1:12345 or a list for multiple webhooks
                                 # [http://127.0.0.1:1345,http://127.0.0.1:12346] (default=None)
-#wh-types:[]                    # List of events to be sent: pokemon, gym, raid, egg, tth, gym-info, pokestop, lure. (default= nothing)
+#wh-types:[]                    # List of events to be sent: pokemon, gym, raid, egg, tth, gym-info, pokestop, lure, captcha. (default= nothing)
 #wh-threads:                    # Number of webhook threads; increase if the webhook queue falls behind. (default=1)
 #wh-retries:                    # Number of times to retry sending webhook data on failure (default=5)
 #wh-timeout:                    # Timeout (in seconds) for webhook requests (default=2).

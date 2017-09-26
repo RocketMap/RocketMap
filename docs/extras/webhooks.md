@@ -269,7 +269,7 @@ A `lure` event is sent whenever RocketMap scans a pokestop **if that pokestop ha
 **Important: while the webhook type name for `lure` events is `lure`, when this data is sent to a webhook the `type` field will be `pokestop`.**
 
 Note: if you add `lure` events to your `wh_types` you will receive them even if you have not enabled `pokestop` events.
-                                                       
+
 Lure events contain the same fields as `pokestop` events (described above).
 
 ### `gym`
@@ -408,8 +408,6 @@ Note: at present only the `speed-scan` scheduler sends `tth` events.
 ### `captcha`
 
 A `captcha` event is sent whenever a scan worker encounters a captcha.
-
-Note: at present it is not possible to disable `captcha` events: they will be sent regardless of your `wh-types` settings.
 
 | Field         | Details                                                   | Example           |
 | ------------- | --------------------------------------------------------- | ----------------- |
