@@ -1082,6 +1082,10 @@ class MainWorker(BaseModel):
                     'failed': int(account_stats[2])}
         return dict
 
+    @staticmethod
+    def get_all(cls):
+        return [m for m in MainWorker.select().dicts()]
+
 
 class WorkerStatus(LatLongModel):
     username = Utf8mb4CharField(primary_key=True, max_length=50)
