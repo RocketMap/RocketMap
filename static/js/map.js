@@ -1576,10 +1576,14 @@ function processPokemon(item) {
          !isExcludedPoke && isPokeAlive) {
         // Add marker to map and item to dict.
         if (!item.hidden) {
+            const isBounceDisabled = Store.get('isBounceDisabled')
+            const scaleByRarity = Store.get('scaleByRarity')
+            const isNotifyPkmn = isNotifyPoke(item)
+
             if (item.marker) {
-                updatePokemonMarker(item.marker, map)
+                updatePokemonMarker(item.marker, map, scaleByRarity, isNotifyPkmn)
             } else {
-                newMarker = setupPokemonMarker(item, map)
+                newMarker = setupPokemonMarker(item, map, isBounceDisabled, scaleByRarity, isNotifyPkmn)
                 customizePokemonMarker(newMarker, item)
                 item.marker = newMarker
             }
@@ -1855,7 +1859,10 @@ function redrawPokemon(pokemonList) {
         var item = pokemonList[key]
 
         if (!item.hidden) {
-            updatePokemonMarker(item, map)
+            const scaleByRarity = Store.get('scaleByRarity')
+            const isNotifyPkmn = isNotifyPoke(item)
+
+            updatePokemonMarker(item, map, scaleByRarity, isNotifyPkmn)
         }
     })
 }
