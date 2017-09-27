@@ -92,6 +92,10 @@ class BaseModel(flaskDb.Model):
     def database(cls):
         return cls._meta.database
 
+    @classmethod
+    def get_all(cls):
+        return [m for m in cls.select().dicts()]
+
 
 class LatLongModel(BaseModel):
 
@@ -1081,10 +1085,6 @@ class MainWorker(BaseModel):
                     'captcha': int(account_stats[1]),
                     'failed': int(account_stats[2])}
         return dict
-
-    @staticmethod
-    def get_all():
-        return [m for m in MainWorker.select().dicts()]
 
 
 class WorkerStatus(LatLongModel):
