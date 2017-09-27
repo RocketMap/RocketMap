@@ -46,7 +46,6 @@
 #db-user:                       # Required for mysql
 #db-pass:                       # Required for mysql
 #db-port:                       # Required for mysql (default=3306)
-#db-max_connections:            # Max connections (per thread) for the database. (default=5)
 #db-threads:                    # Number of db threads; increase if the db queue falls behind. (default=1)
 
 

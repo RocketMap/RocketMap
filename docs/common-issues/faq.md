@@ -155,22 +155,6 @@ InternalError(1054, u"unknown column 'cp' in 'field list'") or similar
 
 Only one instance can run when the database is being modified or upgraded. Run ***ONE*** instance of RM with `-cd` to wipe your database, then run ***ONE*** instance of RM (without `-cd`) to setup your database.
 
-#### Peewee max connections
-
-```
-ValueError: Exceeded maximum connections.
-```
-
-Try raising --db-max_connections, default is 5.
-
-#### MySQL max connections
-
-```
-OperationalError(1040, u'Too many connections')
-```
-
-You need to raise the maximum connections allowed on your MySQL server configuration, this is typically by setting `max_connections` in my.cnf or my.ini. Please use Google to find where this file is located on your specific operating system.
-
 #### SQLite query limit
 
 ```

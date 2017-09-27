@@ -482,8 +482,8 @@ def search_overseer_thread(args, new_location_queue, control_flags, heartb,
     # The real work starts here but will halt when any control flag is set.
     while True:
         if (args.hash_key is not None and
-                (hashkeys_last_upsert + hashkeys_upsert_min_delay)
-                <= timeit.default_timer()):
+            (hashkeys_last_upsert + hashkeys_upsert_min_delay) <=
+                timeit.default_timer()):
             upsertKeys(args.hash_key, key_scheduler, db_updates_queue)
             hashkeys_last_upsert = timeit.default_timer()
 
@@ -787,22 +787,38 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
             log.info(status['message'])
 
             # Get an account.
+            stagger_thread(args)
             account = account_queue.get()
             # Reset account statistics tracked per loop.
-            status.update(WorkerStatus.get_worker(
-                account['username'], scheduler.scan_location))
-            status['message'] = 'Switching to account {}.'.format(
-                account['username'])
-            log.info(status['message'])
-
+            prevStatus = WorkerStatus.get_worker(account['username'])
+            if prevStatus:
+                status.update(prevStatus)
+            else:
+                status.update({
+                    'username': account['username'],
+                    'last_modified': datetime.utcnow(),
+                    'last_scan_date': datetime.utcnow(),
+                    'latitude': None,
+                    'longitude': None
+                })
             # New lease of life right here.
-            status['fail'] = 0
-            status['success'] = 0
-            status['noitems'] = 0
-            status['skip'] = 0
-            status['captcha'] = 0
-
-            stagger_thread(args)
+            status.update({
+                'fail':
+                    0,
+                'success':
+                    0,
+                'noitems':
+                    0,
+                'skip':
+                    0,
+                'captcha':
+                    0,
+                'active':
+                    True,
+                'message':
+                    'Switching to account {}.'.format(account['username'])
+            })
+            log.info(status['message'])
 
             # Sleep when consecutive_fails reaches max_failures, overall fails
             # for stat purposes.
@@ -816,7 +832,6 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
 
             # The forever loop for the searches.
             while True:
-                status['active'] = True
                 while is_paused(control_flags):
                     status['message'] = 'Scanning paused.'
                     time.sleep(2)
@@ -1050,6 +1065,7 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                             except GymDetails.DoesNotExist:
                                 gyms_to_update[gym['gym_id']] = gym
                                 continue
+                            GymDetails.database().close()
 
                             # If we have a record of this gym already, check if
                             # the gym has been updated since our last update.
@@ -1170,15 +1186,14 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
 
         # Catch any process exceptions, log them, and continue the thread.
         except Exception as e:
-            log.error((
-                'Exception in search_worker under account {} Exception ' +
-                'message: {}.').format(account['username'], repr(e)))
+            log.exception(
+                'Exception in search_worker under account %s.',
+                account['username'])
             status['active'] = False
             status['message'] = (
                 'Exception in search_worker using account {}. Restarting ' +
                 'with fresh account. See logs for details.').format(
                     account['username'])
-            traceback.print_exc(file=sys.stdout)
             account_failures.append({'account': account,
                                      'last_fail_time': now(),
                                      'reason': 'exception'})
