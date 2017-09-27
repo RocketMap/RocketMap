@@ -1083,7 +1083,7 @@ class MainWorker(BaseModel):
         return dict
 
     @staticmethod
-    def get_all(cls):
+    def get_all():
         return [m for m in MainWorker.select().dicts()]
 
 
