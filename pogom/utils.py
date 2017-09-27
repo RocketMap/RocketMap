@@ -12,6 +12,7 @@ import socket
 import struct
 import requests
 import hashlib
+import psutil
 
 from s2sphere import CellId, LatLng
 from geopy.geocoders import GoogleV3
@@ -467,6 +468,13 @@ def get_args():
                               'through these trusted proxies.'))
     parser.add_argument('--api-version', default='0.75.0',
                         help=('API version currently in use.'))
+    parser.add_argument('--no-file-logs',
+                        help=('Disable logging to files. ' +
+                              'Does not disable --access-logs.'),
+                        action='store_true', default=False)
+    parser.add_argument('--log-path',
+                        help=('Defines directory to save log files to.'),
+                        default='logs/')
     verbose = parser.add_mutually_exclusive_group()
     verbose.add_argument('-v',
                          help=('Show debug messages from RocketMap ' +
@@ -476,13 +484,6 @@ def get_args():
                          help=('Show debug messages from RocketMap ' +
                                'and pgoapi.'),
                          type=int, dest='verbose')
-    parser.add_argument('--no-file-logs',
-                        help=('Disable logging to files. ' +
-                              'Does not disable --access-logs.'),
-                        action='store_true', default=False)
-    parser.add_argument('--log-path',
-                        help=('Defines directory to save log files to.'),
-                        default='logs/')
     parser.set_defaults(DEBUG=False)
 
     args = parser.parse_args()
@@ -1047,3 +1048,88 @@ def get_async_requests_session(num_retries, backoff_factor, pool_size,
                                           pool_maxsize=pool_size))
 
     return session
+
+
+# Get common usage stats.
+def resource_usage():
+    platform = sys.platform
+    proc = psutil.Process()
+
+    with proc.oneshot():
+        cpu_usage = psutil.cpu_times_percent()
+        mem_usage = psutil.virtual_memory()
+        net_usage = psutil.net_io_counters()
+
+        usage = {
+            'platform': platform,
+            'PID': proc.pid,
+            'MEM': {
+                'total': mem_usage.total,
+                'available': mem_usage.available,
+                'used': mem_usage.used,
+                'free': mem_usage.free,
+                'percent_used': mem_usage.percent,
+                'process_percent_used': proc.memory_percent()
+            },
+            'CPU': {
+                'user': cpu_usage.user,
+                'system': cpu_usage.system,
+                'idle': cpu_usage.idle,
+                'process_percent_used': proc.cpu_percent(interval=1)
+            },
+            'NET': {
+                'bytes_sent': net_usage.bytes_sent,
+                'bytes_recv': net_usage.bytes_recv,
+                'packets_sent': net_usage.packets_sent,
+                'packets_recv': net_usage.packets_recv,
+                'errin': net_usage.errin,
+                'errout': net_usage.errout,
+                'dropin': net_usage.dropin,
+                'dropout': net_usage.dropout
+            },
+            'connections': {
+                'ipv4': len(proc.connections('inet4')),
+                'ipv6': len(proc.connections('inet6'))
+            },
+            'thread_count': proc.num_threads(),
+            'process_count': len(psutil.pids())
+        }
+
+        # Linux only.
+        if platform == 'linux' or platform == 'linux2':
+            usage['sensors'] = {
+                'temperatures': psutil.sensors_temperatures(),
+                'fans': psutil.sensors_fans()
+            }
+            usage['connections']['unix'] = len(proc.connections('unix'))
+            usage['num_handles'] = proc.num_fds()
+        elif platform == 'win32':
+            usage['num_handles'] = proc.num_handles()
+
+    return usage
+
+
+# Log resource usage to any logger.
+def log_resource_usage(log_method):
+    usage = resource_usage()
+    log_method('Resource usage: %s.', usage)
+
+
+# Generic method to support periodic background tasks. Thread sleep could be
+# replaced by a tiny sleep, and time measuring, but we're using sleep() for
+# now to keep resource overhead to an absolute minimum.
+def periodic_loop(f, loop_delay_ms):
+    while True:
+        # Do the thing.
+        f()
+        # zZz :bed:
+        time.sleep(loop_delay_ms / 1000)
+
+
+# Periodically log resource usage every 'loop_delay_ms' ms.
+def log_resource_usage_loop(loop_delay_ms=60000):
+    # Helper method to log to specific log level.
+    def log_resource_usage_to_debug():
+        log_resource_usage(log.debug)
+
+    periodic_loop(log_resource_usage_to_debug, loop_delay_ms)
