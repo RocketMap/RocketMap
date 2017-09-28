@@ -10,7 +10,6 @@ import random
 import time
 import socket
 import struct
-import requests
 import hashlib
 import psutil
 
@@ -894,17 +893,6 @@ def get_move_type(move_id):
 
 def dottedQuadToNum(ip):
     return struct.unpack("!L", socket.inet_aton(ip))[0]
-
-
-def get_blacklist():
-    try:
-        url = 'https://blist.devkat.org/blacklist.json'
-        blacklist = requests.get(url, timeout=5).json()
-        log.debug('Entries in blacklist: %s.', len(blacklist))
-        return blacklist
-    except (requests.exceptions.RequestException, IndexError, KeyError):
-        log.error('Unable to retrieve blacklist, setting to empty.')
-        return []
 
 
 # Generate random device info.
