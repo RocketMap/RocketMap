@@ -45,8 +45,8 @@
                     [-vci VERSION_CHECK_INTERVAL] [-el ENCRYPT_LIB]
                     [-odt ON_DEMAND_TIMEOUT] [--disable-blacklist]
                     [-tp TRUSTED_PROXIES] [--api-version API_VERSION]
-                    [-v | --verbosity VERBOSE] [--no-file-logs]
-                    [--log-path LOG_PATH]
+                    [--no-file-logs] [--log-path LOG_PATH] [--dump]
+                    [-v | --verbosity VERBOSE]
 
     Args that start with '--' (eg. -a) can also be set in a config file
     (/config/config.ini or
@@ -400,11 +400,13 @@
       --api-version API_VERSION
                             API version currently in use. [env var:
                             POGOMAP_API_VERSION]
-      -v                    Show debug messages from RocketMap and pgoapi. Can be
-                            repeated up to 3 times.
-      --verbosity VERBOSE   Show debug messages from RocketMap and pgoapi. [env
-                            var: POGOMAP_VERBOSITY]
       --no-file-logs        Disable logging to files. Does not disable --access-
                             logs. [env var: POGOMAP_NO_FILE_LOGS]
       --log-path LOG_PATH   Defines directory to save log files to. [env var:
                             POGOMAP_LOG_PATH]
+      --dump                Dump censored debug info about the environment and
+                            auto-upload to hastebin.com. [env var: POGOMAP_DUMP]
+      -v                    Show debug messages from RocketMap and pgoapi. Can be
+                            repeated up to 3 times.
+      --verbosity VERBOSE   Show debug messages from RocketMap and pgoapi. [env
+                            var: POGOMAP_VERBOSITY]

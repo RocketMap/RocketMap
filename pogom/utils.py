@@ -12,6 +12,8 @@ import socket
 import struct
 import hashlib
 import psutil
+import subprocess
+import requests
 
 from s2sphere import CellId, LatLng
 from geopy.geocoders import GoogleV3
@@ -19,6 +21,7 @@ from requests_futures.sessions import FuturesSession
 from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 from cHaversine import haversine
+from pprint import pformat
 
 log = logging.getLogger(__name__)
 
@@ -476,6 +479,11 @@ def get_args():
     parser.add_argument('--log-path',
                         help=('Defines directory to save log files to.'),
                         default='logs/')
+    parser.add_argument('--dump',
+                        help=('Dump censored debug info about the ' +
+                              'environment and auto-upload to ' +
+                              'hastebin.com.'),
+                        action='store_true', default=False)
     verbose = parser.add_mutually_exclusive_group()
     verbose.add_argument('-v',
                          help=('Show debug messages from RocketMap ' +
@@ -1123,3 +1131,150 @@ def log_resource_usage_loop(loop_delay_ms=60000):
         log_resource_usage(log.debug)
 
     periodic_loop(log_resource_usage_to_debug, loop_delay_ms)
+
+
+# Return shell call output as string, replacing any errors with the
+# error's string representation.
+def check_output_catch(command):
+    try:
+        result = subprocess.check_output(command,
+                                         stderr=subprocess.STDOUT,
+                                         shell=True)
+    except Exception as ex:
+        result = 'ERROR: ' + ex.output.replace(os.linesep, ' ')
+    finally:
+        return result.strip()
+
+
+# Automatically censor all necessary fields. Lists will return
+# their length, all other items will return 'censored_tag'.
+def _censor_args_namespace(args, censored_tag):
+    fields_to_censor = [
+        'accounts',
+        'accounts_L30',
+        'username',
+        'password',
+        'auth_service',
+        'proxy',
+        'webhooks',
+        'webhook_blacklist',
+        'webhook_whitelist',
+        'config',
+        'accountcsv',
+        'high_lvl_accounts',
+        'geofence_file',
+        'geofence_excluded_file',
+        'ignorelist_file',
+        'enc_whitelist_file',
+        'webhook_whitelist_file',
+        'webhook_blacklist_file',
+        'db',
+        'proxy_file',
+        'log_path',
+        'encrypt_lib',
+        'ssl_certificate',
+        'ssl_privatekey',
+        'location',
+        'captcha_key',
+        'captcha_dsk',
+        'manual_captcha_domain',
+        'host',
+        'port',
+        'gmaps_key',
+        'db_name',
+        'db_user',
+        'db_pass',
+        'db_host',
+        'db_port',
+        'status_name',
+        'status_page_password',
+        'hash_key',
+        'trusted_proxies'
+    ]
+
+    for field in fields_to_censor:
+        # Do we have the field?
+        if field in args:
+            value = args[field]
+
+            # Replace with length of list or censored tag.
+            if isinstance(value, list):
+                args[field] = len(value)
+            else:
+                args[field] = censored_tag
+
+    return args
+
+
+# Get censored debug info about the environment we're running in.
+def get_censored_debug_info():
+    CENSORED_TAG = '<censored>'
+    args = _censor_args_namespace(vars(get_args()), CENSORED_TAG)
+
+    # Get git status.
+    status = check_output_catch('git status')
+    log = check_output_catch('git log -1')
+    remotes = check_output_catch('git remote -v')
+
+    # Python, pip, node, npm.
+    python = sys.version.replace(os.linesep, ' ').strip()
+    pip = check_output_catch('pip -V')
+    node = check_output_catch('node -v')
+    npm = check_output_catch('npm -v')
+
+    return {
+        'args': args,
+        'git': {
+            'status': status,
+            'log': log,
+            'remotes': remotes
+        },
+        'versions': {
+            'python': python,
+            'pip': pip,
+            'node': node,
+            'npm': npm
+        }
+    }
+
+
+# Post a string of text to a hasteb.in and retrieve the URL.
+def upload_to_hastebin(text):
+    log.info('Uploading info to hastebin.com...')
+    response = requests.post('https://hastebin.com/documents', data=text)
+    return response.json()['key']
+
+
+# Get censored debug info & auto-upload to hasteb.in.
+def get_debug_dump_link():
+    debug = get_censored_debug_info()
+    args = debug['args']
+    git = debug['git']
+    versions = debug['versions']
+
+    # Format debug info for text upload.
+    result = '''#######################
+### RocketMap debug ###
+#######################
+
+## Versions:
+'''
+
+    # Versions first, for readability.
+    result += '- Python: ' + versions['python'] + '\n'
+    result += '- pip: ' + versions['pip'] + '\n'
+    result += '- Node.js: ' + versions['node'] + '\n'
+    result += '- npm: ' + versions['npm'] + '\n'
+
+    # Next up is git.
+    result += '\n\n' + '## Git:' + '\n'
+    result += git['status'] + '\n'
+    result += '\n\n' + git['remotes'] + '\n'
+    result += '\n\n' + git['log'] + '\n'
+
+    # And finally, our censored args.
+    result += '\n\n' + '## Settings:' + '\n'
+    result += pformat(args, width=1)
+
+    # Upload to hasteb.in.
+    return upload_to_hastebin(result)
