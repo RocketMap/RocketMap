@@ -16,7 +16,7 @@ module.exports = function (grunt) {
                 files: {
                     'static/dist/css/app.built.css': 'static/sass/main.scss',
                     'static/dist/css/mobile.built.css': 'static/sass/mobile.scss',
-                    'static/dist/css/statistics.built.css': 'static/css/statistics.css',
+                    'static/dist/css/statistics.built.css': 'static/sass/statistics.scss',
                     'static/dist/css/status.built.css': 'static/sass/status.scss'
                 }
             }

@@ -25,7 +25,9 @@
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/appicons/180x180.png').lstrip('/') }}" sizes="180x180">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/app.min.css').lstrip('/') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/status.min.css').lstrip('/') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/statistics.min.css').lstrip('/') }}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.12/css/jquery.dataTables.css">
     <!-- Custom CSS code-->
       {% if show.custom_css %}
     <link rel="stylesheet" type="text/css" href="static/css/custom.css">
@@ -39,22 +41,48 @@
           <a href="status" target="_blank" style="float: right;"><span class="label">Status</span></a>
         </header>
         <nav id="nav">
-          <div class="ui-accordion-content">
-            {% for name, item in valid_input.items() %}
-                <div class="form-control switch-container">
-                  <h3>{{item.display}}</h3>
-                  <select id="{{name}}" name="{{name}}" class="input">
-                      {% for value, entry in item["items"].items() %}
-                          <option value="{{value}}" {{entry.selected}}>{{entry.display}}</option>
-                      {% endfor %}
-                  </select>
-                </div>
-            {% endfor %}
+          <div id="nav-accordion" class="ui-accordion-content">
+            <div class="form-control switch-container">
+              <h3>Duration</h3>
+              <select id="duration" name="duration" class="input">
+                <option value="1">Last Hour</option>
+                <option value="3">Last 3 Hours</option>
+                <option value="6">Last 6 Hours</option>
+                <option value="12">Last 12 Hours</option>
+                <option value="24" selected="">Last Day</option>
+                <option value="168">Last 7 Days</option>
+                <option value="336">Last 14 Days</option>
+                <option value="730">Last Month</option>
+                <option value="2190">Last 3 Months</option>
+                <option value="4380">Last 6 Months</option>
+                <option value="8760">Last Year</option>
+                <option value="876000">Map Lifetime</option>  
+              </select>
+            </div>
           </div>
         </nav>
-        <div class="totals">
-            <h3 id="seen_header"></h3>
-            <h1 id="seen_total"></h1>
+        <div class="spacing"></div>
+        <div class="status_container" id="status_container">
+            <div id="totals" class="worker">
+                <span id="name" class="name">Pokemon Seen in Last Day</span>
+                <span id="message" class="message"></span>
+            </div>
+            <table id="stats_table" class="status_table">
+                <thead>
+                    <tr class="status_row header">
+                        <td class="status_cell"></td>
+                        <td class="status_cell">Pokedex #</td>
+                        <td class="status_cell">Name</td>
+                        <td class="status_cell">Seen</td>
+                        <td class="status_cell">Seen (%)</td>
+                        <td class="status_cell">Last Seen</td>
+                        <td class="status_cell">Location</td>
+                        <td class="status_cell"></td>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
         </div>
         <div id="loading"><img src="{{ url_for('static', filename='images/loading.gif').lstrip('/') }}" alt="Loading"/></div>
         <div class="container" id="seen_container">
@@ -72,6 +100,8 @@
     <!-- Load JS libs before custom scripts. -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
     <script>
       var centerLat = {{lat}};
       var centerLng = {{lng}};
