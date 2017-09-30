@@ -1,0 +1,25 @@
+# DO NOT USE NOTEPAD TO EDIT CONFIG FILES! USE NOTEPAD++ INSTEAD!
+# Uncomment a line when you want to change its default value (Remove # at the beginning)
+# Please ensure to leave a space after the colon if a value is needed ("example-setting" "example-setting-with: value")
+# When your configuration is done, rename this file by removing the ".example" extension
+
+
+# Keys
+###################
+
+#gmaps-key:                     # Your Google Maps API key
+#captcha-key:                   # 2Captcha API key.
+#hash-key:                      # Key for hash server (default=None)
+
+# Other shared settings 
+###################
+
+#db-type:                       # sqlite (default) or mysql
+#db:                            # Database filename for SQLite. (default='pogom.db')
+#db-host:                       # Required for mysql ()
+#db-name:                       # Required for mysql
+#db-user:                       # Required for mysql
+#db-pass:                       # Required for mysql
+#db-port:                       # Required for mysql (default=3306)
+#db-max_connections:            # Max connections (per thread) for the database. (default=5)
+#db-threads:                    # Number of db threads; increase if the db queue falls behind. (default=1)
