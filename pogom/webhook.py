@@ -4,9 +4,11 @@
 import logging
 import requests
 import threading
+
 from queue import Empty
 from cachetools import LFUCache
 from timeit import default_timer
+
 from .utils import get_async_requests_session
 
 log = logging.getLogger(__name__)
@@ -17,7 +19,7 @@ wh_lock = threading.Lock()
 def send_to_webhooks(args, session, message_frame):
     if not args.webhooks:
         # What are you even doing here...
-        log.warning('Called send_to_webhook() without webhooks.')
+        log.critical('Called send_to_webhook() without webhooks.')
         return
 
     req_timeout = args.wh_timeout
@@ -26,15 +28,16 @@ def send_to_webhooks(args, session, message_frame):
         try:
             # Disable keep-alive and set streaming to True, so we can skip
             # the response content.
-            session.post(w, json=message_frame,
-                         timeout=(None, req_timeout),
-                         background_callback=__wh_completed,
-                         headers={'Connection': 'close'},
-                         stream=True)
+            future = session.post(w, json=message_frame,
+                                  timeout=(None, req_timeout),
+                                  background_callback=__wh_request_completed,
+                                  headers={'Connection': 'close'},
+                                  stream=True)
+            future.add_done_callback(__wh_future_completed)
         except requests.exceptions.ReadTimeout:
             log.exception('Response timeout on webhook endpoint %s.', w)
         except requests.exceptions.RequestException as e:
-            log.exception(e)
+            log.exception('Request exception on webhook: %s.', e)
 
 
 def wh_updater(args, queue, key_caches):
@@ -176,8 +179,21 @@ def wh_updater(args, queue, key_caches):
 
 
 # Helpers
-# Background handler for completed webhook requests.
-def __wh_completed(sess, resp):
+
+# Background handler for completed webhook futures.
+def __wh_future_completed(future):
+    # Handle any exceptions that might've occurred.
+    try:
+        exc = future.exception(timeout=0)
+
+        if exc:
+            log.exception("Something's wrong with your webhook: %s.", exc)
+    except Exception as ex:
+        log.exception('Unexpected exception in exception info: %s.', ex)
+
+
+# Background handler for completed webhook requests from requests lib.
+def __wh_request_completed(sess, resp):
     # Instantly close the response to release the connection back to the pool.
     resp.close()
 
