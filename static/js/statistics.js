@@ -23,6 +23,27 @@ function loadRawData() {
         },
         complete: function () {
             rawDataIsLoading = false
+        },
+        error: function () {
+            // Display error toast
+            toastr['error']('Request failed while getting data. Retrying...', 'Error getting data')
+            toastr.options = {
+                'closeButton': true,
+                'debug': false,
+                'newestOnTop': true,
+                'progressBar': false,
+                'positionClass': 'toast-top-right',
+                'preventDuplicates': true,
+                'onclick': null,
+                'showDuration': '300',
+                'hideDuration': '1000',
+                'timeOut': '25000',
+                'extendedTimeOut': '1000',
+                'showEasing': 'swing',
+                'hideEasing': 'linear',
+                'showMethod': 'fadeIn',
+                'hideMethod': 'fadeOut'
+            }
         }
     })
 }
@@ -96,6 +117,9 @@ function updateStats() {
                     {'orderable': false, 'targets': [0, 7]}
                 ]
             })
+    }).fail(function () {
+        // Wait for next retry.
+        setTimeout(updateStats, 1000)
     })
 }
 
@@ -144,6 +168,27 @@ function loadDetails() {
         },
         complete: function () {
             detailsLoading = false
+        },
+        error: function () {
+            // Display error toast
+            toastr['error']('Request failed while getting data. Retrying...', 'Error getting data')
+            toastr.options = {
+                'closeButton': true,
+                'debug': false,
+                'newestOnTop': true,
+                'progressBar': false,
+                'positionClass': 'toast-top-right',
+                'preventDuplicates': true,
+                'onclick': null,
+                'showDuration': '300',
+                'hideDuration': '1000',
+                'timeOut': '25000',
+                'extendedTimeOut': '1000',
+                'showEasing': 'swing',
+                'hideEasing': 'linear',
+                'showMethod': 'fadeIn',
+                'hideMethod': 'fadeOut'
+            }
         }
     })
 }
@@ -414,6 +459,9 @@ function updateDetails() {
             map: map,
             radius: 50
         })
+    }).fail(function () {
+        // Wait for next retry.
+        setTimeout(updateDetails, 1000)
     })
 }
 
