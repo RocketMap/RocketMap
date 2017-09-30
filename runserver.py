@@ -203,6 +203,13 @@ def main():
 
     args = get_args()
 
+    # Abort if only-server and no-server are used together
+
+    if args.only_server and args.no_server:
+        log.critical(
+            "You can't use no-server and only-server at the same time, silly.")
+        sys.exit(1)
+
     # Abort if status name is not valid.
     regexp = re.compile('^([\w\s\-.]+)$')
     if not regexp.match(args.status_name):
