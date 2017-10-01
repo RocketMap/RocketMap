@@ -10,7 +10,7 @@ You can install the required packages on Ubuntu by running the following command
 
 .. code-block:: bash
 
-  sudo apt-get install -y python python-pip python-dev build-essential git
+  sudo apt-get install -y python python-pip python-dev build-essential git libssl-dev libffi-dev
   curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
   sudo apt-get install -y nodejs
 
@@ -24,7 +24,7 @@ Debian's sources lists are out of date and will not fetch the correct versions o
 
     curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
 
-    sudo apt-get install -y build-essential libbz2-dev libsqlite3-dev libreadline-dev zlib1g-dev libncurses5-dev libssl-dev libgdbm-dev python python-dev nodejs
+    sudo apt-get install -y build-essential libbz2-dev libsqlite3-dev libreadline-dev libssl-dev libffi-dev zlib1g-dev libncurses5-dev libssl-dev libgdbm-dev python python-dev nodejs
 
 After install, check that you have the correct versions in your environment variables:
 

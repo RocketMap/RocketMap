@@ -4,7 +4,7 @@
 
 ## What do we know?
 
-Accounts are automattically banned based on specific behaviors known to mappers and botters. While RocketMap is working on a full scale solution, this a guide of what we know. 
+Accounts are automatically banned based on specific behaviors known to mappers and botters. While RocketMap is working on a full scale solution, this a guide of what we know. 
 
 * New accounts work for 60 to 140 hours (depending on config).
 * Blinded accounts can get unblinded after 6 to 10 days.
