@@ -19,7 +19,7 @@ If there is already information in this table, click the "X"s to clear them all 
 
 ![](../_static/img/AzEGV1i.png)
 
-When the information is cleared, add two new records with the text boxes at the top with the following configuration:
+When the information is cleared, add two new records with the text boxes at the top with the following configuration (replace 11.22.33.44 with your server's IP address):
 
 ![](../_static/img/ZXMksO1.png)
 
