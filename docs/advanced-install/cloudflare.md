@@ -49,4 +49,4 @@ Navigate to "Firewall" and change "Security Level" to "High." If you are running
 
 ## Finishing Up
 
-Everything should not be configured correctly! Simply visit `http://yourdomain.com/` in your browser and your map should load, all while hiding your IP address from everybody else.
+Everything should now be configured correctly! Simply visit `http://yourdomain.com/` in your browser and your map should load, all while hiding your IP address from everybody else.
