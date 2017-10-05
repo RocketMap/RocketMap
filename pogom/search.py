@@ -1007,7 +1007,7 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                     parsed = parse_map(args, response_dict, step_location,
                                        dbq, whq, key_scheduler, api, status,
                                        scan_date, account, account_sets)
-                    del response_dict
+
                     scheduler.task_done(status, parsed)
                     if parsed['count'] > 0:
                         status['success'] += 1
@@ -1034,6 +1034,7 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                                                            account['username'])
                     log.exception('{}. Exception message: {}'.format(
                         status['message'], repr(e)))
+                finally:
                     if response_dict is not None:
                         del response_dict
 
