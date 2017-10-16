@@ -927,7 +927,11 @@ function getGymLevel(gym) {
 }
 
 function getRaidLevel(raid) {
-    return raid['level'] || 0
+    if (raid) {
+        return raid['level']
+    } else {
+        return 0
+    }
 }
 
 function lpad(str, len, padstr) {
