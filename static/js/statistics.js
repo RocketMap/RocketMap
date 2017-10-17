@@ -53,6 +53,7 @@ function processSeen(seen) {
 
     for (var i = 0; i < seen.pokemon.length; i++) {
         var pokemonItem = seen.pokemon[i]
+        var seenPercent = (pokemonItem.count / seen.total) * 100
 
         $('#stats_table > tbody')
             .append(`<tr class="status_row">
@@ -67,11 +68,11 @@ function processSeen(seen) {
                                 ${pokemonItem.pokemon_name}
                             </a>
                         </td>
-                        <td class="status_cell">
+                        <td class="status_cell" data-sort="${pokemonItem.count}">
                             ${pokemonItem.count.toLocaleString()}
                         </td>
-                        <td class="status_cell">
-                            ${(pokemonItem.count / seen.total * 100).toFixed(4)}
+                        <td class="status_cell" data-sort="${seenPercent}">
+                            ${seenPercent.toLocaleString(undefined, {minimumFractionDigits: 4, maximumFractionDigits: 4})}
                         </td>
                         <td class="status_cell">
                             ${moment(pokemonItem.disappear_time).format('H:mm:ss D MMM YYYY')}
