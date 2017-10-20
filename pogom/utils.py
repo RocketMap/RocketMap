@@ -314,7 +314,7 @@ def get_args():
                         action='store_true', default=False)
     parser.add_argument('-ams', '--account-max-spins',
                         help='Maximum number of Pokestop spins per hour.',
-                        type=int, default=80)
+                        type=int, default=20)
     parser.add_argument('-kph', '--kph',
                         help=('Set a maximum speed in km/hour for scanner ' +
                               'movement.'),
