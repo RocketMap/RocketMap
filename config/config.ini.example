@@ -85,7 +85,7 @@
 #min-seconds-left:              # Time that must be left on a spawn before considering it too late and skipping it. (default=0)
 #gym-info                       # Enables detailed gym info collection. (default=False)
 #pokestop-spinning              # Spin Pokestops with "50%" Chance (default=False)
-#account-max-spins              # Maximum number of Pokestop spins per hour (default=80)
+#account-max-spins:             # Maximum number of Pokestop spins per hour (default=20)
 #on-demand_timeout:             # Pause searching while web UI is inactive for this timeout (in seconds). (default=0)
 
 
@@ -95,7 +95,7 @@
 #login-delay:                   # Time delay between each login attempt. (default=6)
 #login-retries:                 # Number of times to retry the login before refreshing a thread. (default=3)
 #account-search-interval:       # Seconds for accounts to search before switching to a new account. (default=0)
-#account-rest-interval:        # Seconds for accounts to rest when they fail or are switched out. (default=7200)
+#account-rest-interval:         # Seconds for accounts to rest when they fail or are switched out. (default=7200)
 #max-failures:                  # Maximum number of failures to parse locations before an account will go into a sleep for
                                 # account-rest-interval seconds. (default 5, 0 to disable)
 #max-empty:                     # Maximum number of empty scans before an account will go into a sleep for
@@ -183,9 +183,9 @@
 # Misc
 ######
 
-#verbosity						          # Show debug messages from RocketMap and PGoApi. Values are 1,2,3 (default=0)
-#no-file-logs					          # Disables logging to files except for access.log. (default=False)
-#log-path						            # Defines the path logs are saved at. (default=logs/)
+#verbosity                      # Show debug messages from RocketMap and PGoApi. Values are 1,2,3 (default=0)
+#no-file-logs                   # Disables logging to files except for access.log. (default=False)
+#log-path:                      # Defines the path logs are saved at. (default=logs/)
 #no-version-check               # Disable API version check. (default=False)
 #version-check-interval:        # Interval to check API version in seconds (Default: in range [60, 300]).
 #mock:                          # Mock mode - point to a fpgo endpoint instead of using the real PogoApi,
