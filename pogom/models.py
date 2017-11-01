@@ -940,8 +940,8 @@ class ScannedLocation(LatLongModel):
                                             one_sp_scan.c.spawnpoint_id))
                      .where(one_sp_scan.c.cellid << cellids)
                      .dicts())
-            l = list(query)
-            for item in l:
+            spawns = list(query)
+            for item in spawns:
                 if item['cellid'] not in ret:
                     ret[item['cellid']] = []
                 ret[item['cellid']].append(item)
@@ -1364,7 +1364,7 @@ class SpawnPoint(LatLongModel):
     @staticmethod
     def get_times(cell, scan, now_date, scan_delay,
                   cell_to_linked_spawn_points, sp_by_id):
-        l = []
+        result = []
         now_secs = date_secs(now_date)
         linked_spawn_points = (cell_to_linked_spawn_points[cell]
                                if cell in cell_to_linked_spawn_points else [])
@@ -1375,9 +1375,9 @@ class SpawnPoint(LatLongModel):
                 continue
 
             endpoints = SpawnPoint.start_end(sp, scan_delay)
-            SpawnPoint.add_if_not_scanned('spawn', l, sp, scan, endpoints[0],
-                                          endpoints[1], now_date, now_secs,
-                                          sp_by_id)
+            SpawnPoint.add_if_not_scanned('spawn', result, sp, scan,
+                                          endpoints[0], endpoints[1], now_date,
+                                          now_secs, sp_by_id)
 
             # Check to see if still searching for valid TTH.
             if SpawnPoint.tth_found(sp):
@@ -1396,10 +1396,10 @@ class SpawnPoint(LatLongModel):
             # the last scan. TTH appears in the last 90 seconds of the Spawn.
             start = sp['latest_seen'] + 45
 
-            SpawnPoint.add_if_not_scanned('TTH', l, sp, scan, start, end,
+            SpawnPoint.add_if_not_scanned('TTH', result, sp, scan, start, end,
                                           now_date, now_secs, sp_by_id)
 
-        return l
+        return result
 
     @staticmethod
     def add_if_not_scanned(kind, l, sp, scan, start,

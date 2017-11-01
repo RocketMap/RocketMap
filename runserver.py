@@ -90,7 +90,7 @@ def install_thread_excepthook():
             run_old(*args, **kwargs)
         except (KeyboardInterrupt, SystemExit):
             raise
-        except:
+        except Exception:
             exc_type, exc_value, exc_trace = sys.exc_info()
 
             # Handle Flask's broken pipe when a client prematurely ends
