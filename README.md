@@ -3,13 +3,13 @@
 
 ![Python 2.7](https://img.shields.io/badge/python-2.7-blue.svg) ![License](https://img.shields.io/github/license/RocketMap/RocketMap.svg) [![Build Status](https://travis-ci.org/RocketMap/RocketMap.svg?branch=develop)](https://travis-ci.org/RocketMap/RocketMap)
 
-Live visualization of all the Pokémon (with option to show gyms and PokéStops) in your area. This is a proof of concept that we can load all the Pokémon visible nearby given a location. Currently runs on a Flask server displaying Google Maps with markers on it.
+Live visualization of all the Pokémon (with option to show gyms, raids and PokéStops) in your area. This is a proof of concept that we can load all the Pokémon visible nearby given a location. Currently runs on a Flask server displaying Google Maps with markers on it.
 
 ![Map](https://github.com/RocketMap/RocketMap/blob/develop/static/RocketMap.png)
 
 ## Features:
 
-* Shows Pokémon, PokéStops and gyms with a clean GUI.
+* Shows Pokémon, PokéStops, raids and gyms with a clean GUI.
 * Notifications
 * Lure information
 * Multithreaded mode
