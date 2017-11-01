@@ -72,6 +72,10 @@ const cryFileTypes = ['wav', 'mp3']
 
 const genderType = ['♂', '♀', '⚲']
 const unownForm = ['unset', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '!', '?']
+const pokemonWithImages = [
+    3, 6, 9, 59, 65, 68, 89, 94, 103, 110, 112, 125, 126, 129, 131, 134,
+    135, 136, 143, 144, 145, 146, 150, 153, 156, 159, 243, 244, 245, 248, 249
+]
 
 
 /*
@@ -620,11 +624,6 @@ function isGymSatisfiesRaidMinMaxFilter(raid) {
 }
 
 function gymLabel(gym, includeMembers = true) {
-    const pokemonWithImages = [
-        3, 6, 9, 59, 65, 68, 89, 94, 103, 110, 112, 125, 126, 129, 131, 134,
-        135, 136, 143, 144, 145, 146, 150, 153, 156, 159, 243, 244, 245, 248, 249
-    ]
-
     const raid = gym.raid
     var raidStr = ''
     if (raid && raid.end > Date.now()) {
@@ -1110,10 +1109,6 @@ function setupGymMarker(item) {
 
 function updateGymMarker(item, marker) {
     let raidLevel = getRaidLevel(item.raid)
-    const pokemonWithImages = [
-        3, 6, 9, 59, 65, 68, 89, 94, 103, 110, 112, 125, 126, 129, 131, 134,
-        135, 136, 143, 144, 145, 146, 150, 153, 156, 159, 243, 244, 245, 248, 249
-    ]
     if (item.raid && isOngoingRaid(item.raid) && Store.get('showRaids') && raidLevel >= Store.get('showRaidMinLevel') && raidLevel <= Store.get('showRaidMaxLevel')) {
         let markerImage = 'static/images/raid/' + gymTypes[item.team_id] + '_' + item.raid.level + '_unknown.png'
         if (pokemonWithImages.indexOf(item.raid.pokemon_id) !== -1) {
