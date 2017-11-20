@@ -961,7 +961,8 @@ def generate_device_info(identifier):
         ios_pool = ios10 + ios11
     elif device_pick == 'iPhone8,4':
         # iPhone SE started on 9.3.
-        ios_pool = ('9.3', '9.3.1', '9.3.2', '9.3.3', '9.3.4', '9.3.5') + ios10 + ios11
+        ios_pool = ('9.3', '9.3.1', '9.3.2', '9.3.3', '9.3.4', '9.3.5') \
+                   + ios10 + ios11
     elif device_pick in ('iPhone5,1', 'iPhone5,2', 'iPhone5,3', 'iPhone5,4'):
         # iPhone 5/5c doesn't support iOS 11.
         ios_pool = ios9 + ios10
