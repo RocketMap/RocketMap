@@ -183,9 +183,17 @@ def can_start_scanning(args):
         log.critical('Hash key is required for scanning. Exiting.')
         return False
 
-    # Check the PoGo api pgoapi implements against what RM is expecting
+    # Check the PoGo api pgoapi implements against what RM is expecting.
+    # Some API versions have a non-standard version int, so we map them
+    # to the correct one.
+    api_version_int = int(args.api_version.replace('.', '0'))
+    api_version_map = {
+        8302: 8300
+    }
+    mapped_version_int = api_version_map.get(api_version_int, api_version_int)
+
     try:
-        if PGoApi.get_api_version() != int(args.api_version.replace('.', '0')):
+        if PGoApi.get_api_version() != mapped_version_int:
             log.critical(api_version_error)
             return False
     except AttributeError:

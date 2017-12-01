@@ -123,7 +123,7 @@ def check_login(args, account, api, proxy_url):
 # Simulate real app via login sequence.
 def rpc_login_sequence(args, api, account):
     total_req = 0
-    app_version = int(args.api_version.replace('.', '0'))
+    app_version = PGoApi.get_api_version()
 
     # 1 - Make an empty request to mimick real app behavior.
     log.debug('Starting RPC login sequence...')
