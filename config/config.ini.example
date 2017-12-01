@@ -152,7 +152,7 @@
 #wh-types:[]                    # List of events to be sent: pokemon, gym, raid, egg, tth, gym-info, pokestop, lure, captcha. (default= nothing)
 #wh-threads:                    # Number of webhook threads; increase if the webhook queue falls behind. (default=1)
 #wh-retries:                    # Number of times to retry sending webhook data on failure (default=5)
-#wh-timeout:                    # Timeout (in seconds) for webhook requests (default=2).
+#wh-timeout:                    # Timeout (in seconds) for webhook requests (default=1).
 #wh-concurrency:                # Async requests pool size. (default=25)
 #wh-backoff-factor:             # Factor (in seconds) by which the delay until next retry will increase. (default=0.25).
 #wh-lfu-size:                   # Webhook LFU cache max size (default=1000).

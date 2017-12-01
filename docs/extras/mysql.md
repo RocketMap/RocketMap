@@ -35,7 +35,7 @@
    GRANT ALL PRIVILEGES ON rocketmapdb . * TO 'rocketmapuser'@'localhost';
    exit
    ```
-   You can change `rocketmapdb` to whatever you want the name of the database to be.
+   You can change `rocketmapdb` to whatever you want the name of the database to be. Also, be sure to change `'password'` to the password you want to use.
 5. If the database creation was successful it will tell you "Query OK, 1 row affected". If it doesn't echo that back at you then you either received an error message, or it just created a blank line. I've detailed how to fix common errors, and the blank line below.
    - **Blank line:**
      You simply missed the ";" in the CREATE DATABASE command. Essentially you didn't close of the line, so the program thinks you still have more information to input. Simply insert a ; onto the blank line and hit enter and it should echo "Query OK" at you.
@@ -44,6 +44,8 @@
    - **Error: "ERROR 1007 (HY000): Can't create database 'rocketmapdb'; database exists"**
      The rocketmapdb database already exists.
      If you're trying to start a fresh database you'll need to execute `DROP DATABASE rocketmapdb`, and then run `CREATE DATABASE rocketgomapdb`. If you want to keep the rocketmapdb but start a new one, change the name.
+   - **(1045, u"Access denied for user 'rocketmapuser'@'localhost' (using password: YES)")**
+     You might be using **password** as your password for the database user **rocketmapuser**. Simply run `ALTER USER 'rocketmapuser'@'localhost' IDENTIFIED BY 'password';` and replace `'password'` with the password you want to use.
 6. Congratulations, your database is now setup and ready to be used.
 
 ## IV. Setting up the Config.ini file
@@ -94,16 +96,16 @@ python runserver.py -st 10 -l "[LOCATION]"
 You should now be up and running. If you've encountered any errors it's most likely due to missing a parameter you commented out when you call runserver.py or you mis-typed something in your `config.ini`. However, if it's neither of those issues and something not covered in this guide hop into the RocketMap discord server, and go to the help channel. People there are great, and gladly assist people with troubleshooting issues.
 
 
-## Set up MySQL on a second computer, seperate from RM instances. 
+## Set up MySQL on a second computer, seperate from RM instances.
 
 In this example, computer running RocketMap will be `Server A` while computer running MySQL will be `Server B`.
 
-You will follow above directions for II and III on Server B and directions for IV on Server A. 
-***However:*** The following steps will be different. 
+You will follow above directions for II and III on Server B and directions for IV on Server A.
+***However:*** The following steps will be different.
 
 Server B- III
 
-You will need to grant your account permission to use the database outside of your database server. 
+You will need to grant your account permission to use the database outside of your database server.
 
 ```sql
    CREATE DATABASE rocketmapdb;
