@@ -1750,5 +1750,77 @@
         "duration": 1500,
         "energy": 15,
         "dps": 10
+    },
+    "282": {
+        "name": "Take Down",
+        "type": "Normal",
+        "damage": 8,
+        "duration": 1200,
+        "energy": 10,
+        "dps": 6.7
+    },
+    "283": {
+        "name": "Waterfall",
+        "type": "Water",
+        "damage": 16,
+        "duration": 1200,
+        "energy": 8,
+        "dps": 13.33
+    },
+    "284": {
+        "name": "Surf",
+        "type": "Water",
+        "damage": 65,
+        "duration": 1700,
+        "energy": 50,
+        "dps": 29.5
+    },
+    "285": {
+        "name": "Draco Meteor",
+        "type": "Dragon",
+        "damage": 150,
+        "duration": 3600,
+        "energy": 100,
+        "dps": 36.6
+    },
+    "286": {
+        "name": "Doom Desire",
+        "type": "Steel",
+        "damage": 80,
+        "duration": 1700,
+        "energy": 50,
+        "dps": 36.4
+    },
+    "287": {
+        "name": "Yawn",
+        "type": "Normal",
+        "damage": 0,
+        "duration": 1700,
+        "energy": 15,
+        "dps": 0
+    },
+    "288": {
+        "name": "Psycho Boost",
+        "type": "Psychic",
+        "damage": 70,
+        "duration": 4000,
+        "energy": 50,
+        "dps": 15.6
+    },
+    "289": {
+        "name": "Origin Pulse",
+        "type": "Water",
+        "damage": 130,
+        "duration": 1700,
+        "energy": 100,
+        "dps": 59.1
+    },
+    "290": {
+        "name": "Precipice Blades",
+        "type": "Ground",
+        "damage": 130,
+        "duration": 1700,
+        "energy": 100,
+        "dps": 59.1
     }
 }
