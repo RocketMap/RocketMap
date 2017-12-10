@@ -496,10 +496,11 @@ def spin_pokestop(api, account, args, fort, step_location):
         time.sleep(random.uniform(2, 4))  # Don't let Niantic throttle.
 
         # Check for reCaptcha.
-        captcha_url = response['responses']['CHECK_CHALLENGE'].challenge_url
-        if len(captcha_url) > 1:
-            log.debug('Account encountered a reCaptcha.')
-            return False
+        if 'CHECK_CHALLENGE' in response['responses']:
+            captcha_url = response['responses']['CHECK_CHALLENGE'].challenge_url
+            if len(captcha_url) > 1:
+                log.debug('Account encountered a reCaptcha.')
+                return False
 
         spin_result = response['responses']['FORT_SEARCH'].result
         if spin_result == 1:
@@ -556,11 +557,12 @@ def clear_inventory(api, account):
         time.sleep(random.uniform(2, 4))
         release_p_response = release_pokemon(api, account, 0, release_ids)
 
-        captcha_url = release_p_response[
-            'responses']['CHECK_CHALLENGE'].challenge_url
-        if len(captcha_url) > 1:
-            log.info('Account encountered a reCaptcha.')
-            return False
+        if 'CHECK_CHALLENGE' in release_p_response['responses']:
+            captcha_url = release_p_response[
+                'responses']['CHECK_CHALLENGE'].challenge_url
+            if len(captcha_url) > 1:
+                log.info('Account encountered a reCaptcha.')
+                return False
 
         release_response = release_p_response['responses']['RELEASE_POKEMON']
         release_result = release_response.result
@@ -582,10 +584,11 @@ def clear_inventory(api, account):
             time.sleep(random.uniform(2, 4))
             resp = recycle_inventory_item(api, account, item_id, drop_count)
 
-            captcha_url = resp['responses']['CHECK_CHALLENGE'].challenge_url
-            if len(captcha_url) > 1:
-                log.info('Account encountered a reCaptcha.')
-                return False
+            if 'CHECK_CHALLENGE' in resp['responses']:
+                captcha_url = resp['responses']['CHECK_CHALLENGE'].challenge_url
+                if len(captcha_url) > 1:
+                    log.info('Account encountered a reCaptcha.')
+                    return False
 
             clear_response = resp['responses']['RECYCLE_INVENTORY_ITEM']
             clear_result = clear_response.result
