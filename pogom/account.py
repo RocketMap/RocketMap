@@ -497,7 +497,8 @@ def spin_pokestop(api, account, args, fort, step_location):
 
         # Check for reCaptcha.
         if 'CHECK_CHALLENGE' in response['responses']:
-            captcha_url = response['responses']['CHECK_CHALLENGE'].challenge_url
+            captcha_url = response[
+                'responses']['CHECK_CHALLENGE'].challenge_url
             if len(captcha_url) > 1:
                 log.debug('Account encountered a reCaptcha.')
                 return False
@@ -585,7 +586,8 @@ def clear_inventory(api, account):
             resp = recycle_inventory_item(api, account, item_id, drop_count)
 
             if 'CHECK_CHALLENGE' in resp['responses']:
-                captcha_url = resp['responses']['CHECK_CHALLENGE'].challenge_url
+                captcha_url = resp[
+                    'responses']['CHECK_CHALLENGE'].challenge_url
                 if len(captcha_url) > 1:
                     log.info('Account encountered a reCaptcha.')
                     return False
