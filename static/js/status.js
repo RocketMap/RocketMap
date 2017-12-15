@@ -1,9 +1,9 @@
 /* Main stats page */
 var rawDataIsLoading = false
 var statusPagePassword = false
-var groupByWorker = true
 var showHashTable = true
-var showWorkersTable = true
+var showInstances = true
+var showWorkers = true
 var hashkeys = {}
 
 // Raw data updating
@@ -19,16 +19,30 @@ function getFormattedDate(unFormattedDate) { // eslintrc no-undef.
  * Workers
  */
 function addMainWorker(hash) {
-    var worker = `
-     <div id="worker_${hash}" class="worker">
-       <span id="name_${hash}" class="name"></span>
-       <span id="method_${hash}" class="method"></span>
-       <span id="message_${hash}" class="message"></span>
-     </div>
-   `
+    var worker
+    if (showInstances && !showWorkers) {
+        worker = `
+        <div id="worker_${hash}" class="worker">
+            <span id="name_${hash}" class="name"></span>
+            <span id="method_${hash}" class="method"></span>
+            <span id="message_${hash}" class="message"></span>
+            <br>
+        </div>
+        `
+    } else {
+        worker = `
+        <div id="worker_${hash}" class="worker">
+            <span id="name_${hash}" class="name"></span>
+            <span id="method_${hash}" class="method"></span>
+            <span id="message_${hash}" class="message"></span>
+        </div>
+        `
+    }
 
     $(worker).appendTo('#status_container')
-    addTable(hash)
+    if (showWorkers) {
+        addTable(hash)
+    }
 }
 
 function processMainWorker(i, worker) {
@@ -78,7 +92,7 @@ function addHashtable(mainKeyHash, keyHash) {
 function processWorker(i, worker) {
     var hash = hashFnv32a(worker['username'], true)
     var mainWorkerHash
-    if (groupByWorker) {
+    if (showWorkers && showInstances) {
         mainWorkerHash = hashFnv32a(worker['worker_name'], true)
         if ($('#table_' + mainWorkerHash).length === 0) {
             return
@@ -153,10 +167,10 @@ function processHashKeys(i, hashkey) {
 }
 
 function parseResult(result) {
-    if (groupByWorker && showWorkersTable) {
+    if (showInstances) {
         $.each(result.main_workers, processMainWorker)
     }
-    if (showWorkersTable) {
+    if (showWorkers) {
         $.each(result.workers, processWorker)
     }
     if (showHashTable) {
@@ -384,12 +398,6 @@ $(document).ready(function () {
         })
     })
 
-    $('#groupbyworker-switch').change(function () {
-        groupByWorker = this.checked
-
-        $('#status_container .status_table').remove()
-        $('#status_container .worker').remove()
-    })
 
     $('#hashkey-switch').change(function () {
         showHashTable = this.checked
@@ -399,7 +407,14 @@ $(document).ready(function () {
     })
 
     $('#showworker-switch').change(function () {
-        showWorkersTable = this.checked
+        showWorkers = this.checked
+
+        $('#status_container .status_table').remove()
+        $('#status_container .worker').remove()
+    })
+
+    $('#showinstances-switch').change(function () {
+        showInstances = this.checked
 
         $('#status_container .status_table').remove()
         $('#status_container .worker').remove()
