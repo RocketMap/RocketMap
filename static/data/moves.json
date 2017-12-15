@@ -1822,5 +1822,13 @@
         "duration": 1700,
         "energy": 100,
         "dps": 59.1
+    },
+    "291": {
+        "name": "Present",
+        "type": "Normal",
+        "damage": 5,
+        "duration": 1300,
+        "energy": 20,
+        "dps": 3.8
     }
 }
