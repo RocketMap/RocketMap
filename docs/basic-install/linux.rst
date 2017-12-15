@@ -15,16 +15,18 @@ You can install the required packages on Ubuntu by running the following command
   sudo apt-get install -y nodejs
 
 
-Debian 7/8
-**********
+Debian 7/8/9
+************
 
 Debian's sources lists are out of date and will not fetch the correct versions of NodeJS and NPM. You must download and install these from the Node repository:
 
 .. code-block:: bash
 
-    curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+    curl -sL https://raw.githubusercontent.com/nodesource/distributions/master/deb/setup_8.x | sudo -E bash -
 
     sudo apt-get install -y build-essential libbz2-dev libsqlite3-dev libreadline-dev libssl-dev libffi-dev zlib1g-dev libncurses5-dev libssl-dev libgdbm-dev python python-dev nodejs
+
+    curl -sL https://bootstrap.pypa.io/get-pip.py | sudo python -
 
 After install, check that you have the correct versions in your environment variables:
 
@@ -33,7 +35,7 @@ After install, check that you have the correct versions in your environment vari
 	~$ python --version
 		Python 2.7.13
 	~$ pip --version
-		pip 9.0.1 from /home/user/.local/lib/python2.7/site-packages (python 2.7)
+		pip 9.0.1 from /usr/local/lib/python2.7/dist-packages (python 2.7)
 
 If your output looks as above, you can proceed with installation:
 
