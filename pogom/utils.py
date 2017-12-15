@@ -83,11 +83,11 @@ def get_args():
                               'or are switched out.'))
     parser.add_argument('-ac', '--accountcsv',
                         help=('Load accounts from CSV file containing ' +
-                              '"auth_service,username,passwd" lines.'))
+                              '"auth_service,username,password" lines.'))
     parser.add_argument('-hlvl', '--high-lvl-accounts',
                         help=('Load high level accounts from CSV file '
                               + ' containing '
-                              + '"auth_service,username,passwd"'
+                              + '"auth_service,username,password"'
                               + ' lines.'))
     parser.add_argument('-bh', '--beehive',
                         help=('Use beehive configuration for multiple ' +
@@ -527,7 +527,8 @@ def get_args():
                     csv_input.append('<username>,<password>')
                     csv_input.append('<ptc/google>,<username>,<password>')
 
-                    # If the number of fields is differend this is not a CSV.
+                    # If the number of fields is different,
+                    # then this is not a CSV.
                     if num_fields != line.count(',') + 1:
                         print(sys.argv[0] +
                               ": Error parsing CSV file on line " + str(num) +
@@ -575,7 +576,7 @@ def get_args():
 
                     # If the number of fields is three then assume this is
                     # "ptc,username,password". As requested.
-                    if num_fields == 3:
+                    if num_fields >= 3:
                         # If field 0 is not ptc or google something is wrong!
                         if (fields[0].lower() == 'ptc' or
                                 fields[0].lower() == 'google'):
@@ -596,12 +597,6 @@ def get_args():
                             args.password.append(fields[2])
                         else:
                             field_error = 'password'
-
-                    if num_fields > 3:
-                        print(('Too many fields in accounts file: max ' +
-                               'supported are 3 fields. ' +
-                               'Found {} fields').format(num_fields))
-                        sys.exit(1)
 
                     # If something is wrong display error.
                     if field_error != '':
@@ -695,7 +690,7 @@ def get_args():
 
                     line = line.split(',')
 
-                    # We need "service, user, pass".
+                    # We need "service, username, password".
                     if len(line) < 3:
                         raise Exception('L30 account is missing a'
                                         + ' field. Each line requires: '
