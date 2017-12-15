@@ -6,8 +6,6 @@ import logging
 from pgoapi.utilities import f2i, get_cell_ids
 from pgoapi.hash_server import BadHashRequestException, HashingOfflineException
 
-from .transform import jitter_location
-
 log = logging.getLogger(__name__)
 
 
@@ -237,24 +235,13 @@ def level_up_rewards(api, account):
 
 
 @catchRequestException('downloading map')
-def get_map_objects(api, account, position, no_jitter=False):
-    # Create scan_location to send to the api based off of position
-    # because tuples aren't mutable.
-    if no_jitter:
-        # Just use the original coordinates.
-        scan_location = position
-    else:
-        # Jitter it, just a little bit.
-        scan_location = jitter_location(position)
-        log.debug('Jittered to: %f/%f/%f', scan_location[0], scan_location[1],
-                  scan_location[2])
-
-    cell_ids = get_cell_ids(scan_location[0], scan_location[1])
+def get_map_objects(api, account, location):
+    cell_ids = get_cell_ids(location[0], location[1])
     timestamps = [0, ]*len(cell_ids)
     req = api.create_request()
     req.get_map_objects(
-        latitude=f2i(scan_location[0]),
-        longitude=f2i(scan_location[1]),
+        latitude=f2i(location[0]),
+        longitude=f2i(location[1]),
         since_timestamp_ms=timestamps,
         cell_id=cell_ids)
     return send_generic_request(req, account)

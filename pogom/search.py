@@ -42,13 +42,14 @@ from cachetools import TTLCache
 
 from pgoapi.hash_server import HashServer
 from .models import (parse_map, GymDetails, parse_gyms, MainWorker,
-                     WorkerStatus, HashKeys)
+                     WorkerStatus, HashKeys, ScannedLocation)
 from .utils import now, distance
 from .transform import get_new_coords
 from .account import setup_api, check_login, AccountSet
 from .captcha import captcha_overseer_thread, handle_captcha
 from .proxy import get_new_proxy
 from .apiRequests import gym_get_info, get_map_objects as gmo
+from .transform import jitter_location
 
 log = logging.getLogger(__name__)
 
@@ -898,8 +899,9 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                         break
 
                 # Grab the next thing to search (when available).
-                step, step_location, appears, leaves, messages, wait = (
+                step, scan_coords, appears, leaves, messages, wait = (
                     scheduler.next_item(status))
+
                 status['message'] = messages['wait']
                 # The next_item will return the value telling us how long
                 # to sleep. This way the status can be updated
@@ -909,6 +911,15 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                 if step == -1:
                     time.sleep(scheduler.delay(status['last_scan_date']))
                     continue
+
+                # get the ScannedLocation before jittering
+                scan_location = ScannedLocation.get_by_loc(scan_coords)
+
+                # Jitter the coords if configured.
+                if not args.no_jitter:
+                    scan_coords = jitter_location(scan_coords)
+                    log.debug('Jittered to: %f/%f/%f', scan_coords[0],
+                              scan_coords[1], scan_coords[2])
 
                 # Too soon?
                 # Adding a 10 second grace period.
@@ -944,7 +955,7 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                 # Let the api know where we intend to be for this loop.
                 # Doing this before check_login so it does not also have
                 # to be done when the auth token is refreshed.
-                api.set_position(*step_location)
+                api.set_position(*scan_coords)
 
                 if args.hash_key:
                     key = key_scheduler.next()
@@ -967,14 +978,13 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
 
                 # Make the actual request.
                 scan_date = datetime.utcnow()
-                response_dict = gmo(
-                    api, account, step_location, args.no_jitter)
+                response_dict = gmo(api, account, scan_coords)
                 status['last_scan_date'] = datetime.utcnow()
 
                 # Record the time and the place that the worker made the
                 # request.
-                status['latitude'] = step_location[0]
-                status['longitude'] = step_location[1]
+                status['latitude'] = scan_coords[0]
+                status['longitude'] = scan_coords[1]
                 dbq.put((WorkerStatus, {0: WorkerStatus.db_format(status)}))
 
                 # Nothing back. Mark it up, sleep, carry on.
@@ -992,21 +1002,22 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                     captcha = handle_captcha(args, status, api, account,
                                              account_failures,
                                              account_captchas, whq,
-                                             response_dict, step_location)
+                                             response_dict, scan_coords)
                     if captcha is not None and captcha:
                         # Make another request for the same location
                         # since the previous one was captcha'd.
                         scan_date = datetime.utcnow()
                         response_dict = gmo(
-                            api, account, step_location, args.no_jitter)
+                            api, account, scan_coords, args.no_jitter)
                     elif captcha is not None:
                         account_queue.task_done()
                         time.sleep(3)
                         break
 
-                    parsed = parse_map(args, response_dict, step_location,
-                                       dbq, whq, key_scheduler, api, status,
-                                       scan_date, account, account_sets)
+                    parsed = parse_map(args, response_dict, scan_coords,
+                                       scan_location, dbq, whq, key_scheduler,
+                                       api, status, scan_date, account,
+                                       account_sets)
 
                     scheduler.task_done(status, parsed)
                     if parsed['count'] > 0:
@@ -1018,7 +1029,7 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                     consecutive_fails = 0
                     status['message'] = ('Search at {:6f},{:6f} completed ' +
                                          'with {} finds.').format(
-                        step_location[0], step_location[1],
+                        scan_coords[0], scan_coords[1],
                         parsed['count'])
                     log.debug(status['message'])
                 except Exception as e:
@@ -1029,8 +1040,8 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                     # counter in case of error.
                     status['message'] = ('Map parse failed at {:6f},{:6f}, ' +
                                          'abandoning location. {} may be ' +
-                                         'banned.').format(step_location[0],
-                                                           step_location[1],
+                                         'banned.').format(scan_coords[0],
+                                                           scan_coords[1],
                                                            account['username'])
                     log.exception('{}. Exception message: {}'.format(
                         status['message'], repr(e)))
@@ -1057,7 +1068,7 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
 
                         # Can only get gym details within 1km of our position.
                         gym_distance = distance(
-                            step_location, [gym['latitude'], gym['longitude']])
+                            scan_coords, [gym['latitude'], gym['longitude']])
                         if gym_distance < 1000:
                             # Check if we already have details on this gym.
                             # Get them if not.
@@ -1084,7 +1095,7 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                                 'Skipping update of gym @ %f/%f, too far ' +
                                 'away from our location at %f/%f (%.0fm).',
                                 gym['latitude'], gym['longitude'],
-                                step_location[0], step_location[1],
+                                scan_coords[0], scan_coords[1],
                                 gym_distance)
 
                     if len(gyms_to_update):
@@ -1092,8 +1103,8 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                         current_gym = 1
                         status['message'] = (
                             'Updating {} gyms for location {},{}...').format(
-                                len(gyms_to_update), step_location[0],
-                                step_location[1])
+                                len(gyms_to_update), scan_coords[0],
+                                scan_coords[1])
                         log.debug(status['message'])
 
                         for gym in gyms_to_update.values():
@@ -1102,17 +1113,17 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                                 'Getting details for gym {} of {} for ' +
                                 'location {:6f},{:6f}...').format(
                                     current_gym,
-                                    len(gyms_to_update), step_location[0],
-                                    step_location[1])
+                                    len(gyms_to_update), scan_coords[0],
+                                    scan_coords[1])
                             log.info('Getting details for gym @ %f/%f ' +
                                      '(%.0fm away)', gym['latitude'],
                                      gym['longitude'],
-                                     distance(step_location, [
+                                     distance(scan_coords, [
                                          gym['latitude'], gym['longitude']
                                      ]))
 
                             response = gym_get_info(api, account,
-                                                    step_location, gym)
+                                                    scan_coords, gym)
 
                             # Make sure the gym was in range. (Sometimes the
                             # API gets cranky about gyms that are ALMOST 1km
@@ -1133,8 +1144,8 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                         status['message'] = (
                             'Processing details of {} gyms for location ' +
                             '{:6f},{:6f}...').format(len(gyms_to_update),
-                                                     step_location[0],
-                                                     step_location[1])
+                                                     scan_coords[0],
+                                                     scan_coords[1])
                         log.debug(status['message'])
 
                         if gym_responses:
