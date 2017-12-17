@@ -60,7 +60,7 @@ I'm doing the initial scan, and the spawns have a duration under 1 minute. Why?
 
 How does Speed Scheduler find the time_til_hidden or TTH?
 
-> At the last minute or so of a Pokemon spawn, the servers include a time stamp of when the pokemon will disappear, called the time_til_hidden (TTH). Until the TTH is found, spawns are scanned twice -- once when they first spawn and again at the end of their spawn window to find the time_til_hidden and get the exact spawn time. Speed Scheduler searches for the TTH by doing a search between the last seen time and 15 minutes after. If the spawn isn't there at this time, it searches again between that last seen time and earliest unseen time. Next check is between those times again, and so on. This reduces the time where the TTH could be by about half every search, so it should find the TTH within five or so searches.
+> At the last minute or so of a Pokemon spawn, the servers include a time stamp of when the Pokemon will disappear, called the time_til_hidden (TTH). Until the TTH is found, spawns are scanned twice -- once when they first spawn and again at the end of their spawn window to find the time_til_hidden and get the exact spawn time. Speed Scheduler searches for the TTH by doing a search between the last seen time and 15 minutes after. If the spawn isn't there at this time, it searches again between that last seen time and earliest unseen time. Next check is between those times again, and so on. This reduces the time where the TTH could be by about half every search, so it should find the TTH within five or so searches.
 
 Speed Scheduler has been running for days, but the TTH found is still about 99%. Why doesn't it find 100% of the TTH?
 
@@ -75,11 +75,12 @@ How many workers will I need for the initial scan?
 > Here's a rough formula for how many workers:
 
 > Workers = Cells / 20
-> Cells = (((steps * (steps - 1)) * 3) + 1)
+
+> Cells = (steps * (steps - 1) * 3 + 1)
 
 > With -st 26, you will have 1951 cells and need about 98 workers.
 
-> To do the initial scan in an hour so, at -kph 35, it takes about half a minute to get to a the next location to scan, and you will want to be able to scan all cells in about 10 minutes, so the workers Cells / 20. If you reduce the -kph from 35 by half, increase the workers by double.
+> To do the initial scan in an hour or so, at -kph 35, it takes about half a minute to get to the next location to scan, and you will want to be able to scan all cells in about 10 minutes, so the workers = Cells / 20. If you reduce the -kph from 35 by half, increase the workers by double.
 
 How many workers will I need after the initial scan is done?
 
