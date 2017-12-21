@@ -94,9 +94,9 @@ def fast_get_new_coords(origin, distance, bearing):
 
 
 # Apply a location jitter.
-def jitter_location(location=None, maxMeters=10):
+def jitter_location(location=None, max_meters=5):
     origin = geopy.Point(location[0], location[1])
     bearing = random.randint(0, 360)
-    distance = math.sqrt(random.random()) * (float(maxMeters))
+    distance = math.sqrt(random.random()) * (float(max_meters))
     destination = fast_get_new_coords(origin, distance, bearing)
     return (destination[0], destination[1], location[2])

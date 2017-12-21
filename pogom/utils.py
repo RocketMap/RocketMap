@@ -115,9 +115,9 @@ def get_args():
                               ' rather than only once, and store results in' +
                               ' the database.'),
                         action='store_true', default=False)
-    parser.add_argument('-nj', '--no-jitter',
-                        help=("Don't apply random -9m to +9m jitter to " +
-                              "location."),
+    parser.add_argument('-j', '--jitter',
+                        help=('Apply random -5m to +5m jitter to ' +
+                              'location.'),
                         action='store_true', default=False)
     parser.add_argument('-al', '--access-logs',
                         help=("Write web logs to access.log."),

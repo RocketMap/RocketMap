@@ -916,9 +916,9 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                 scan_location = ScannedLocation.get_by_loc(scan_coords)
 
                 # Jitter the coords if configured.
-                if not args.no_jitter:
+                if args.jitter:
                     scan_coords = jitter_location(scan_coords)
-                    log.debug('Jittered to: %f/%f/%f', scan_coords[0],
+                    log.debug('Jittered to: %f/%f/%f.', scan_coords[0],
                               scan_coords[1], scan_coords[2])
 
                 # Too soon?
@@ -1007,8 +1007,7 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
                         # Make another request for the same location
                         # since the previous one was captcha'd.
                         scan_date = datetime.utcnow()
-                        response_dict = gmo(
-                            api, account, scan_coords, args.no_jitter)
+                        response_dict = gmo(api, account, scan_coords)
                     elif captcha is not None:
                         account_queue.task_done()
                         time.sleep(3)
