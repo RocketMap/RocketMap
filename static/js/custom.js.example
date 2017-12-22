@@ -1,6 +1,8 @@
 $(function () {
     'use strict'
 
+    // Marker cluster might have loaded before custom.js.
+    const isMarkerClusterLoaded = typeof window.markerCluster !== 'undefined' && !!window.markerCluster
 
     /* Settings. */
 
@@ -81,6 +83,10 @@ $(function () {
 
     if (disableClusters) {
         Store.set('maxClusterZoomLevel', -1)
+
+        if (isMarkerClusterLoaded) {
+            window.markerCluster.setMaxZoom(-1)
+        }
     }
 
     // Google Analytics.

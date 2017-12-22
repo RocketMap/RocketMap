@@ -40,7 +40,7 @@ var reincludedPokemon = []
 var reids = []
 
 var map
-var markerCluster
+var markerCluster = window.markerCluster = {}
 var rawDataIsLoading = false
 var locationMarker
 const rangeMarkers = ['pokemon', 'pokestop', 'gym']
