@@ -67,7 +67,7 @@ def parse_remote_config(account, api_response):
 
     remote_config = api_response['responses']['DOWNLOAD_REMOTE_CONFIG_VERSION']
     if remote_config.result == 0:
-        raise AccountBannedException('The account has a temporal ban')
+        raise AccountBannedException('The account is temporarily banned')
 
     asset_time = remote_config.asset_digest_timestamp_ms / 1000000
     template_time = remote_config.item_templates_timestamp_ms / 1000
