@@ -2278,6 +2278,9 @@ def parse_map(args, map_dict, scan_coords, scan_location, db_update_queue,
     # Look for spawnpoints within scan_loc that are not here to see if we
     # can narrow down tth window.
     for sp in ScannedLocation.linked_spawn_points(scan_location['cellid']):
+        if sp['missed_count'] > 5:
+                continue
+
         if sp['id'] in sp_id_list:
             # Don't overwrite changes from this parse with DB version.
             sp = spawn_points[sp['id']]
