@@ -1,27 +1,34 @@
-# Account Blinding 
+# Account Blinding
 
-### As of May 21st 2017, Niantic has implemented a new kind of ban. This ban will hide rare pokemon and other features within the Pokemon Go app when using an account that is blind. 
+### As of May 21st 2017, Niantic has implemented a new kind of ban. This ban will hide some pokemon within the Pokemon Go app when using an account in that state.
 
 ## What do we know?
 
-Accounts are automatically banned based on specific behaviors known to mappers and botters. While RocketMap is working on a full scale solution, this a guide of what we know. 
+Currently all APIs and tools are affected, the flag they use to identify third party projects has not been found and there are some fields in the API which we are missing information for.
 
-* New accounts work for 60 to 140 hours (depending on config).
-* Blinded accounts can get unblinded after 6 to 10 days.
-* Reusing unblinded accounts in any 3rd party app (including RM) will get them blinded again faster than before (sometimes in just a few hours).
-* If you buy accounts to scan, do so at your own risk. These have often been getting blinded in a matter of a few hours (~4h), most likely because they had already been flagged before.
-* Once flagged, the blinding is inevitable.
-* All 3rd party apps/scanners are affected in the exact same manner. We've spent extra time to confirm this because some people were pretty convinced we were wrong, although it usually ended up being because they hadn't even realized their accounts were already blind.
-* **There is NO recommended way to test accounts for blindness.** The current 3rd party implementations are incorrect and could get your accounts flagged if they weren't already. This is a WIP and is being added to RM itself.
+ * Clean accounts work for up to 3 days before blinding under regular usage.
+ * There are some unknown daily limits for map requests or encounters, if an account reaches that limit it immediately gets banned.
+ * Blinded accounts will get banned after 2-3 more days (even if they are removed from use).
+ * Banned accounts will get unbanned and unblinded after up to 2 months.
+ * If you buy accounts to scan, you do so at your own risk. Often these accounts are already blind when you purchase them or can get blinded soon if the seller does not give you accounts that have been resting for 2 months.
+ * Blinding is inevitable.
+ * All 3rd party apps/scanners are affected in the exact same manner. We've spent extra time to confirm this because some people were pretty convinced we were wrong, although it usually ended up being because they hadn't even realized their accounts were already blind.
+ * Blinding also affects high level accounts, blinded accounts will fail to encounter the Pokémon hidden in the map, they also get banned within 24 hours if they do too many encounters.
+ * Even a simple login without a map request will start the countdown that leads to blinding. Any third party API usage whatsoever on an account will flag your account.
 
 ## What can I do?
 
-Right now, here are 3 approaches for your configs to maximize the scan time per account. **Results depend on a lot of things, so test and experiment for yourself until you find what works best for you:**
-1. Burn through accounts: no sleep, no account rotation. For some whose accounts usually get flagged very early on, this will increase the scan time of the account.
-2. Use a basic constant rotation: e.g. asi 8h (8h of scanning) for ari 4h (4 hours of sleep).
-3. Use more realistic scan times: low asi and high ari (scan in bursts: short period of scanning for a realistic resting time), or low asi and low ari (what you would call "not too active players") but use enough spare accounts to fill 24 hours with realistic schedules for all accounts.
+Given the current situation the best option is to burn through accounts: no sleep, no account rotation. This will allow you to use as little accounts as possible and just change the whole batch at once (including high level accounts) once you see that accounts are getting blinded.
 
-The ideal will depend on your own results, we've found that all three approaches had positive effects for at least one testing setup. A person who needs #1 will be the direct opposite of someone running #3, but both are equally valid.
+You can identify that your accounts are getting blinded by the lower number of Pokémon in the map or the frequency with which the following message occurs in your logs:
+
+```
+[models][ WARNING] hsss kind spawnpoint XXXXX has no Pokemon Y times in a row.
+```
+
+Some errors like that are expected during regular operation but if the log is constantly spammed with this, then you are likely getting blinded accounts. Please note that this message will only appear up to 5 times per spawnpoint (and it will subsequently be hidden so your logs don't get spammed).
+
+On high lvl accounts you can identify blinded accounts when the encounter fails with the error `3`.
 
 ### Spawnpoint Fix
 
@@ -29,5 +36,3 @@ If your accounts are blinded and it starts disabling spawnpoints because it cons
 ```sql
 UPDATE spawnpoint SET missed_count = 0;
 ```
-
-`last updated 6/9/17`

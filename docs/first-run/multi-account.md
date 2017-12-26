@@ -1,9 +1,11 @@
-# Using Multiple Accounts
+# Configuring Accounts
 
-RocketMap supports using multiple accounts to run a worker with multiple threads.
+RocketMap needs at least the same number of accounts as workers. Having some spare (5% to 10%) is useful because accounts can be put on pause if an error occurs while scanning.
+By default accounts work 24/7 if you want to configure some kind of working schedule using --account-search-interval
+then take that into account when adding the required number of accounts.
 
 
-## Using Command Line Arguments:
+## Configuring accounts using Command Line:
 
 To use multiple accounts when running from the command line, you must specify multiple -u and -p values.
 
@@ -23,7 +25,7 @@ Example: `python runserver.py -a ptc -a ptc -a google -u thunderfox01 -u thunder
 
 To use multiple accounts with config.ini, you must surround all the accounts and passwords in brackets [] and seperate them with a comma and space.
 
-Example: 
+Example:
 ```
 auth-service: ptc
 username: [thunderfox01, thunderfox02]
@@ -33,7 +35,7 @@ password: [password01, password02]
 
 If you have multiple accounts with the same password, you can specify one password value similar to the command line.
 
-Example: 
+Example:
 ```
 auth-service: ptc
 username: [thunderfox01, thunderfox02]
@@ -51,7 +53,7 @@ password: [password01, password02, password03]
 
 ## Using CSV file:
 
-To use multiple accounts from a CSV file, you create a CSV file with the auth method, username and password on each line. Shorten to 3 fields only, more than 3 fields will error out.
+To use multiple accounts from a CSV file, you create a CSV file with the auth method, username and password on each line. If more fields appear in the CSV file they will not be taken into account.
 
 CSV File Example:
 ```
