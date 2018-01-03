@@ -413,8 +413,13 @@ def get_args():
                         help=('Number of times to retry sending webhook ' +
                               'data on failure.'),
                         type=int, default=3)
-    parser.add_argument('-wht', '--wh-timeout',
-                        help='Timeout (in seconds) for webhook requests.',
+    parser.add_argument('-whct', '--wh-connect-timeout',
+                        help=('Connect timeout (in seconds) for webhook' +
+                              ' requests.'),
+                        type=float, default=1.0)
+    parser.add_argument('-whrt', '--wh-read-timeout',
+                        help=('Read timeout (in seconds) for webhook' +
+                              'requests.'),
                         type=float, default=1.0)
     parser.add_argument('-whbf', '--wh-backoff-factor',
                         help=('Factor (in seconds) by which the delay ' +

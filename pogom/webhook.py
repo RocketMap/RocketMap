@@ -22,14 +22,15 @@ def send_to_webhooks(args, session, message_frame):
         log.critical('Called send_to_webhook() without webhooks.')
         return
 
-    req_timeout = args.wh_timeout
+    connect_timeout = args.wh_connect_timeout
+    read_timeout = args.wh_read_timeout
 
     for w in args.webhooks:
         try:
             # Disable keep-alive and set streaming to True, so we can skip
             # the response content.
             future = session.post(w, json=message_frame,
-                                  timeout=(None, req_timeout),
+                                  timeout=(connect_timeout, read_timeout),
                                   background_callback=__wh_request_completed,
                                   headers={'Connection': 'close'},
                                   stream=True)
