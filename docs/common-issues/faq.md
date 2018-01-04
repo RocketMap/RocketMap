@@ -28,7 +28,7 @@ If you happen to have 2-step verification enabled for your Google account you wi
 
 SpeedScan (`-speed`) is the most used scheduler: it's the only scheduler that currently supports finding the proper spawnpoint time and duration, and it also features a built-in speed limiter to avoid speed violations (i.e. softbans).
 
-More information can be found here : [Speed Scheduler](http://rocketmap.readthedocs.io/en/develop/scanning-method/Speed-Scheduler.html)
+More information can be found here : [Speed Scheduler](http://rocketmap.readthedocs.io/en/develop/scanning-method/speed-scheduler.html)
 
 ### But I was happy using the default Hex or -ss...
 
