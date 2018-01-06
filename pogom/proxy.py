@@ -6,6 +6,7 @@ import requests
 import sys
 import time
 
+from threading import Thread
 from random import randint
 from utils import get_async_requests_session
 
@@ -303,6 +304,24 @@ def get_new_proxy(args):
         lp = 0
 
     return lp, args.proxy[lp]
+
+
+def initialize_proxies(args):
+    # Processing proxies if set (load from file, check and overwrite old
+    # args.proxy with new working list).
+    args.proxy = load_proxies(args)
+
+    if args.proxy and not args.proxy_skip_check:
+        args.proxy = check_proxies(args, args.proxy)
+
+    # Run periodical proxy refresh thread.
+    if (args.proxy_file is not None) and (args.proxy_refresh > 0):
+        t = Thread(target=proxies_refresher,
+                   name='proxy-refresh', args=(args,))
+        t.daemon = True
+        t.start()
+    else:
+        log.info('Periodical proxies refresh disabled.')
 
 
 # Background handler for completed proxy check requests.
