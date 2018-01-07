@@ -87,10 +87,16 @@ set_log_and_verbosity(log)
 
 
 args = get_args()
+
+# Abort if we don't have a hash key set.
+if not args.hash_key:
+    log.critical('Hash key is required for leveling up accounts. Exiting.')
+    sys.exit(1)
+
 fake_queue = FakeQueue()
 key_scheduler = KeyScheduler(args.hash_key, fake_queue)
 position = extract_coordinates(args.location)
-startup_db(None, args.clear_db, args.db_type, args.db)
+startup_db(None, args.clear_db)
 args.player_locale = PlayerLocale.get_locale(args.location)
 if not args.player_locale:
     args.player_locale = gmaps_reverse_geolocate(
