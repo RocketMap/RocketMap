@@ -569,10 +569,8 @@ class SpeedScan(HexSearch):
 
         log.info('Doing %s distance calcs to assign spawn points to scans',
                  "{:,}".format(len(spawnpoints) * len(scans)))
-        scan_spawn_point = {}
-        ScannedLocation.link_spawn_points(scans, initial, spawnpoints,
-                                          self.step_distance, scan_spawn_point,
-                                          force=True)
+        scan_spawn_point = ScannedLocation.link_spawn_points(
+            scans, initial, spawnpoints, self.step_distance)
         if len(scan_spawn_point):
             log.info('%d relations found between the spawn points and steps',
                      len(scan_spawn_point))

@@ -11,9 +11,7 @@ If you are not familiar or don't feel confortable with Python, pip or any of the
 
 ## Introduction
 
-The quickest way to get RocketMap up and running with docker is quite simple. However, given the disposable nature of docker containers, and the fact that the default database for RocketMap is SQLite, your data won't be persistent. In case the container is stopped or crashes, all the collected data will be lost.
-
-If that doesn't bother you, and you just want to give RocketMap a go, keep on reading. If you prefer a persistent setup, skip to "Advanced Docker Setup"
+The quickest way to get RocketMap up and running with docker is quite simple. However you need to setup an external mysql database to make it work so be sure to read the tutorial until the "Advanced Docker Setup"
 
 ## Simple Docker Setup
 
@@ -166,7 +164,6 @@ docker run -d --name pogomap --net=pogonw -p 5000:5000 \
     -k 'your-google-maps-key' \
     -l 'lat, lon' \
     -st 5 \
-    --db-type mysql \
     --db-host db \
     --db-port 3306 \
     --db-name pogodb \
@@ -195,7 +192,6 @@ docker run -d --name pogomap2 --net=pogonw \
     -k 'your-google-maps-key' \
     -l 'newlat, newlon' \
     -st 5 \
-    --db-type mysql \
     --db-host db \
     --db-port 3306 \
     --db-name pogodb \
@@ -251,7 +247,6 @@ docker run -d --name pogomap --net=pogonw -p 5000:5000 \
     -k 'your-google-maps-key' \
     -l 'lat, lon' \
     -st 5 \
-    --db-type mysql \
     --db-host db \
     --db-port 3306 \
     --db-name pogodb \

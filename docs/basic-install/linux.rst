@@ -24,7 +24,7 @@ Debian's sources lists are out of date and will not fetch the correct versions o
 
     curl -sL https://raw.githubusercontent.com/nodesource/distributions/master/deb/setup_8.x | sudo -E bash -
 
-    sudo apt-get install -y build-essential libbz2-dev libsqlite3-dev libreadline-dev libssl-dev libffi-dev zlib1g-dev libncurses5-dev libssl-dev libgdbm-dev python python-dev nodejs
+    sudo apt-get install -y build-essential libbz2-dev libreadline-dev libssl-dev libffi-dev zlib1g-dev libncurses5-dev libssl-dev libgdbm-dev python python-dev nodejs
 
     curl -sL https://bootstrap.pypa.io/get-pip.py | sudo python -
 

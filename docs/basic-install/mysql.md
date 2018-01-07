@@ -1,13 +1,12 @@
-# Using a MySQL Server
+# Installing MySQL
 
-**This is a guide for windows only currently.**
-**Preliminary Linux (Debian) instructions below (VII)**
+**This guide is primarily for Windows.**
+**However, preliminary Linux (Debian) instructions are below (VII)**
 **Preliminary Docker (modern Linux OS w/ Docker & git installed) instructions below (VIII)**
 
 ## I. Prerequisites
-1. Have already ran/operated the RocketMap using the default database setup.
-2. Have the "develop" build of RocketMap. [Available here.](https://rocketmap.readthedocs.io/en/develop/basic-install/index.html)
-3. Downloaded [MariaDB](https://downloads.mariadb.org/)
+1. Have the "develop" build of RocketMap. [Available here.](https://rocketmap.readthedocs.io/en/develop/basic-install/index.html)
+2. Downloaded [MariaDB](https://downloads.mariadb.org/)
 
 ## II. Installing MariaDB
 1. Run the install file, for me this was: mariadb-10.1.16-winx64.msi
@@ -59,7 +58,6 @@
         - Change "username" to your respective username for the selected service.
         - Change "password" to your respective password for the username on the selected service.
     - **Database Settings:** This is the important section you will want to modify.
-        - Change the "db-type" to "mysql"
         - Change "db-host" to "127.0.0.1"
         - Change "db-name:" to "rocketmapdb"
         - Change "db-user:" to "rocketmapuser"
@@ -73,28 +71,13 @@
 5. Make sure you've removed all of the `#` from any line with a value you inputted. Indent the comments that are after the values as well, so they are on the following line below the variable they represent. For example:
    ```
    # Database settings
-   db-type: mysql
-   # sqlite (default) or mysql
+   db-name: mydb
+   # Required
    ```
 6. Go to File->Save as... and make sure you save this file into the same directory as the "config.ini.example", but obviously save it as "config.ini". Make sure it's saved as a .ini file type, and not anything else or it won't work.
 7. You're now done configuring your config.ini file.
 
-## V. Run it!
-
-Now that we have our server setup and our config.ini filled out it's time to actually run the workers to make sure everything is in check. Remember from above if you commented out any parameters in the util.py file that all of those parameters need to be met and filled out when you run the runserver.py script. In our case we commented out location, and steps so we could individual choose where each worker scanned, and the size of the scan. I've put two code snippets below, one would be used if you didn't comment out anything and instead filled out the **[Search_Settings]** in section IV step 4 above. The other code snippet is what you would run if you commented out the same lines as I did in our running example.
-
-```
-python runserver.py
-```
-
-**Left Search_Settings at default**
-
-```
-python runserver.py -st 10 -l "[LOCATION]"
-```
-
-You should now be up and running. If you've encountered any errors it's most likely due to missing a parameter you commented out when you call runserver.py or you mis-typed something in your `config.ini`. However, if it's neither of those issues and something not covered in this guide hop into the RocketMap discord server, and go to the help channel. People there are great, and gladly assist people with troubleshooting issues.
-
+MySQL is now installed, return to the main install guide. If you've encountered any errors it's most likely due to missing a parameter you commented out when you call runserver.py or you mis-typed something in your `config.ini`. However, if it's neither of those issues and something not covered in this guide hop into the RocketMap discord server, and go to the help channel. People there are great, and gladly assist people with troubleshooting issues.
 
 ## Set up MySQL on a second computer, seperate from RM instances.
 
@@ -120,7 +103,6 @@ You need to tell RocketMap where the database is!
 
 ```
 **Database Settings:** This is the important section you will want to modify.
- - Change the "db-type" to "mysql"
  - Change "db-host" to [IP ADDDRESS OF SERVER B]
  - Change "db-name:" to "rocketmapdb"
  - Change "db-user:" to "rocketmapuser"
@@ -151,11 +133,10 @@ You need to tell RocketMap where the database is!
 
    ```
    # Database settings
-   db-type: mysql          # sqlite (default) or mysql
-   db-host: 127.0.0.1      # required for mysql
-   db-name: rocketmapdb # required for mysql
-   db-user: rocketmapuser    # required for mysql
-   db-pass: YourPW         # required for mysql
+   db-host: 127.0.0.1      
+   db-name: rocketmapdb # required
+   db-user: rocketmapuser    # required
+   db-pass: YourPW         # required
    ```
 
 ## Docker Settings w/ Let's Encrypt
@@ -172,7 +153,7 @@ _only pain comes from mysql5.7 and beyond_
 
 ```
 docker run --name mainmap -d --link pokesql pokemap --auth-service=ptc \
-  --username=youruser --password=yourpassword --db-type=mysql --db-host=pokesql \
+  --username=youruser --password=yourpassword --db-host=pokesql \
   --db-name=pokemap --db-user=root --db-pass=some-string --gmaps-key=someapikey
 ```
 
@@ -183,7 +164,7 @@ _OPTIONAL: always scan Austin, TX (SQL benchmark?)_
 ```
 docker run --name scanagent -d --link pokesql pokemap --no-server \
  --auth-service=ptc --location="Austin, TX" --username=yourotheruser \
- --password=yourotherpassword --db-type=mysql --db-host=pokemap \
+ --password=yourotherpassword --db-host=pokemap \
  --db-name=pokemap --db-user=root --db-pass=some-string \
  --gmaps-key=some-api-key
 ```

@@ -204,14 +204,11 @@ def can_start_scanning(args):
     return True
 
 
-def startup_db(app, clear_db, db_type, db):
+def startup_db(app, clear_db):
     db = init_database(app)
     if clear_db:
         log.info('Clearing database')
-        if db_type == 'mysql':
-            drop_tables(db)
-        elif os.path.isfile(db):
-            os.remove(db)
+        drop_tables(db)
 
     verify_database_schema(db)
 
@@ -318,7 +315,7 @@ def main():
         app.before_request(app.validate_request)
         app.set_current_location(position)
 
-    db = startup_db(app, args.clear_db, args.db_type, args.db)
+    db = startup_db(app, args.clear_db)
 
     args.root_path = os.path.dirname(os.path.abspath(__file__))
 

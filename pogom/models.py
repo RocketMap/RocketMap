@@ -12,14 +12,13 @@ import math
 from peewee import (InsertQuery, Check, CompositeKey, ForeignKeyField,
                     SmallIntegerField, IntegerField, CharField, DoubleField,
                     BooleanField, DateTimeField, fn, DeleteQuery, FloatField,
-                    TextField, JOIN, OperationalError)
+                    TextField, BigIntegerField, PrimaryKeyField,
+                    JOIN, OperationalError)
 from playhouse.flask_utils import FlaskDB
 from playhouse.pool import PooledMySQLDatabase
 from playhouse.shortcuts import RetryOperationalError, case
-from playhouse.migrate import migrate, MySQLMigrator, SqliteMigrator
-from playhouse.sqlite_ext import SqliteExtDatabase
+from playhouse.migrate import migrate, MySQLMigrator
 from datetime import datetime, timedelta
-from base64 import b64encode
 from cachetools import TTLCache
 from cachetools import cached
 from timeit import default_timer
@@ -41,7 +40,7 @@ args = get_args()
 flaskDb = FlaskDB()
 cache = TTLCache(maxsize=100, ttl=60 * 5)
 
-db_schema_version = 20
+db_schema_version = 21
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -55,27 +54,22 @@ class Utf8mb4CharField(CharField):
         super(CharField, self).__init__(*args, **kwargs)
 
 
+class UBigIntegerField(BigIntegerField):
+    db_field = 'bigint unsigned'
+
+
 def init_database(app):
-    if args.db_type == 'mysql':
-        log.info('Connecting to MySQL database on %s:%i...',
-                 args.db_host, args.db_port)
-        db = MyRetryDB(
-            args.db_name,
-            user=args.db_user,
-            password=args.db_pass,
-            host=args.db_host,
-            port=args.db_port,
-            stale_timeout=30,
-            max_connections=None,
-            charset='utf8mb4')
-    else:
-        log.info('Connecting to local SQLite database')
-        db = SqliteExtDatabase(args.db,
-                               pragmas=(
-                                   ('journal_mode', 'WAL'),
-                                   ('mmap_size', 1024 * 1024 * 32),
-                                   ('cache_size', 10000),
-                                   ('journal_size_limit', 1024 * 1024 * 4),))
+    log.info('Connecting to MySQL database on %s:%i...',
+             args.db_host, args.db_port)
+    db = MyRetryDB(
+        args.db_name,
+        user=args.db_user,
+        password=args.db_pass,
+        host=args.db_host,
+        port=args.db_port,
+        stale_timeout=30,
+        max_connections=None,
+        charset='utf8mb4')
 
     # Using internal method as the other way would be using internal var, we
     # could use initializer but db is initialized later
@@ -112,8 +106,8 @@ class LatLongModel(BaseModel):
 class Pokemon(LatLongModel):
     # We are base64 encoding the ids delivered by the api
     # because they are too big for sqlite to handle.
-    encounter_id = Utf8mb4CharField(primary_key=True, max_length=50)
-    spawnpoint_id = Utf8mb4CharField(index=True)
+    encounter_id = UBigIntegerField(primary_key=True)
+    spawnpoint_id = UBigIntegerField(index=True)
     pokemon_id = SmallIntegerField(index=True)
     latitude = DoubleField()
     longitude = DoubleField()
@@ -348,8 +342,7 @@ class Pokestop(LatLongModel):
     longitude = DoubleField()
     last_modified = DateTimeField(index=True)
     lure_expiration = DateTimeField(null=True, index=True)
-    active_fort_modifier = Utf8mb4CharField(max_length=50,
-                                            null=True, index=True)
+    active_fort_modifier = SmallIntegerField(null=True, index=True)
     last_updated = DateTimeField(
         null=True, index=True, default=datetime.utcnow)
 
@@ -653,7 +646,7 @@ class Raid(BaseModel):
 
 
 class LocationAltitude(LatLongModel):
-    cellid = Utf8mb4CharField(primary_key=True, max_length=50)
+    cellid = UBigIntegerField(primary_key=True)
     latitude = DoubleField()
     longitude = DoubleField()
     last_modified = DateTimeField(index=True, default=datetime.utcnow,
@@ -722,7 +715,7 @@ class PlayerLocale(BaseModel):
 
 
 class ScannedLocation(LatLongModel):
-    cellid = Utf8mb4CharField(primary_key=True, max_length=50)
+    cellid = UBigIntegerField(primary_key=True)
     latitude = DoubleField()
     longitude = DoubleField()
     last_modified = DateTimeField(
@@ -870,11 +863,10 @@ class ScannedLocation(LatLongModel):
     # spannedlocation records.  Otherwise, search through the spawnpoint list
     # and update scan_spawn_point dict for DB bulk upserting.
     @staticmethod
-    def link_spawn_points(scans, initial, spawn_points, distance,
-                          scan_spawn_point, force=False):
+    def link_spawn_points(scans, initial, spawn_points, distance):
+        index = 0
+        scan_spawn_point = {}
         for cell, scan in scans.iteritems():
-            if initial[cell]['done'] and not force:
-                continue
             # Difference in degrees at the equator for 70m is actually 0.00063
             # degrees and gets smaller the further north or south you go
             deg_at_lat = 0.0007 / math.cos(math.radians(scan['loc'][0]))
@@ -884,9 +876,11 @@ class ScannedLocation(LatLongModel):
                     continue
                 if in_radius((sp['latitude'], sp['longitude']),
                              scan['loc'], distance * 1000):
-                    scan_spawn_point[cell + sp['id']] = {
+                    scan_spawn_point[index] = {
                         'spawnpoint': sp['id'],
                         'scannedlocation': cell}
+                    index += 1
+        return scan_spawn_point
 
     # Return list of dicts for upcoming valid band times.
     @staticmethod
@@ -1151,7 +1145,7 @@ class WorkerStatus(LatLongModel):
 
 
 class SpawnPoint(LatLongModel):
-    id = Utf8mb4CharField(primary_key=True, max_length=50)
+    id = UBigIntegerField(primary_key=True)
     latitude = DoubleField()
     longitude = DoubleField()
     last_scanned = DateTimeField(index=True)
@@ -1449,11 +1443,11 @@ class ScanSpawnPoint(BaseModel):
 
 
 class SpawnpointDetectionData(BaseModel):
-    id = Utf8mb4CharField(primary_key=True, max_length=54)
+    id = PrimaryKeyField()
     # Removed ForeignKeyField since it caused MySQL issues.
-    encounter_id = Utf8mb4CharField(max_length=54)
+    encounter_id = UBigIntegerField()
     # Removed ForeignKeyField since it caused MySQL issues.
-    spawnpoint_id = Utf8mb4CharField(max_length=54, index=True)
+    spawnpoint_id = UBigIntegerField(index=True)
     scan_time = DateTimeField()
     tth_secs = SmallIntegerField(null=True)
 
@@ -1658,7 +1652,7 @@ class Versions(BaseModel):
 
 class GymMember(BaseModel):
     gym_id = Utf8mb4CharField(index=True)
-    pokemon_uid = Utf8mb4CharField(index=True)
+    pokemon_uid = UBigIntegerField(index=True)
     last_scanned = DateTimeField(default=datetime.utcnow, index=True)
     deployment_time = DateTimeField()
     cp_decayed = SmallIntegerField()
@@ -1668,7 +1662,7 @@ class GymMember(BaseModel):
 
 
 class GymPokemon(BaseModel):
-    pokemon_uid = Utf8mb4CharField(primary_key=True, max_length=50)
+    pokemon_uid = UBigIntegerField(primary_key=True)
     pokemon_id = SmallIntegerField()
     cp = SmallIntegerField()
     trainer_name = Utf8mb4CharField(index=True)
@@ -1860,8 +1854,7 @@ def parse_map(args, map_dict, scan_coords, scan_location, db_update_queue,
     just_completed = not done_already and scan_location['done']
 
     if wild_pokemon and not args.no_pokemon:
-        encounter_ids = [b64encode(str(p.encounter_id))
-                         for p in wild_pokemon]
+        encounter_ids = [p.encounter_id for p in wild_pokemon]
         # For all the wild Pokemon we found check if an active Pokemon is in
         # the database.
         with Pokemon.database().execution_context():
@@ -1878,22 +1871,21 @@ def parse_map(args, map_dict, scan_coords, scan_location, db_update_queue,
                 (p['encounter_id'], p['spawnpoint_id']) for p in query]
 
         for p in wild_pokemon:
-
-            sp = SpawnPoint.get_by_id(p.spawn_point_id, p.latitude,
+            spawn_id = int(p.spawn_point_id, 16)
+            sp = SpawnPoint.get_by_id(spawn_id, p.latitude,
                                       p.longitude)
-            spawn_points[p.spawn_point_id] = sp
+            spawn_points[spawn_id] = sp
             sp['missed_count'] = 0
 
             sighting = {
-                'id': b64encode(str(p.encounter_id)) + '_' + str(now_secs),
-                'encounter_id': b64encode(str(p.encounter_id)),
-                'spawnpoint_id': p.spawn_point_id,
+                'encounter_id': p.encounter_id,
+                'spawnpoint_id': spawn_id,
                 'scan_time': now_date,
                 'tth_secs': None
             }
 
             # Keep a list of sp_ids to return.
-            sp_id_list.append(p.spawn_point_id)
+            sp_id_list.append(spawn_id)
 
             # time_till_hidden_ms was overflowing causing a negative integer.
             # It was also returning a value above 3.6M ms.
@@ -1913,7 +1905,7 @@ def parse_map(args, map_dict, scan_coords, scan_location, db_update_queue,
                     sp['latest_seen'] = d_t_secs
                     sp['earliest_unseen'] = d_t_secs
 
-            scan_spawn_points[scan_location['cellid'] + sp['id']] = {
+            scan_spawn_points[len(scan_spawn_points)+1] = {
                 'spawnpoint': sp['id'],
                 'scannedlocation': scan_location['cellid']}
             if not sp['last_scanned']:
@@ -1939,8 +1931,7 @@ def parse_map(args, map_dict, scan_coords, scan_location, db_update_queue,
             sp['last_scanned'] = datetime.utcfromtimestamp(
                 p.last_modified_timestamp_ms / 1000.0)
 
-            if ((b64encode(str(p.encounter_id)), p.spawn_point_id)
-                    in encountered_pokemon):
+            if ((p.encounter_id, spawn_id) in encountered_pokemon):
                 # If Pokemon has been encountered before don't process it.
                 skipped += 1
                 continue
@@ -1970,8 +1961,8 @@ def parse_map(args, map_dict, scan_coords, scan_location, db_update_queue,
                     args, p, account, api, account_sets, status, key_scheduler)
 
             pokemon[p.encounter_id] = {
-                'encounter_id': b64encode(str(p.encounter_id)),
-                'spawnpoint_id': p.spawn_point_id,
+                'encounter_id': p.encounter_id,
+                'spawnpoint_id': spawn_id,
                 'pokemon_id': pokemon_id,
                 'latitude': p.latitude,
                 'longitude': p.longitude,
@@ -2060,7 +2051,6 @@ def parse_map(args, map_dict, scan_coords, scan_location, db_update_queue,
                     # changed don't process it.
                     stopsskipped += 1
                     continue
-
                 pokestops[f.id] = {
                     'pokestop_id': f.id,
                     'enabled': f.enabled,
@@ -2081,7 +2071,7 @@ def parse_map(args, map_dict, scan_coords, scan_location, db_update_queue,
                         l_e = calendar.timegm(lure_expiration.timetuple())
                     wh_pokestop = pokestops[f.id].copy()
                     wh_pokestop.update({
-                        'pokestop_id': b64encode(str(f.id)),
+                        'pokestop_id': f.id,
                         'last_modified': f.last_modified_timestamp_ms,
                         'lure_expiration': l_e,
                     })
@@ -2089,7 +2079,7 @@ def parse_map(args, map_dict, scan_coords, scan_location, db_update_queue,
 
             # Currently, there are only stops and gyms.
             elif not args.no_gyms and f.type == 0:
-                b64_gym_id = b64encode(str(f.id))
+                b64_gym_id = str(f.id)
                 gym_display = f.gym_display
                 raid_info = f.raid_info
                 # Send gyms to webhooks.
@@ -2450,7 +2440,7 @@ def parse_gyms(args, gym_responses, wh_update_queue, db_update_queue):
 
         if 'gym-info' in args.wh_types:
             webhook_data = {
-                'id': b64encode(str(gym_id)),
+                'id': str(gym_id),
                 'latitude': gym_state.pokemon_fort_proto.latitude,
                 'longitude': gym_state.pokemon_fort_proto.longitude,
                 'team': gym_state.pokemon_fort_proto.owned_by_team,
@@ -2644,13 +2634,7 @@ def clean_db_loop(args):
 def bulk_upsert(cls, data, db):
     num_rows = len(data.values())
     i = 0
-
-    if args.db_type == 'mysql':
-        step = 250
-    else:
-        # SQLite has a default max number of parameters of 999,
-        # so we need to limit how many rows we insert for it.
-        step = 50
+    step = 250
 
     with db.atomic():
         while i < num_rows:
@@ -2660,15 +2644,13 @@ def bulk_upsert(cls, data, db):
                 # unable to recognize strings to update unicode keys for
                 # foreign key fields, thus giving lots of foreign key
                 # constraint errors.
-                if args.db_type == 'mysql':
-                    db.execute_sql('SET FOREIGN_KEY_CHECKS=0;')
+                db.execute_sql('SET FOREIGN_KEY_CHECKS=0;')
 
                 # Use peewee's own implementation of the insert_many() method.
                 InsertQuery(cls, rows=data.values()[
                             i:min(i + step, num_rows)]).upsert().execute()
 
-                if args.db_type == 'mysql':
-                    db.execute_sql('SET FOREIGN_KEY_CHECKS=1;')
+                db.execute_sql('SET FOREIGN_KEY_CHECKS=1;')
 
             except Exception as e:
                 # If there is a DB table constraint error, dump the data and
@@ -2722,39 +2704,37 @@ def drop_tables(db):
 
 
 def verify_table_encoding(db):
-    if args.db_type == 'mysql':
-        with db.execution_context():
+    with db.execution_context():
 
-            cmd_sql = '''
-                SELECT table_name FROM information_schema.tables WHERE
-                table_collation != "utf8mb4_unicode_ci"
-                AND table_schema = "%s";
-                ''' % args.db_name
-            change_tables = db.execute_sql(cmd_sql)
+        cmd_sql = '''
+            SELECT table_name FROM information_schema.tables WHERE
+            table_collation != "utf8mb4_unicode_ci"
+            AND table_schema = "%s";
+            ''' % args.db_name
+        change_tables = db.execute_sql(cmd_sql)
 
-            cmd_sql = "SHOW tables;"
-            tables = db.execute_sql(cmd_sql)
+        cmd_sql = "SHOW tables;"
+        tables = db.execute_sql(cmd_sql)
 
-            if change_tables.rowcount > 0:
-                log.info('Changing collation and charset on %s tables.',
-                         change_tables.rowcount)
+        if change_tables.rowcount > 0:
+            log.info('Changing collation and charset on %s tables.',
+                     change_tables.rowcount)
 
-                if change_tables.rowcount == tables.rowcount:
-                    log.info('Changing whole database,' +
-                             ' this might a take while.')
+            if change_tables.rowcount == tables.rowcount:
+                log.info('Changing whole database,' +
+                         ' this might a take while.')
 
-                db.execute_sql('SET FOREIGN_KEY_CHECKS=0;')
-                for table in change_tables:
-                    log.debug('Changing collation and charset on table %s.',
-                              table[0])
-                    cmd_sql = '''ALTER TABLE %s CONVERT TO CHARACTER SET utf8mb4
-                                COLLATE utf8mb4_unicode_ci;''' % str(table[0])
-                    db.execute_sql(cmd_sql)
-                db.execute_sql('SET FOREIGN_KEY_CHECKS=1;')
+            db.execute_sql('SET FOREIGN_KEY_CHECKS=0;')
+            for table in change_tables:
+                log.debug('Changing collation and charset on table %s.',
+                          table[0])
+                cmd_sql = '''ALTER TABLE %s CONVERT TO CHARACTER SET utf8mb4
+                            COLLATE utf8mb4_unicode_ci;''' % str(table[0])
+                db.execute_sql(cmd_sql)
+            db.execute_sql('SET FOREIGN_KEY_CHECKS=1;')
 
 
 def verify_database_schema(db):
-    db.connect()
     if not Versions.table_exists():
         db.create_tables([Versions])
 
@@ -2773,7 +2753,9 @@ def verify_database_schema(db):
         db_ver = Versions.get(Versions.key == 'schema_version').val
 
         if db_ver < db_schema_version:
-            database_migrate(db, db_ver)
+            if not database_migrate(db, db_ver):
+                log.error('Error migrating database')
+                sys.exit(1)
 
         elif db_ver > db_schema_version:
             log.error('Your database version (%i) appears to be newer than '
@@ -2793,10 +2775,7 @@ def database_migrate(db, old_ver):
              old_ver, db_schema_version)
 
     # Perform migrations here.
-    if args.db_type == 'mysql':
-        migrator = MySQLMigrator(db)
-    else:
-        migrator = SqliteMigrator(db)
+    migrator = MySQLMigrator(db)
 
     if old_ver < 2:
         migrate(migrator.add_column('pokestop', 'encounter_id',
@@ -2885,79 +2864,75 @@ def database_migrate(db, old_ver):
         )
 
     if old_ver < 15:
-        # we don't have to touch sqlite because it has REAL and INTEGER only
-        if args.db_type == 'mysql':
-            db.execute_sql('ALTER TABLE `pokemon` '
-                           'MODIFY COLUMN `weight` FLOAT NULL DEFAULT NULL,'
-                           'MODIFY COLUMN `height` FLOAT NULL DEFAULT NULL,'
-                           'MODIFY COLUMN `gender` SMALLINT NULL DEFAULT NULL'
-                           ';')
+        db.execute_sql('ALTER TABLE `pokemon` '
+                       'MODIFY COLUMN `weight` FLOAT NULL DEFAULT NULL,'
+                       'MODIFY COLUMN `height` FLOAT NULL DEFAULT NULL,'
+                       'MODIFY COLUMN `gender` SMALLINT NULL DEFAULT NULL'
+                       ';')
 
     if old_ver < 16:
         log.info('This DB schema update can take some time. '
                  'Please be patient.')
 
         # change some column types from INT to SMALLINT
-        # we don't have to touch sqlite because it has INTEGER only
-        if args.db_type == 'mysql':
-            db.execute_sql(
-                'ALTER TABLE `pokemon` '
-                'MODIFY COLUMN `pokemon_id` SMALLINT NOT NULL,'
-                'MODIFY COLUMN `individual_attack` SMALLINT '
-                'NULL DEFAULT NULL,'
-                'MODIFY COLUMN `individual_defense` SMALLINT '
-                'NULL DEFAULT NULL,'
-                'MODIFY COLUMN `individual_stamina` SMALLINT '
-                'NULL DEFAULT NULL,'
-                'MODIFY COLUMN `move_1` SMALLINT NULL DEFAULT NULL,'
-                'MODIFY COLUMN `move_2` SMALLINT NULL DEFAULT NULL;'
-            )
-            db.execute_sql(
-                'ALTER TABLE `gym` '
-                'MODIFY COLUMN `team_id` SMALLINT NOT NULL,'
-                'MODIFY COLUMN `guard_pokemon_id` SMALLINT NOT NULL;'
-            )
-            db.execute_sql(
-                'ALTER TABLE `scannedlocation` '
-                'MODIFY COLUMN `band1` SMALLINT NOT NULL,'
-                'MODIFY COLUMN `band2` SMALLINT NOT NULL,'
-                'MODIFY COLUMN `band3` SMALLINT NOT NULL,'
-                'MODIFY COLUMN `band4` SMALLINT NOT NULL,'
-                'MODIFY COLUMN `band5` SMALLINT NOT NULL,'
-                'MODIFY COLUMN `midpoint` SMALLINT NOT NULL,'
-                'MODIFY COLUMN `width` SMALLINT NOT NULL;'
-            )
-            db.execute_sql(
-                'ALTER TABLE `spawnpoint` '
-                'MODIFY COLUMN `latest_seen` SMALLINT NOT NULL,'
-                'MODIFY COLUMN `earliest_unseen` SMALLINT NOT NULL;'
-            )
-            db.execute_sql(
-                'ALTER TABLE `spawnpointdetectiondata` '
-                'MODIFY COLUMN `tth_secs` SMALLINT NULL DEFAULT NULL;'
-            )
-            db.execute_sql(
-                'ALTER TABLE `versions` '
-                'MODIFY COLUMN `val` SMALLINT NOT NULL;'
-            )
-            db.execute_sql(
-                'ALTER TABLE `gympokemon` '
-                'MODIFY COLUMN `pokemon_id` SMALLINT NOT NULL,'
-                'MODIFY COLUMN `cp` SMALLINT NOT NULL,'
-                'MODIFY COLUMN `num_upgrades` SMALLINT NULL DEFAULT NULL,'
-                'MODIFY COLUMN `move_1` SMALLINT NULL DEFAULT NULL,'
-                'MODIFY COLUMN `move_2` SMALLINT NULL DEFAULT NULL,'
-                'MODIFY COLUMN `stamina` SMALLINT NULL DEFAULT NULL,'
-                'MODIFY COLUMN `stamina_max` SMALLINT NULL DEFAULT NULL,'
-                'MODIFY COLUMN `iv_defense` SMALLINT NULL DEFAULT NULL,'
-                'MODIFY COLUMN `iv_stamina` SMALLINT NULL DEFAULT NULL,'
-                'MODIFY COLUMN `iv_attack` SMALLINT NULL DEFAULT NULL;'
-            )
-            db.execute_sql(
-                'ALTER TABLE `trainer` '
-                'MODIFY COLUMN `team` SMALLINT NOT NULL,'
-                'MODIFY COLUMN `level` SMALLINT NOT NULL;'
-            )
+        db.execute_sql(
+            'ALTER TABLE `pokemon` '
+            'MODIFY COLUMN `pokemon_id` SMALLINT NOT NULL,'
+            'MODIFY COLUMN `individual_attack` SMALLINT '
+            'NULL DEFAULT NULL,'
+            'MODIFY COLUMN `individual_defense` SMALLINT '
+            'NULL DEFAULT NULL,'
+            'MODIFY COLUMN `individual_stamina` SMALLINT '
+            'NULL DEFAULT NULL,'
+            'MODIFY COLUMN `move_1` SMALLINT NULL DEFAULT NULL,'
+            'MODIFY COLUMN `move_2` SMALLINT NULL DEFAULT NULL;'
+        )
+        db.execute_sql(
+            'ALTER TABLE `gym` '
+            'MODIFY COLUMN `team_id` SMALLINT NOT NULL,'
+            'MODIFY COLUMN `guard_pokemon_id` SMALLINT NOT NULL;'
+        )
+        db.execute_sql(
+            'ALTER TABLE `scannedlocation` '
+            'MODIFY COLUMN `band1` SMALLINT NOT NULL,'
+            'MODIFY COLUMN `band2` SMALLINT NOT NULL,'
+            'MODIFY COLUMN `band3` SMALLINT NOT NULL,'
+            'MODIFY COLUMN `band4` SMALLINT NOT NULL,'
+            'MODIFY COLUMN `band5` SMALLINT NOT NULL,'
+            'MODIFY COLUMN `midpoint` SMALLINT NOT NULL,'
+            'MODIFY COLUMN `width` SMALLINT NOT NULL;'
+        )
+        db.execute_sql(
+            'ALTER TABLE `spawnpoint` '
+            'MODIFY COLUMN `latest_seen` SMALLINT NOT NULL,'
+            'MODIFY COLUMN `earliest_unseen` SMALLINT NOT NULL;'
+        )
+        db.execute_sql(
+            'ALTER TABLE `spawnpointdetectiondata` '
+            'MODIFY COLUMN `tth_secs` SMALLINT NULL DEFAULT NULL;'
+        )
+        db.execute_sql(
+            'ALTER TABLE `versions` '
+            'MODIFY COLUMN `val` SMALLINT NOT NULL;'
+        )
+        db.execute_sql(
+            'ALTER TABLE `gympokemon` '
+            'MODIFY COLUMN `pokemon_id` SMALLINT NOT NULL,'
+            'MODIFY COLUMN `cp` SMALLINT NOT NULL,'
+            'MODIFY COLUMN `num_upgrades` SMALLINT NULL DEFAULT NULL,'
+            'MODIFY COLUMN `move_1` SMALLINT NULL DEFAULT NULL,'
+            'MODIFY COLUMN `move_2` SMALLINT NULL DEFAULT NULL,'
+            'MODIFY COLUMN `stamina` SMALLINT NULL DEFAULT NULL,'
+            'MODIFY COLUMN `stamina_max` SMALLINT NULL DEFAULT NULL,'
+            'MODIFY COLUMN `iv_defense` SMALLINT NULL DEFAULT NULL,'
+            'MODIFY COLUMN `iv_stamina` SMALLINT NULL DEFAULT NULL,'
+            'MODIFY COLUMN `iv_attack` SMALLINT NULL DEFAULT NULL;'
+        )
+        db.execute_sql(
+            'ALTER TABLE `trainer` '
+            'MODIFY COLUMN `team` SMALLINT NOT NULL,'
+            'MODIFY COLUMN `level` SMALLINT NOT NULL;'
+        )
 
         # add some missing indexes
         migrate(
@@ -3014,5 +2989,77 @@ def database_migrate(db, old_ver):
             migrator.add_column('gym', 'total_cp',
                                 SmallIntegerField(null=False, default=0)))
 
+    if old_ver < 21:
+        # First rename all tables being modified.
+        db.execute_sql('RENAME TABLE `pokemon` TO `pokemon_old`;')
+        db.execute_sql(
+            'RENAME TABLE `locationaltitude` TO `locationaltitude_old`;')
+        db.execute_sql(
+            'RENAME TABLE `scannedlocation` TO `scannedlocation_old`;')
+        db.execute_sql('RENAME TABLE `spawnpoint` TO `spawnpoint_old`;')
+        db.execute_sql('RENAME TABLE `spawnpointdetectiondata` TO ' +
+                       '`spawnpointdetectiondata_old`;')
+        db.execute_sql('RENAME TABLE `gymmember` TO `gymmember_old`;')
+        db.execute_sql('RENAME TABLE `gympokemon` TO `gympokemon_old`;')
+        db.execute_sql(
+            'RENAME TABLE `scanspawnpoint`  TO `scanspawnpoint_old`;')
+        # Then create all tables that we renamed with the proper fields.
+        create_tables(db)
+        # Insert data back with the correct format
+        db.execute_sql(
+            'INSERT INTO `pokemon` SELECT ' +
+            'FROM_BASE64(encounter_id) as encounter_id, ' +
+            'CONV(spawnpoint_id, 16,10) as spawnpoint_id, ' +
+            'pokemon_id, latitude, longitude, disappear_time, ' +
+            'individual_attack, individual_defense, individual_stamina, ' +
+            'move_1, move_2, cp, cp_multiplier, weight, height, gender, ' +
+            'form, last_modified ' +
+            'FROM `pokemon_old`;')
+        db.execute_sql(
+            'INSERT INTO `locationaltitude` SELECT ' +
+            'CONV(cellid, 16,10) as cellid, ' +
+            'latitude, longitude, last_modified, altitude ' +
+            'FROM `locationaltitude_old`;')
+        db.execute_sql(
+            'INSERT INTO `scannedlocation` SELECT ' +
+            'CONV(cellid, 16,10) as cellid, ' +
+            'latitude, longitude, last_modified, done, band1, band2, band3, ' +
+            'band4, band5, midpoint, width ' +
+            'FROM `scannedlocation_old`;')
+        db.execute_sql(
+            'INSERT INTO `spawnpoint` SELECT ' +
+            'CONV(id, 16,10) as id, ' +
+            'latitude, longitude, last_scanned, kind, links, missed_count, ' +
+            'latest_seen, earliest_unseen ' +
+            'FROM `spawnpoint_old`;')
+        db.execute_sql(
+            'INSERT INTO `spawnpointdetectiondata` ' +
+            '(encounter_id, spawnpoint_id, scan_time, tth_secs) SELECT ' +
+            'FROM_BASE64(encounter_id) as encounter_id, ' +
+            'CONV(spawnpoint_id, 16,10) as spawnpoint_id, ' +
+            'scan_time, tth_secs ' +
+            'FROM `spawnpointdetectiondata_old`;')
+        # A simple alter table does not work ¯\_(ツ)_/¯
+        db.execute_sql(
+            'INSERT INTO `gymmember` SELECT * FROM `gymmember_old`;')
+        db.execute_sql(
+            'INSERT INTO `gympokemon` SELECT * FROM `gympokemon_old`;')
+        db.execute_sql(
+            'INSERT INTO `scanspawnpoint` SELECT ' +
+            'CONV(scannedlocation_id, 16,10) as scannedlocation_id, ' +
+            'CONV(spawnpoint_id, 16,10) as spawnpoint_id ' +
+            'FROM `scanspawnpoint_old`;')
+        db.execute_sql(
+            'ALTER TABLE `pokestop` MODIFY active_fort_modifier SMALLINT(6);')
+        # Drop all _old tables
+        db.execute_sql('DROP TABLE `scanspawnpoint_old`;')
+        db.execute_sql('DROP TABLE `pokemon_old`;')
+        db.execute_sql('DROP TABLE `locationaltitude_old`;')
+        db.execute_sql('DROP TABLE `spawnpointdetectiondata_old`;')
+        db.execute_sql('DROP TABLE `scannedlocation_old`;')
+        db.execute_sql('DROP TABLE `spawnpoint_old`;')
+        db.execute_sql('DROP TABLE `gymmember_old`;')
+        db.execute_sql('DROP TABLE `gympokemon_old`;')
     # Always log that we're done.
     log.info('Schema upgrade complete.')
+    return True
