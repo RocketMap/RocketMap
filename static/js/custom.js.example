@@ -1,14 +1,15 @@
 $(function () {
     'use strict'
 
-    // Marker cluster might have loaded before custom.js.
-    const isMarkerClusterLoaded = typeof window.markerCluster !== 'undefined' && !!window.markerCluster
-
     /* Settings. */
 
+    const showSearchMarker = true // Show a marker on the map's scan location. Default: false.
+    const isSearchMarkerMovable = false // Let the user move the scan location marker around. Doesn't do anything without --no-fixed-location. Default: false.
+    const showLocationMarker = true // Show a marker on the visitor's location. Default: false.
+    const isLocationMarkerMovable = false // Let the user move the visitor marker around. Default: false.
     const scaleByRarity = true // Enable scaling by rarity. Default: true.
     const upscalePokemon = false // Enable upscaling of certain Pokemon (upscaledPokemon and notify list). Default: false.
-    const upscaledPokemon = [] // Add Pokémon IDs separated by commas (e.g. [1, 2, 3]) to upscale icons.
+    const upscaledPokemon = [] // Add Pokémon IDs separated by commas (e.g. [1, 2, 3]) to upscale icons. Default: [].
 
     // Google Analytics property ID. Leave empty to disable.
     // Looks like 'UA-XXXXX-Y'.
@@ -33,17 +34,19 @@ $(function () {
     ]
 
     // Clustering! Different zoom levels for desktop vs mobile.
-    const disableClusters = false // Default: false
-    const maxClusterZoomLevel = 14 // Default: 14
-    const maxClusterZoomLevelMobile = 14 // Default: same as desktop
-    const clusterZoomOnClick = false // Default: false
-    const clusterZoomOnClickMobile = false // Default: same as desktop
-    const clusterGridSize = 60 // Default: 60
-    const clusterGridSizeMobile = 60 // Default: same as desktop
+    const disableClusters = false // Default: false.
+    const maxClusterZoomLevel = 14 // Default: 14.
+    const maxClusterZoomLevelMobile = 14 // Default: 14.
+    const clusterZoomOnClick = false // Default: false.
+    const clusterZoomOnClickMobile = false // Default: false.
+    const clusterGridSize = 60 // Default: 60.
+    const clusterGridSizeMobile = 60 // Default: 60.
 
     // Process Pokémon in chunks to improve responsiveness.
-    const processPokemonChunkSize = 100 // Default: 100
-    const processPokemonIntervalMs = 100 // Default: 100ms
+    const processPokemonChunkSize = 100 // Default: 100.
+    const processPokemonIntervalMs = 100 // Default: 100ms.
+    const processPokemonChunkSizeMobile = 100 // Default: 100.
+    const processPokemonIntervalMsMobile = 100 // Default: 100ms.
 
 
     /* Feature detection. */
@@ -63,7 +66,8 @@ $(function () {
     /* Do stuff. */
 
     const currentPage = window.location.pathname
-
+    // Marker cluster might have loaded before custom.js.
+    const isMarkerClusterLoaded = typeof window.markerCluster !== 'undefined' && !!window.markerCluster
 
     // Set custom Store values.
     Store.set('maxClusterZoomLevel', maxClusterZoomLevel)
@@ -74,11 +78,17 @@ $(function () {
     Store.set('scaleByRarity', scaleByRarity)
     Store.set('upscalePokemon', upscalePokemon)
     Store.set('upscaledPokemon', upscaledPokemon)
+    Store.set('showSearchMarker', showSearchMarker)
+    Store.set('isSearchMarkerMovable', isSearchMarkerMovable)
+    Store.set('showLocationMarker', showLocationMarker)
+    Store.set('isLocationMarkerMovable', isLocationMarkerMovable)
 
     if (typeof window.orientation !== 'undefined' || isMobileDevice()) {
         Store.set('maxClusterZoomLevel', maxClusterZoomLevelMobile)
         Store.set('clusterZoomOnClick', clusterZoomOnClickMobile)
         Store.set('clusterGridSize', clusterGridSizeMobile)
+        Store.set('processPokemonChunkSize', processPokemonChunkSizeMobile)
+        Store.set('processPokemonIntervalMs', processPokemonIntervalMsMobile)
     }
 
     if (disableClusters) {

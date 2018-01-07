@@ -1033,6 +1033,22 @@ var StoreOptions = {
     'isBounceDisabled': {
         default: false,
         type: StoreTypes.Boolean
+    },
+    'showLocationMarker': {
+        default: true,
+        type: StoreTypes.Boolean
+    },
+    'isLocationMarkerMovable': {
+        default: false,
+        type: StoreTypes.Boolean
+    },
+    'showSearchMarker': {
+        default: true,
+        type: StoreTypes.Boolean
+    },
+    'isSearchMarkerMovable': {
+        default: false,
+        type: StoreTypes.Boolean
     }
 }
 

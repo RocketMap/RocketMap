@@ -169,9 +169,7 @@ class Pogom(Flask):
         if args.on_demand_timeout > 0:
             self.control_flags['on_demand'].clear()
 
-        search_display = True if (args.search_control and
-                                  args.on_demand_timeout <= 0) else False
-
+        search_display = (args.search_control and args.on_demand_timeout <= 0)
         scan_display = False if (args.only_server or args.fixed_location or
                                  args.spawnpoint_scanning) else True
 
