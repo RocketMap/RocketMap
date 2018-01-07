@@ -7,7 +7,6 @@ import logging
 import time
 import re
 import ssl
-import json
 import requests
 
 from distutils.version import StrictVersion
@@ -23,7 +22,7 @@ from pogom.utils import (get_args, now, gmaps_reverse_geolocate,
 from pogom.altitude import get_gmaps_altitude
 
 from pogom.models import (init_database, create_tables, drop_tables,
-                          PlayerLocale, SpawnPoint, db_updater, clean_db_loop,
+                          PlayerLocale, db_updater, clean_db_loop,
                           verify_table_encoding, verify_database_schema)
 from pogom.webhook import wh_updater
 
@@ -407,20 +406,6 @@ def main():
                 'Existing player locale has been retrieved from the DB.')
 
         # Gather the Pokemon!
-
-        # Attempt to dump the spawn points (do this before starting threads of
-        # endure the woe).
-        if (args.spawnpoint_scanning and
-                args.spawnpoint_scanning != 'nofile' and
-                args.dump_spawnpoints):
-            with open(args.spawnpoint_scanning, 'w+') as file:
-                log.info(
-                    'Saving spawn points to %s', args.spawnpoint_scanning)
-                spawns = SpawnPoint.get_spawnpoints_in_hex(
-                    position, args.step_limit)
-                file.write(json.dumps(spawns))
-                log.info('Finished exporting spawn points')
-
         argset = (args, new_location_queue, control_flags,
                   heartbeat, db_updates_queue, wh_updates_queue)
 

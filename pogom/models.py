@@ -7,7 +7,6 @@ import calendar
 import sys
 import gc
 import time
-import geopy
 import math
 
 from peewee import (InsertQuery, Check, CompositeKey, ForeignKeyField,
@@ -1270,63 +1269,6 @@ class SpawnPoint(LatLongModel):
             del sp['earliest_unseen']
 
         return list(spawnpoints.values())
-
-    @staticmethod
-    def get_spawnpoints_in_hex(center, steps):
-
-        log.info('Finding spawnpoints {} steps away.'.format(steps))
-
-        n, e, s, w = hex_bounds(center, steps)
-
-        query = (SpawnPoint
-                 .select(SpawnPoint.latitude.alias('lat'),
-                         SpawnPoint.longitude.alias('lng'),
-                         SpawnPoint.id,
-                         SpawnPoint.earliest_unseen,
-                         SpawnPoint.latest_seen,
-                         SpawnPoint.kind,
-                         SpawnPoint.links,
-                         ))
-        query = (query.where((SpawnPoint.latitude <= n) &
-                             (SpawnPoint.latitude >= s) &
-                             (SpawnPoint.longitude >= w) &
-                             (SpawnPoint.longitude <= e)
-                             ))
-        # Sqlite doesn't support distinct on columns.
-        if args.db_type == 'mysql':
-            query = query.distinct(SpawnPoint.id)
-        else:
-            query = query.group_by(SpawnPoint.id)
-
-        with SpawnPoint.database().execution_context():
-            s = list(query.dicts())
-
-        # The distance between scan circles of radius 70 in a hex is 121.2436
-        # steps - 1 to account for the center circle then add 70 for the edge.
-        step_distance = ((steps - 1) * 121.2436) + 70
-        # Compare spawnpoint list to a circle with radius steps * 120.
-        # Uses the direct geopy distance between the center and the spawnpoint.
-        filtered = []
-
-        for idx, sp in enumerate(s):
-            if geopy.distance.distance(
-                    center, (sp['lat'], sp['lng'])).meters <= step_distance:
-                filtered.append(s[idx])
-
-        # We use 'time' as appearance time as this was how things worked
-        # previously we now also include 'disappear_time' because we
-        # can and it is meaningful in a list of spawn data
-        # the other changes also maintain a similar file format
-        for sp in filtered:
-            sp['time'], sp['disappear_time'] = SpawnPoint.start_end(sp)
-            del sp['earliest_unseen']
-            del sp['latest_seen']
-            del sp['kind']
-            del sp['links']
-            sp['spawnpoint_id'] = sp['id']
-            del sp['id']
-
-        return filtered
 
     # Confirm if tth has been found.
     @staticmethod

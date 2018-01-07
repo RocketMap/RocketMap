@@ -904,7 +904,7 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
 
                 status['message'] = messages['wait']
                 # The next_item will return the value telling us how long
-                # to sleep. This way the status can be updated
+                # to sleep. This way the status can be updated.
                 time.sleep(wait)
 
                 # Using step as a flag for no valid next location returned.

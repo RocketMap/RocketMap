@@ -100,3 +100,43 @@ def jitter_location(location=None, max_meters=5):
     distance = math.sqrt(random.random()) * (float(max_meters))
     destination = fast_get_new_coords(origin, distance, bearing)
     return (destination[0], destination[1], location[2])
+
+
+# Computes the intermediate point at any fraction along the great circle path.
+def intermediate_point(pos1, pos2, fraction):
+    if pos1 == pos2:
+        return pos1
+
+    lat1 = math.radians(pos1[0])
+    lon1 = math.radians(pos1[1])
+    lat2 = math.radians(pos2[0])
+    lon2 = math.radians(pos2[1])
+
+    # Spherical Law of Cosines.
+    slc = (math.sin(lat1) * math.sin(lat2) +
+           math.cos(lat1) * math.cos(lat2) * math.cos(lon2 - lon1))
+
+    if slc > 1:
+        # Locations are too close to each other.
+        return pos1 if fraction < 0.5 else pos2
+
+    delta = math.acos(slc)
+
+    if delta == 0:
+        # Locations are too close to each other.
+        return pos1 if fraction < 0.5 else pos2
+
+    # Intermediate point.
+    a = math.sin((1 - fraction) * delta) / delta
+    b = math.sin(fraction * delta) / delta
+    x = (a * math.cos(lat1) * math.cos(lon1) +
+         b * math.cos(lat2) * math.cos(lon2))
+    y = (a * math.cos(lat1) * math.sin(lon1) +
+         b * math.cos(lat2) * math.sin(lon2))
+    z = a * math.sin(lat1) + b * math.sin(lat2)
+
+    lat3 = math.atan2(z, math.sqrt(x**2 + y**2))
+    lon3 = math.atan2(y, x)
+
+    return (((math.degrees(lat3) + 540) % 360) - 180,
+            ((math.degrees(lon3) + 540) % 360) - 180)

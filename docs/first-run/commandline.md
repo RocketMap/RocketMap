@@ -19,7 +19,7 @@
                     [-msl MIN_SECONDS_LEFT] [-dc] [-H HOST] [-P PORT]
                     [-L LOCALE] [-c] [-m MOCK] [-ns] [-os] [-sc] [-nfl] -k
                     GMAPS_KEY [--skip-empty] [-C] [-D DB] [-cd] [-np] [-ng]
-                    [-nr] [-nk] [-ss [SPAWNPOINT_SCANNING]] [-speed] [-spin]
+                    [-nr] [-nk] [-ss] [-ssct SS_CLUSTER_TIME] [-speed] [-spin]
                     [-ams ACCOUNT_MAX_SPINS] [-kph KPH] [-hkph HLVL_KPH]
                     [-ldur LURE_DURATION] [--dump-spawnpoints]
                     [-pd PURGE_DATA] [-px PROXY] [-pxsc]
@@ -251,10 +251,13 @@
                             into local db). [env var: POGOMAP_NO_RAIDS]
       -nk, --no-pokestops   Disables PokeStops from the map (including parsing
                             them into local db). [env var: POGOMAP_NO_POKESTOPS]
-      -ss [SPAWNPOINT_SCANNING], --spawnpoint-scanning [SPAWNPOINT_SCANNING]
+      -ss, --spawnpoint-scanning
                             Use spawnpoint scanning (instead of hex grid). Scans
                             in a circle based on step_limit when on DB. [env var:
                             POGOMAP_SPAWNPOINT_SCANNING]
+      -ssct SS_CLUSTER_TIME, --ss-cluster-time SS_CLUSTER_TIME
+                            Time threshold in seconds for spawn point clustering
+                            (0 to disable). [env var: POGOMAP_SS_CLUSTER_TIME]
       -speed, --speed-scan  Use speed scanning to identify spawn points and then
                             scan closest spawns. [env var: POGOMAP_SPEED_SCAN]
       -spin, --pokestop-spinning
