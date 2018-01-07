@@ -188,7 +188,7 @@ def __wh_future_completed(future):
         exc = future.exception(timeout=0)
 
         if exc:
-            log.exception("Something's wrong with your webhook: %s.", exc)
+            log.warning("Something's wrong with your webhook: %s.", exc)
     except Exception as ex:
         log.exception('Unexpected exception in exception info: %s.', ex)
 
