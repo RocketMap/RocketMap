@@ -18,6 +18,21 @@
     font-weight: 900;
     margin-bottom: 2px;
     text-decoration: underline;
+
+    .team {
+      &.uncontested {
+        color: rgba(85,85,85,1);
+      }
+      &.mystic {
+        color: rgba(0,134,255,1);
+      }
+      &.valor {
+        color: rgba(255,26,26,1);
+      }
+      &.instinct {
+        color: rgba(255,159,25,1);
+      }
+    }
   }
 
   &.sprite {

@@ -601,7 +601,7 @@ class Gym(LatLongModel):
                    .join(Trainer, on=(GymPokemon.trainer_name == Trainer.name))
                    .where(GymMember.gym_id == id)
                    .where(GymMember.last_scanned > Gym.last_modified)
-                   .order_by(GymMember.cp_decayed.desc())
+                   .order_by(GymMember.deployment_time.desc())
                    .distinct()
                    .dicts())
 
