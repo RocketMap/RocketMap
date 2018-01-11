@@ -14,8 +14,6 @@
 # Other shared settings 
 ###################
 
-#db-type:                       # sqlite (default) or mysql
-#db:                            # Database filename for SQLite. (default='pogom.db')
 #db-host:                       # Required for mysql ()
 #db-name:                       # Required for mysql
 #db-user:                       # Required for mysql
