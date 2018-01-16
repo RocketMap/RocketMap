@@ -379,6 +379,7 @@ Note: `raid` events use the same event type and fields as `egg` events, but the 
 | Field        | Details                                                           | Example      |
 | ------------ | ----------------------------------------------------------------- | ------------ |
 | `gym_id`     | The gym's unique ID | `"NGY2ZjBjY2Y3OTUyNGQyZW`<br>`FlMjc3ODkzODM2YmI1Y2YuMTY="` |
+| `team_id`    | The team that currently controls the gym<sup>1</sup>              |          `1` |
 | `latitude`   | The gym's latitude                                                |  `43.599321` |
 | `longitude`  | The gym's longitude                                               |   `5.181415` |
 | `spawn`      | The time at which the raid spawned                                | `1500992342` |
@@ -389,6 +390,15 @@ Note: `raid` events use the same event type and fields as `egg` events, but the 
 | `cp`         | The raid boss's CP                                                |      `42753` |
 | `move_1`     | The raid boss's quick move                                        |        `274` |
 | `move_2`     | The raid boss's charge move                                       |        `275` |
+
+1. The teams are represented by the values:
+
+| Value   | Team        |
+| ------- | ----------- |
+| `0`     | Uncontested |
+| `1`     | Mystic      |
+| `2`     | Valor       |
+| `3`     | Instinct    |
 
 ### `tth`
 
