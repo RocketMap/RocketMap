@@ -12,9 +12,10 @@ from enum import Enum
 sys.path.append('.')
 from pogom.schedulers import KeyScheduler  # noqa: E402
 from pogom.account import (check_login, setup_api, pokestop_spinnable,
-                           spin_pokestop, TooManyLoginAttempts, LoginSequenceFail)  # noqa: E402
+                           spin_pokestop, TooManyLoginAttempts)  # noqa: E402
 from pogom.utils import get_args, gmaps_reverse_geolocate  # noqa: E402
-from pogom.apiRequests import (get_map_objects as gmo, AccountBannedException)  # noqa: E402
+from pogom.apiRequests import (get_map_objects as gmo,
+                               AccountBannedException)  # noqa: E402
 from runserver import (set_log_and_verbosity, startup_db,
                        extract_coordinates)  # noqa: E402
 from pogom.proxy import initialize_proxies  # noqa: E402
@@ -30,9 +31,9 @@ class FakeQueue:
 class ErrorType(Enum):
     generic = 1
     captcha = 2
-    noStops = 3
+    no_stops = 3
     banned = 4
-    loginError = 5
+    login_error = 5
 
 
 def get_location_forts(api, account, location):
@@ -46,7 +47,7 @@ def get_location_forts(api, account, location):
     for i, cell in enumerate(cells):
         forts += cell.forts
     if not forts:
-        return (ErrorType.noStops, None)
+        return (ErrorType.no_stops, None)
     return (None, forts)
 
 
@@ -92,9 +93,9 @@ def level_up_account(args, location, accounts, errors):
             log.info('Account %s, level %d.', account['username'],
                      account['level'])
         except TooManyLoginAttempts:
-                errors[ErrorType.loginError].append(account)
+            errors[ErrorType.login_error].append(account)
         except AccountBannedException:
-                errors[ErrorType.banned].append(account)
+            errors[ErrorType.banned].append(account)
         except Exception as e:
             if error_count < 2:
                 log.exception('Exception in worker: %s. retrying.', e)
