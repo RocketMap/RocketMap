@@ -25,7 +25,7 @@
 #speed-scan                     # Use speed-scan as the search scheduler.
 #location:                      # Location, can be an address or coordinates.
 #step-limit:                    # Steps (default=10)
-#scan-delay:                    # Time delay between requests in scan threads. (default=12)
+#scan-delay:                    # Time delay between requests in scan threads. (default=10)
 #no-gyms                        # Disables gym scanning (default=False)
 #no-pokemon                     # Disables pokemon scanning. (default=False)
 #no-pokestops                   # Disables pokestop scanning. (default=False)
