@@ -342,7 +342,7 @@
       &.sprite {
         @media screen and (max-width: 480px) {
           height: 48px !important;
-          width:: 48px !important;
+          width: 48px !important;
         }
         display: block;
         height: 96px;
@@ -351,7 +351,7 @@
         &.pokemon {
           @media screen and (max-width: 480px) {
             height: 30px !important;
-            width:: 30px !important;
+            width: 30px !important;
           }
           display: block;
           height: 48px;
@@ -391,7 +391,7 @@
         &.strength {
           @media screen and (max-width: 480px) {
             height: 12px !important;
-            width:: 12px !important;
+            width: 12px !important;
           }
           font-weight: 900;
           height: 16px;
@@ -402,6 +402,7 @@
 
       &.pokemon {
         font-size: 12px;
+        line-height: 1rem;
 
         &.motivation.decayed:before {
           content: '\f004';
