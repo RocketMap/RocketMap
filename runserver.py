@@ -267,9 +267,9 @@ def main():
     # Stop if we're just looking for a debug dump.
     if args.dump:
         log.info('Retrieving environment info...')
-        hastebin = get_debug_dump_link()
+        hastebin_id = get_debug_dump_link()
         log.info('Done! Your debug link: https://hastebin.com/%s.txt',
-                 hastebin)
+                 hastebin_id)
         sys.exit(1)
 
     # Let's not forget to run Grunt / Only needed when running with webserver.
@@ -277,10 +277,11 @@ def main():
         sys.exit(1)
 
     if args.no_version_check and not args.only_server:
-            log.warning('You are running RocketMap in No Version Check mode. '
-                        'If you don\'t know what you\'re doing, this mode '
-                        'can have consequences, and you will not receive '
-                        'support running in NoVC mode. You have been warned.')
+        log.warning('You are running RocketMap in No Version Check mode. '
+                    "If you don't know what you're doing, this mode "
+                    'can have negative consequences, and you will not '
+                    'receive support running in NoVC mode. '
+                    'You have been warned.')
 
     position = extract_coordinates(args.location)
 
@@ -288,7 +289,7 @@ def main():
     (altitude, status) = get_gmaps_altitude(position[0], position[1],
                                             args.gmaps_key)
     if altitude is not None:
-        log.debug('Local altitude is: %sm', altitude)
+        log.debug('Local altitude is: %sm.', altitude)
         position = (position[0], position[1], altitude)
     else:
         if status == 'REQUEST_DENIED':
@@ -301,17 +302,18 @@ def main():
             log.error('Unable to retrieve altitude from Google APIs' +
                       'setting to 0')
 
-    log.info('Parsed location is: %.4f/%.4f/%.4f (lat/lng/alt)',
+    log.info('Parsed location is: %.4f/%.4f/%.4f (lat/lng/alt).',
              position[0], position[1], position[2])
 
-    if args.no_pokemon:
-        log.info('Parsing of Pokemon disabled.')
-    if args.no_pokestops:
-        log.info('Parsing of Pokestops disabled.')
-    if args.no_gyms:
-        log.info('Parsing of Gyms disabled.')
-    if args.encounter:
-        log.info('Encountering pokemon enabled.')
+    # Scanning toggles.
+    log.info('Parsing of Pokemon %s.',
+             'disabled' if args.no_pokemon else 'enabled')
+    log.info('Parsing of Pokestops %s.',
+             'disabled' if args.no_pokestops else 'enabled')
+    log.info('Parsing of Gyms %s.',
+             'disabled' if args.no_gyms else 'enabled')
+    log.info('Pokemon encounters %s.',
+             'enabled' if args.encounter else 'disabled')
 
     app = None
     if not args.no_server and not args.clear_db:
@@ -368,7 +370,7 @@ def main():
     wh_updates_queue = Queue()
     wh_key_cache = {}
 
-    if len(args.wh_types) == 0:
+    if not args.wh_types:
         log.info('Webhook disabled.')
     else:
         log.info('Webhook enabled for events: sending %s to %s.',
@@ -384,6 +386,14 @@ def main():
             t.start()
 
     if not args.only_server:
+        # Speed limit.
+        log.info('Scanning speed limit %s.',
+                 'set to {} km/h'.format(args.kph)
+                 if args.kph > 0 else 'disabled')
+        log.info('High-level speed limit %s.',
+                 'set to {} km/h'.format(args.hlvl_kph)
+                 if args.hlvl_kph > 0 else 'disabled')
+
         # Check if we are able to scan.
         if not can_start_scanning(args):
             sys.exit(1)

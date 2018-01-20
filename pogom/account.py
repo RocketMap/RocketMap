@@ -706,11 +706,12 @@ class AccountSet(object):
                 # Check if we're below speed limit for account.
                 last_scanned = account.get('last_scanned', False)
 
-                if last_scanned:
+                if last_scanned and self.kph > 0:
                     seconds_passed = now - last_scanned
                     old_coords = account.get('last_coords', coords_to_scan)
 
                     distance_m = distance(old_coords, coords_to_scan)
+
                     cooldown_time_sec = distance_m / self.kph * 3.6
 
                     # Not enough time has passed for this one.

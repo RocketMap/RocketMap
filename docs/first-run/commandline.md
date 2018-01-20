@@ -262,11 +262,11 @@ which override config file values which override defaults.
                             Maximum number of Pokestop spins per hour. [env var:
                             POGOMAP_ACCOUNT_MAX_SPINS]
       -kph KPH, --kph KPH   Set a maximum speed in km/hour for scanner movement.
-                            [env var: POGOMAP_KPH]
+                            0 to disable. Default: 35. [env var: POGOMAP_KPH]
       -hkph HLVL_KPH, --hlvl-kph HLVL_KPH
                             Set a maximum speed in km/hour for scanner movement,
-                            for high-level (L30) accounts. [env var:
-                            POGOMAP_HLVL_KPH]
+                            for high-level (L30) accounts. 0 to disable.
+                            Default: 25. [env var: POGOMAP_HLVL_KPH]
       -ldur LURE_DURATION, --lure-duration LURE_DURATION
                             Change duration for lures set on pokestops. This is
                             useful for events that extend lure duration. [env var:

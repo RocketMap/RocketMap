@@ -4,13 +4,14 @@ Speed Scheduler is an alternative scheduler to Hex Scan or Spawnpoint Scan with 
 
 ## Features
 
-* Limit speed according to default of 35 kph or by setting -kph
+* Limit regular scanning speed according to default of 35 km/h or by setting -kph. 0 to disable.
+* Limit high-level account encounter speed according to default of 25 km/h or by setting --hlvl-kph. 0 to disable.
 * Do an initial scan of the full area, then automatically switch to tracking down the exact spawn time (finding the TTH) and only scan for spawns (an -ss like behaviour).
 * Add spawn point type identification of the three current types of spawn points -- 15, 30, and 60 minute spawns.
-* Change spawn point scans to correct spawn time according to spawnpoint type
-* Add scans to complete identification for partially identified spawn points
-* Dynamically identify and check duration of new spawn points without requiring return to Hex scanning
-* Identify spawn points that have been removed and stop scanning them
+* Change spawn point scans to correct spawn time according to spawnpoint type.
+* Add scans to complete identification for partially identified spawn points.
+* Dynamically identify and check duration of new spawn points without requiring return to Hex scanning.
+* Identify spawn points that have been removed and stop scanning them.
 
 To use Speed Scheduler, always put -speed in the command line or set `speed-scan` in your config file.
 

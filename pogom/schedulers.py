@@ -457,7 +457,7 @@ class SpawnScan(BaseScheduler):
         wait_msg = 'Waiting for item from queue.'
 
         worker_loc = (status['latitude'], status['longitude'])
-        if worker_loc[0] and worker_loc[1] and self.args.kph:
+        if worker_loc[0] and worker_loc[1] and self.args.kph > 0:
             now_date = datetime.utcnow()
             last_action = status['last_scan_date']
             meters = distance(step_location, worker_loc)
@@ -972,7 +972,7 @@ class SpeedScan(HexSearch):
 
                 # If we are going to get there before it starts then ignore.
                 loc = item['loc']
-                if worker_loc:
+                if worker_loc and self.args.kph > 0:
                     meters = distance(loc, worker_loc)
                     secs_to_arrival = meters / self.args.kph * 3.6
                     secs_waited = (now_date - last_action).total_seconds()
@@ -980,6 +980,7 @@ class SpeedScan(HexSearch):
                 else:
                     meters = 0
                     secs_to_arrival = 0
+
                 if ms + secs_to_arrival < item['start']:
                     count_early += 1
                     continue
@@ -1020,8 +1021,7 @@ class SpeedScan(HexSearch):
                           min_parked_time_remaining,
                           min_fresh_band_time_remaining)
             else:
-                log.debug('Enumerating queue found best location: %s.',
-                          repr(best))
+                log.debug('Enumerating queue found best location: %s.', best)
 
             loc = best.get('loc', [])
             step = best.get('step', 0)
@@ -1060,8 +1060,9 @@ class SpeedScan(HexSearch):
                 return -1, 0, 0, 0, messages, 0
 
             meters = distance(loc, worker_loc) if worker_loc else 0
-            if (meters > (now_date - last_action).total_seconds() *
-                    self.args.kph / 3.6):
+            if self.args.kph > 0 and (meters >
+                                      (now_date - last_action).total_seconds()
+                                      * self.args.kph / 3.6):
                 # Flag item as "parked" by a specific thread, because
                 # we're waiting for it. This will avoid all threads "walking"
                 # to the same item.
