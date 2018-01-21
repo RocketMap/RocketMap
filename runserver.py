@@ -18,7 +18,8 @@ from flask_cache_bust import init_cache_busting
 
 from pogom.app import Pogom
 from pogom.utils import (get_args, now, gmaps_reverse_geolocate,
-                         log_resource_usage_loop, get_debug_dump_link)
+                         log_resource_usage_loop, get_debug_dump_link,
+                         dynamic_loading_refresher)
 from pogom.altitude import get_gmaps_altitude
 
 from pogom.models import (init_database, create_tables, drop_tables,
@@ -400,7 +401,35 @@ def main():
 
         initialize_proxies(args)
 
-        # Update player locale if not set correctly, yet.
+        # Monitor files, update data if they've changed recently.
+        # Keys are 'args' object keys, values are filenames to load.
+        files_to_monitor = {}
+
+        if args.encounter:
+            files_to_monitor['enc_whitelist'] = args.enc_whitelist_file
+            log.info('Encounters are enabled.')
+        else:
+            log.info('Encounters are disabled.')
+
+        if args.webhook_blacklist_file:
+            files_to_monitor['webhook_blacklist'] = args.webhook_blacklist_file
+            log.info('Webhook blacklist is enabled.')
+        elif args.webhook_whitelist_file:
+            files_to_monitor['webhook_whitelist'] = args.webhook_whitelist_file
+            log.info('Webhook whitelist is enabled.')
+        else:
+            log.info('Webhook whitelist/blacklist is disabled.')
+
+        if files_to_monitor:
+            t = Thread(target=dynamic_loading_refresher,
+                       name='dynamic-enclist', args=(files_to_monitor,))
+            t.daemon = True
+            t.start()
+            log.info('Dynamic list refresher is enabled.')
+        else:
+            log.info('Dynamic list refresher is disabled.')
+
+        # Update player locale if not set correctly yet.
         args.player_locale = PlayerLocale.get_locale(args.location)
         if not args.player_locale:
             args.player_locale = gmaps_reverse_geolocate(

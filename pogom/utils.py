@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import configargparse
 import os
 import json
 import logging
@@ -14,6 +13,7 @@ import hashlib
 import psutil
 import subprocess
 import requests
+import configargparse
 
 from s2sphere import CellId, LatLng
 from geopy.geocoders import GoogleV3
@@ -850,6 +850,38 @@ def i8ln(word):
         return i8ln.dictionary[word]
     else:
         return word
+
+
+# Thread function for periodical enc list updating.
+def dynamic_loading_refresher(file_list):
+    # We're on a 60-second timer.
+    refresh_time_sec = 60
+
+    while True:
+        # Wait (x-1) seconds before refresh, min. 1s.
+        time.sleep(max(1, refresh_time_sec - 1))
+
+        for arg_type, filename in file_list.items():
+            try:
+                # IV/CP scanning.
+                if filename:
+                    # Only refresh if the file has changed.
+                    current_time_sec = time.time()
+                    file_modified_time_sec = os.path.getmtime(filename)
+                    time_diff_sec = current_time_sec - file_modified_time_sec
+
+                    # File has changed in the last refresh_time_sec seconds.
+                    if time_diff_sec < refresh_time_sec:
+                        args = get_args()
+                        with open(filename) as f:
+                            new_list = frozenset([int(l.strip()) for l in f])
+                            setattr(args, arg_type, new_list)
+                            log.info('New %s is: %s.', arg_type, new_list)
+                    else:
+                        log.debug('No change found in %s.', filename)
+            except Exception as e:
+                log.exception('Exception occurred while' +
+                              ' updating %s: %s.', arg_type, e)
 
 
 def get_pokemon_data(pokemon_id):
