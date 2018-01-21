@@ -3,6 +3,7 @@
 
 import calendar
 import logging
+import gc
 
 from flask import Flask, abort, jsonify, render_template, request,\
     make_response, send_from_directory
@@ -16,11 +17,35 @@ from bisect import bisect_left
 from .models import (Pokemon, Gym, Pokestop, ScannedLocation,
                      MainWorker, WorkerStatus, Token, HashKeys,
                      SpawnPoint)
-from .utils import now, dottedQuadToNum
+from .utils import (get_pokemon_name, get_pokemon_types, get_pokemon_rarity,
+                    now, dottedQuadToNum)
+from .transform import transform_from_wgs_to_gcj
 from .blacklist import fingerprints, get_ip_blacklist
 
 log = logging.getLogger(__name__)
 compress = Compress()
+
+
+def convert_pokemon_list(pokemon):
+    args = get_args()
+    # Performance:  disable the garbage collector prior to creating a
+    # (potentially) large dict with append().
+    gc.disable()
+
+    pokemon_result = []
+    for p in pokemon:
+        p['pokemon_name'] = get_pokemon_name(p['pokemon_id'])
+        p['pokemon_rarity'] = get_pokemon_rarity(p['pokemon_id'])
+        p['pokemon_types'] = get_pokemon_types(p['pokemon_id'])
+        p['encounter_id'] = str(p['encounter_id'])
+        if args.china:
+            p['latitude'], p['longitude'] = \
+                transform_from_wgs_to_gcj(p['latitude'], p['longitude'])
+        pokemon_result.append(p)
+
+    # Re-enable the GC.
+    gc.enable()
+    return pokemon
 
 
 class Pogom(Flask):
@@ -283,24 +308,33 @@ class Pogom(Flask):
                 not args.no_pokemon):
             if request.args.get('ids'):
                 ids = [int(x) for x in request.args.get('ids').split(',')]
-                d['pokemons'] = Pokemon.get_active_by_id(ids, swLat, swLng,
-                                                         neLat, neLng)
+                d['pokemons'] = convert_pokemon_list(
+                    Pokemon.get_active_by_id(ids, swLat, swLng, neLat, neLng))
             elif lastpokemon != 'true':
                 # If this is first request since switch on, load
                 # all pokemon on screen.
-                d['pokemons'] = Pokemon.get_active(swLat, swLng, neLat, neLng)
+                d['pokemons'] = convert_pokemon_list(
+                    Pokemon.get_active(swLat, swLng, neLat, neLng))
             else:
                 # If map is already populated only request modified Pokemon
                 # since last request time.
-                d['pokemons'] = Pokemon.get_active(swLat, swLng, neLat, neLng,
-                                                   timestamp=timestamp)
+                d['pokemons'] = convert_pokemon_list(
+                    Pokemon.get_active(
+                        swLat, swLng, neLat, neLng, timestamp=timestamp))
                 if newArea:
                     # If screen is moved add newly uncovered Pokemon to the
                     # ones that were modified since last request time.
                     d['pokemons'] = d['pokemons'] + (
-                        Pokemon.get_active(swLat, swLng, neLat, neLng,
-                                           oSwLat=oSwLat, oSwLng=oSwLng,
-                                           oNeLat=oNeLat, oNeLng=oNeLng))
+                        convert_pokemon_list(
+                            Pokemon.get_active(
+                                swLat,
+                                swLng,
+                                neLat,
+                                neLng,
+                                oSwLat=oSwLat,
+                                oSwLng=oSwLng,
+                                oNeLat=oNeLat,
+                                oNeLng=oNeLng)))
 
             if request.args.get('eids'):
                 # Exclude id's of pokemon that are hidden.
@@ -311,8 +345,9 @@ class Pogom(Flask):
             if request.args.get('reids'):
                 reids = [int(x) for x in request.args.get('reids').split(',')]
                 d['pokemons'] = d['pokemons'] + (
-                    Pokemon.get_active_by_id(reids, swLat, swLng,
-                                             neLat, neLng))
+                    convert_pokemon_list(
+                        Pokemon.get_active_by_id(reids, swLat, swLng, neLat,
+                                                 neLng)))
                 d['reids'] = reids
 
         if (request.args.get('pokestops', 'true') == 'true' and
@@ -437,7 +472,8 @@ class Pogom(Flask):
         lon = request.args.get('lon', self.current_location[1], type=float)
         origin_point = LatLng.from_degrees(lat, lon)
 
-        for pokemon in Pokemon.get_active(None, None, None, None):
+        for pokemon in convert_pokemon_list(
+                Pokemon.get_active(None, None, None, None)):
             pokemon_point = LatLng.from_degrees(pokemon['latitude'],
                                                 pokemon['longitude'])
             diff = pokemon_point - origin_point
