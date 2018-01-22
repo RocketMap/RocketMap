@@ -458,6 +458,7 @@ function initSidebar() {
     $('#max-level-gyms-filter-switch').val(Store.get('maxGymLevel'))
     $('#last-update-gyms-switch').val(Store.get('showLastUpdatedGymsOnly'))
     $('#pokemon-switch').prop('checked', Store.get('showPokemon'))
+    $('#pokemon-stats-switch').prop('checked', Store.get('showPokemonStats'))
     $('#pokestops-switch').prop('checked', Store.get('showPokestops'))
     $('#lured-pokestops-only-switch').val(Store.get('showLuredPokestopsOnly'))
     $('#lured-pokestops-only-wrapper').toggle(Store.get('showPokestops'))
@@ -470,6 +471,7 @@ function initSidebar() {
     $('#scanned-switch').prop('checked', Store.get('showScanned'))
     $('#spawnpoints-switch').prop('checked', Store.get('showSpawnpoints'))
     $('#ranges-switch').prop('checked', Store.get('showRanges'))
+    $('#notify-perfection-wrapper').toggle(Store.get('showPokemonStats'))
     $('#sound-switch').prop('checked', Store.get('playSound'))
     $('#pokemoncries').toggle(Store.get('playSound'))
     $('#cries-switch').prop('checked', Store.get('playCries'))
@@ -545,6 +547,7 @@ function pokemonLabel(item) {
     var form = item['form']
     var cp = item['cp']
     var cpMultiplier = item['cp_multiplier']
+    const showStats = Store.get('showPokemonStats')
 
     $.each(types, function (index, type) {
         typesDisplay += getTypeSpan(type)
@@ -564,7 +567,7 @@ function pokemonLabel(item) {
       ${name} <span class='pokemon name pokedex'><a href='http://pokemon.gameinfo.io/en/pokemon/${id}' target='_blank' title='View in Pokédex'>#${id}</a></span> ${formString} <span class='pokemon gender rarity'>${genderType[gender - 1]} ${rarityDisplay}</span> ${typesDisplay}
     </div>`
 
-    if (cp !== null && cpMultiplier !== null) {
+    if (showStats && cp !== null && cpMultiplier !== null) {
         var pokemonLevel = getPokemonLevel(cpMultiplier)
 
         if (atk !== null && def !== null && sta !== null) {
@@ -996,7 +999,8 @@ function getNotifyText(item) {
     var find = ['<prc>', '<pkm>', '<atk>', '<def>', '<sta>']
     var replace = [((iv) ? iv.toFixed(1) : ''), item['pokemon_name'], item['individual_attack'],
         item['individual_defense'], item['individual_stamina']]
-    var ntitle = repArray(((iv) ? notifyIvTitle : notifyNoIvTitle), find, replace)
+    const showStats = Store.get('showPokemonStats')
+    var ntitle = repArray(((showStats && iv) ? notifyIvTitle : notifyNoIvTitle), find, replace)
     var dist = moment(item['disappear_time']).format('HH:mm:ss')
     var until = getTimeUntil(item['disappear_time'])
     var udist = (until.hour > 0) ? until.hour + ':' : ''
@@ -1040,8 +1044,7 @@ function playPokemonSound(pokemonID, cryFileTypes) {
     }
 }
 
-function isNotifyPoke(poke) {
-    const isOnNotifyList = notifiedPokemon.indexOf(poke['pokemon_id']) > -1 || notifiedRarity.indexOf(poke['pokemon_rarity']) > -1
+function isNotifyPerfectionPoke(poke) {
     var hasHighIV = false
 
     if (poke['individual_attack'] != null) {
@@ -1049,7 +1052,28 @@ function isNotifyPoke(poke) {
         hasHighIV = notifiedMinPerfection > 0 && perfection >= notifiedMinPerfection
     }
 
-    return isOnNotifyList || hasHighIV
+    return hasHighIV
+}
+
+function isNotifyPoke(poke) {
+    const isOnNotifyList = notifiedPokemon.indexOf(poke['pokemon_id']) > -1 || notifiedRarity.indexOf(poke['pokemon_rarity']) > -1
+    const isNotifyPerfectionPkmn = isNotifyPerfectionPoke(poke)
+    const showStats = Store.get('showPokemonStats')
+
+    return isOnNotifyList || (showStats && isNotifyPerfectionPkmn)
+}
+
+function getNotifyPerfectionPokemons(pokemonList) {
+    var notifyPerfectionPkmn = []
+    $.each(pokemonList, function (key, value) {
+        var item = pokemonList[key]
+
+        if (isNotifyPerfectionPoke(item)) {
+            notifyPerfectionPkmn.push(item)
+        }
+    })
+
+    return notifyPerfectionPkmn
 }
 
 function customizePokemonMarker(marker, item, skipNotification) {
@@ -2890,6 +2914,24 @@ $(function () {
     $('#pokemon-switch').change(function () {
         buildSwitchChangeListener(mapData, ['pokemons'], 'showPokemon').bind(this)()
         markerCluster.repaint()
+    })
+    $('#pokemon-stats-switch').change(function () {
+        Store.set('showPokemonStats', this.checked)
+        var options = {
+            'duration': 500
+        }
+        const $wrapper = $('#notify-perfection-wrapper')
+        if (this.checked) {
+            $wrapper.show(options)
+        } else {
+            $wrapper.hide(options)
+        }
+        updatePokemonLabels(mapData.pokemons)
+        // Only redraw Pokémon which are notified of perfection.
+        var notifyPerfectionPkmn = getNotifyPerfectionPokemons(mapData.pokemons)
+        redrawPokemon(notifyPerfectionPkmn)
+
+        markerCluster.redraw()
     })
     $('#scanned-switch').change(function () {
         buildSwitchChangeListener(mapData, ['scanned'], 'showScanned').bind(this)()

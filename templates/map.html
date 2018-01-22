@@ -257,6 +257,18 @@
                 <option value="5">Ultra Rare and below</option>
               </select>
             </div>
+                  {% if show.encounter %}
+            <div class="form-control switch-container">
+              <h3>Pokémon Stats</h3>
+              <div class="onoffswitch">
+                <input id="pokemon-stats-switch" type="checkbox" name="pokemon-stats-switch" class="onoffswitch-checkbox" checked>
+                <label class="onoffswitch-label" for="pokemon-stats-switch">
+                <span class="switch-label" data-on="On" data-off="Off"></span>
+                <span class="switch-handle"></span>
+                </label>
+              </div>
+            </div>
+                  {% endif %}
               {% endif %}
           </div>
 
@@ -358,11 +370,13 @@
             </div>
 
               {% if show.encounter %}
-            <div class="form-control">
-              <label for="notify-perfection">
-                <h3>Notify of Perfection</h3>
-                <input id="notify-perfection" type="text" name="notify-perfection" placeholder="Minimum perfection %"/>
-              </label>
+            <div id="notify-perfection-wrapper" style="display:none">
+              <div class="form-control">
+                <label for="notify-perfection">
+                  <h3>Notify of Perfection</h3>
+                  <input id="notify-perfection" type="text" name="notify-perfection" placeholder="Minimum perfection %"/>
+                </label>
+              </div>
             </div>
               {% endif %}
             <div class="form-control switch-container">

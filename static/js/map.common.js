@@ -918,6 +918,10 @@ var StoreOptions = {
         default: true,
         type: StoreTypes.Boolean
     },
+    'showPokemonStats': {
+        default: true,
+        type: StoreTypes.Boolean
+    },
     'showPokestops': {
         default: true,
         type: StoreTypes.Boolean
@@ -1174,6 +1178,21 @@ function updatePokemonMarker(item, map, scaleByRarity = true, isNotifyPkmn = fal
     const marker = item.marker
 
     marker.setIcon(icon)
+}
+
+function updatePokemonLabel(item) {
+    // Only update label when Pokémon has been encountered.
+    if (item['cp'] !== null && item['cpMultiplier'] !== null) {
+        item.marker.infoWindow.setContent(pokemonLabel(item))
+    }
+}
+
+function updatePokemonLabels(pokemonList) {
+    $.each(pokemonList, function (key, value) {
+        var item = pokemonList[key]
+
+        updatePokemonLabel(item)
+    })
 }
 
 function isTouchDevice() {
