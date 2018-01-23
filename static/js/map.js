@@ -721,29 +721,41 @@ function gymLabel(gym, includeMembers = true) {
             } else {
                 raidImage = `<img class='gym sprite' src='static/images/raid/${gymTypes[gym.team_id]}_${raid.level}_unknown.png'>`
             }
-            image = `
-                <div class='raid container'>
-                <div class='raid container content-left'>
-                    <div>
+            if (raid.pokemon_id === null) {
+                image = `
                     ${raidImage}
+                    <div class='raid'>
+                        <span style='color:rgb(${raidColor[Math.floor((raid.level - 1) / 2)]})'>
+                            ${levelStr}
+                        </span>
+                        <span class='raid countdown label-countdown' disappears-at='${raid.end}'></span> left (${moment(raid.end).format('HH:mm')})
                     </div>
-                </div>
-                <div class='raid container content-right'>
-                    <div>
-                    <div class='raid pokemon'>
-                        ${raid['pokemon_name']} <a href='http://pokemon.gameinfo.io/en/pokemon/${raid['pokemon_id']}' target='_blank' title='View in Pokédex'>#${raid['pokemon_id']}</a> | CP: ${raid['cp']}
+                `
+            } else {
+                image = `
+                    <div class='raid container'>
+                        <div class='raid container content-left'>
+                            <div>
+                                ${raidImage}
+                            </div>
+                        </div>
+                        <div class='raid container content-right'>
+                            <div>
+                                <div class='raid pokemon'>
+                                    ${raid['pokemon_name']} <a href='http://pokemon.gameinfo.io/en/pokemon/${raid['pokemon_id']}' target='_blank' title='View in Pokédex'>#${raid['pokemon_id']}</a> | CP: ${raid['cp']}
+                                </div>
+                                ${raidStr}
+                            </div>
+                        </div>
                     </div>
-                        ${raidStr}
+                    <div class='raid'>
+                        <span style='color:rgb(${raidColor[Math.floor((raid.level - 1) / 2)]})'>
+                            ${levelStr}
+                        </span>
+                        <span class='raid countdown label-countdown' disappears-at='${raid.end}'></span> left (${moment(raid.end).format('HH:mm')})
                     </div>
-                    </div>
-                </div>
-                <div class='raid'>
-                <span style='color:rgb(${raidColor[Math.floor((raid.level - 1) / 2)]})'>
-                ${levelStr}
-                </span>
-                <span class='raid countdown label-countdown' disappears-at='${raid.end}'></span> left (${moment(raid.end).format('HH:mm')})
-                </div>
-            `
+                `
+            }
         } else {
             image = `<img class='gym sprite' src='static/images/gym/${gymTypes[gym.team_id]}_${getGymLevel(gym)}_${raid.level}.png'>`
         }
