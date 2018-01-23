@@ -14,7 +14,7 @@ PyMySQL==0.7.5
 flask-cors==2.1.2
 flask-compress==1.3.0
 LatLon==1.0.1
-git+https://github.com/pogodevorg/pgoapi.git@4c3c1843ab1dee261721175694423b1bae9ab7ec#egg=pgoapi
+git+https://github.com/pogodevorg/pgoapi.git@299dd7cdca75ba44e0fb435ca7e813d8fab80717#egg=pgoapi
 xxhash
 sphinx==1.4.5
 sphinx-autobuild==0.6.0

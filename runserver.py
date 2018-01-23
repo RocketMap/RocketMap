@@ -190,7 +190,8 @@ def can_start_scanning(args):
     api_version_map = {
         8302: 8300,
         8501: 8500,
-        8705: 8700
+        8705: 8700,
+        8901: 8900
     }
     mapped_version_int = api_version_map.get(api_version_int, api_version_int)
 
