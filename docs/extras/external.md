@@ -48,7 +48,7 @@ Enter the following information on that screen. Some routers may make you press 
 
 ![](../_static/img/SfiN7Wd.png)
 
-Replace "Local IP" (sometimes called "Internal IP") with the IPv4 Address we found in the first step of this guide. Both port boxes should have the same number, 5000. If you only have one box for ports just enter "5000" in that one. Click the Add button to save your settings. If you have an option to choose from UDP or TDP, choose TDP.
+Replace "Local IP" (sometimes called "Internal IP") with the IPv4 Address we found in the first step of this guide. Both port boxes should have the same number, 5000. If you only have one box for ports just enter "5000" in that one. Click the Add button to save your settings. If you have an option to choose from UDP or TCP, choose TCP.
 
 ## Finishing Up
 
