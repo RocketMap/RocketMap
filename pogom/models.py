@@ -26,7 +26,7 @@ from timeit import default_timer
 from .utils import (get_pokemon_name, get_pokemon_types,
                     get_args, cellid, in_radius, date_secs, clock_between,
                     get_move_name, get_move_damage, get_move_energy,
-                    get_move_type, calc_pokemon_level)
+                    get_move_type, calc_pokemon_level, peewee_attr_to_col)
 from .transform import transform_from_wgs_to_gcj, get_new_coords
 from .customLog import printPokemon
 
@@ -2668,13 +2668,79 @@ def clean_db_loop(args):
 
 
 def bulk_upsert(cls, data, db):
-    num_rows = len(data.values())
+    rows = data.values()
+    num_rows = len(rows)
     i = 0
-    step = 250
 
+    # This shouldn't happen, ever, but anyways...
+    if num_rows < 1:
+        return
+
+    # We used to support SQLite and it has a default max 999 parameters,
+    # so we limited how many rows we insert for it.
+    # Oracle: 64000
+    # MySQL: 65535
+    # PostgreSQL: 34464
+    # Sqlite: 999
+    step = 500
+
+    # Prepare for our query.
+    conn = db.get_conn()
+    cursor = db.get_cursor()
+
+    # We build our own INSERT INTO ... ON DUPLICATE KEY UPDATE x=VALUES(x)
+    # query, making sure all data is properly escaped. We use
+    # placeholders for VALUES(%s, %s, ...) so we can use executemany().
+    # We use peewee's InsertQuery to retrieve the fields because it
+    # takes care of peewee's internals (e.g. required default fields).
+    query = InsertQuery(cls, rows=[rows[0]])
+    # Take the first row. We need to call _iter_rows() for peewee internals.
+    # Using next() for a single item is not considered "pythonic".
+    first_row = {}
+    for row in query._iter_rows():
+        first_row = row
+        break
+    # Convert the row to its fields, sorted by peewee.
+    row_fields = sorted(first_row.keys(), key=lambda x: x._sort_key)
+    row_fields = map(lambda x: x.name, row_fields)
+    # Translate to proper column name, e.g. foreign keys.
+    db_columns = [peewee_attr_to_col(cls, f) for f in row_fields]
+
+    # Store defaults so we can fall back to them if a value
+    # isn't set.
+    defaults = {}
+
+    for f in cls._meta.fields.values():
+        # Use DB column name as key.
+        field_name = f.name
+        field_default = cls._meta.defaults.get(f, None)
+        defaults[field_name] = field_default
+
+    # Assign fields, placeholders and assignments after defaults
+    # so our lists/keys stay in order.
+    table = '`'+conn.escape_string(cls._meta.db_table)+'`'
+    escaped_fields = ['`'+conn.escape_string(f)+'`' for f in db_columns]
+    placeholders = ['%s' for escaped_field in escaped_fields]
+    assignments = ['{x} = VALUES({x})'.format(
+        x=escaped_field
+    ) for escaped_field in escaped_fields]
+
+    # We build our own MySQL query because peewee only supports
+    # REPLACE INTO for upserting, which deletes the old row before
+    # adding the new one, giving a serious performance hit.
+    query_string = ('INSERT INTO {table} ({fields}) VALUES'
+                    + ' ({placeholders}) ON DUPLICATE KEY UPDATE'
+                    + ' {assignments}')
+
+    # Prepare transaction.
     with db.atomic():
         while i < num_rows:
-            log.debug('Inserting items %d to %d.', i, min(i + step, num_rows))
+            start = i
+            end = min(i + step, num_rows)
+            name = cls.__name__
+
+            log.debug('Inserting items %d to %d for %s.', start, end, name)
+
             try:
                 # Turn off FOREIGN_KEY_CHECKS on MySQL, because apparently it's
                 # unable to recognize strings to update unicode keys for
@@ -2682,9 +2748,46 @@ def bulk_upsert(cls, data, db):
                 # constraint errors.
                 db.execute_sql('SET FOREIGN_KEY_CHECKS=0;')
 
-                # Use peewee's own implementation of the insert_many() method.
-                InsertQuery(cls, rows=data.values()[
-                            i:min(i + step, num_rows)]).upsert().execute()
+                # Time to bulk upsert our data. Convert objects to a list of
+                # values for executemany(), and fall back to defaults if
+                # necessary.
+                batch = []
+                batch_rows = rows[i:min(i + step, num_rows)]
+
+                # We pop them off one by one so we can gradually release
+                # memory as we pass each item. No duplicate memory usage.
+                while len(batch_rows) > 0:
+                    row = batch_rows.pop()
+                    row_data = []
+
+                    # Parse rows, build arrays of values sorted via row_fields.
+                    for field in row_fields:
+                        # Take a default if we need it.
+                        if field not in row:
+                            default = defaults.get(field, None)
+
+                            # peewee's defaults can be callable, e.g. current
+                            # time. We only call when needed to insert.
+                            if callable(default):
+                                default = default()
+
+                            row[field] = default
+
+                        # Append to keep the exact order, and only these
+                        # fields.
+                        row_data.append(row[field])
+                    # Done preparing, add it to the batch.
+                    batch.append(row_data)
+
+                # Format query and go.
+                formatted_query = query_string.format(
+                    table=table,
+                    fields=', '.join(escaped_fields),
+                    placeholders=', '.join(placeholders),
+                    assignments=', '.join(assignments)
+                )
+
+                cursor.executemany(formatted_query, batch)
 
                 db.execute_sql('SET FOREIGN_KEY_CHECKS=1;')
 
