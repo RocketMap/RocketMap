@@ -24,6 +24,7 @@ static/icons-large-sprite.png
 static/icons/*.png
 static/css/custom.css
 static/js/custom.js
+static/rarity.json
 *.csv
 *.bat
 *.sh

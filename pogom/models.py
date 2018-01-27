@@ -40,7 +40,7 @@ args = get_args()
 flaskDb = FlaskDB()
 cache = TTLCache(maxsize=100, ttl=60 * 5)
 
-db_schema_version = 23
+db_schema_version = 24
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -111,7 +111,7 @@ class Pokemon(LatLongModel):
     pokemon_id = SmallIntegerField(index=True)
     latitude = DoubleField()
     longitude = DoubleField()
-    disappear_time = DateTimeField(index=True)
+    disappear_time = DateTimeField()
     individual_attack = SmallIntegerField(null=True)
     individual_defense = SmallIntegerField(null=True)
     individual_stamina = SmallIntegerField(null=True)
@@ -127,7 +127,10 @@ class Pokemon(LatLongModel):
         null=True, index=True, default=datetime.utcnow)
 
     class Meta:
-        indexes = ((('latitude', 'longitude'), False),)
+        indexes = (
+            (('latitude', 'longitude'), False),
+            (('disappear_time', 'pokemon_id'), False)
+        )
 
     @staticmethod
     def get_active(swLat, swLng, neLat, neLng, timestamp=0, oSwLat=None,
@@ -197,6 +200,30 @@ class Pokemon(LatLongModel):
                      .dicts())
 
         return list(query)
+
+    # Get all Pokémon spawn counts based on the last x hours.
+    # More efficient than get_seen(): we don't do any unnecessary mojo.
+    # Returns a dict:
+    #   { 'pokemon': [ {'pokemon_id': '', 'count': 1} ], 'total': 1 }.
+    @staticmethod
+    def get_spawn_counts(hours):
+        query = (Pokemon
+                 .select(Pokemon.pokemon_id,
+                         fn.Count(Pokemon.pokemon_id).alias('count')))
+
+        # Allow 0 to query everything.
+        if hours:
+            hours = datetime.utcnow() - timedelta(hours=hours)
+            # Not using WHERE speeds up the query.
+            query = query.where(Pokemon.disappear_time > hours)
+
+        query = query.group_by(Pokemon.pokemon_id).dicts()
+
+        # We need a total count. Use reduce() instead of sum() for O(n)
+        # instead of O(2n) caused by list comprehension.
+        total = reduce(lambda x, y: x + y['count'], query, 0)
+
+        return {'pokemon': query, 'total': total}
 
     @staticmethod
     @cached(cache)
@@ -3088,6 +3115,13 @@ def database_migrate(db, old_ver):
     if old_ver < 23:
         db.drop_tables([WorkerStatus])
         db.drop_tables([MainWorker])
+
+    if old_ver < 24:
+        migrate(
+            migrator.drop_index('pokemon', 'pokemon_disappear_time'),
+            migrator.add_index('pokemon',
+                               ('disappear_time', 'pokemon_id'), False)
+        )
 
     # Always log that we're done.
     log.info('Schema upgrade complete.')

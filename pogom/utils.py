@@ -22,6 +22,7 @@ from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 from cHaversine import haversine
 from pprint import pformat
+from timeit import default_timer
 
 log = logging.getLogger(__name__)
 
@@ -504,6 +505,17 @@ def get_args():
                          help=('Show debug messages from RocketMap ' +
                                'and pgoapi.'),
                          type=int, dest='verbose')
+    rarity = parser.add_argument_group('Dynamic Rarity')
+    rarity.add_argument('-Rh', '--rarity-hours',
+                        help=('Number of hours of Pokemon data to use' +
+                              ' to calculate dynamic rarity. Decimals' +
+                              ' allowed. Default: 48. 0 to use all data.'),
+                        type=float, default=48)
+    rarity.add_argument('-Rf', '--rarity-update-frequency',
+                        help=('How often (in minutes) the dynamic rarity' +
+                              ' should be updated. Decimals allowed.' +
+                              ' Default: 0. 0 to disable.'),
+                        type=float, default=0)
     parser.set_defaults(DEBUG=False)
 
     args = parser.parse_args()
@@ -899,10 +911,6 @@ def get_pokemon_data(pokemon_id):
 
 def get_pokemon_name(pokemon_id):
     return i8ln(get_pokemon_data(pokemon_id)['name'])
-
-
-def get_pokemon_rarity(pokemon_id):
-    return i8ln(get_pokemon_data(pokemon_id)['rarity'])
 
 
 def get_pokemon_types(pokemon_id):
@@ -1323,3 +1331,65 @@ def get_debug_dump_link():
 
     # Upload to hasteb.in.
     return upload_to_hastebin(result)
+
+
+def get_pokemon_rarity(total_spawns_all, total_spawns_pokemon):
+    spawn_group = 'Common'
+
+    spawn_rate_pct = total_spawns_pokemon / float(total_spawns_all)
+    spawn_rate_pct = round(100 * spawn_rate_pct, 4)
+
+    if spawn_rate_pct < 0.01:
+        spawn_group = 'Ultra Rare'
+    elif spawn_rate_pct < 0.03:
+        spawn_group = 'Very Rare'
+    elif spawn_rate_pct < 0.5:
+        spawn_group = 'Rare'
+    elif spawn_rate_pct < 1:
+        spawn_group = 'Uncommon'
+
+    return spawn_group
+
+
+def dynamic_rarity_refresher():
+    # If we import at the top, pogom.models will import pogom.utils,
+    # causing the cyclic import to make some things unavailable.
+    from pogom.models import Pokemon
+
+    # Refresh every x hours.
+    args = get_args()
+    hours = args.rarity_hours
+    root_path = args.root_path
+
+    rarities_path = os.path.join(root_path, 'static/dist/data/rarity.json')
+    update_frequency_mins = args.rarity_update_frequency
+    refresh_time_sec = update_frequency_mins * 60
+
+    while True:
+        log.info('Updating dynamic rarity...')
+
+        start = default_timer()
+        db_rarities = Pokemon.get_spawn_counts(hours)
+        total = db_rarities['total']
+        pokemon = db_rarities['pokemon']
+
+        # Store as an easy lookup table for front-end.
+        rarities = {}
+
+        for poke in pokemon:
+            rarities[poke['pokemon_id']] = get_pokemon_rarity(total,
+                                                              poke['count'])
+
+        # Save to file.
+        with open(rarities_path, 'w') as outfile:
+            json.dump(rarities, outfile)
+
+        duration = default_timer() - start
+        log.info('Updated dynamic rarity. It took %.2fs for %d entries.',
+                 duration,
+                 total)
+
+        # Wait x seconds before next refresh.
+        log.debug('Waiting %d minutes before next dynamic rarity update.',
+                  refresh_time_sec / 60)
+        time.sleep(refresh_time_sec)

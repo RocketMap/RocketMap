@@ -5,19 +5,18 @@ import calendar
 import logging
 import gc
 
+from datetime import datetime
+from s2sphere import LatLng
+from bisect import bisect_left
 from flask import Flask, abort, jsonify, render_template, request,\
     make_response, send_from_directory
 from flask.json import JSONEncoder
 from flask_compress import Compress
-from datetime import datetime
-from s2sphere import LatLng
-from pogom.utils import get_args
-from bisect import bisect_left
 
 from .models import (Pokemon, Gym, Pokestop, ScannedLocation,
                      MainWorker, WorkerStatus, Token, HashKeys,
                      SpawnPoint)
-from .utils import (get_pokemon_name, get_pokemon_types, get_pokemon_rarity,
+from .utils import (get_args, get_pokemon_name, get_pokemon_types,
                     now, dottedQuadToNum)
 from .transform import transform_from_wgs_to_gcj
 from .blacklist import fingerprints, get_ip_blacklist
@@ -35,7 +34,6 @@ def convert_pokemon_list(pokemon):
     pokemon_result = []
     for p in pokemon:
         p['pokemon_name'] = get_pokemon_name(p['pokemon_id'])
-        p['pokemon_rarity'] = get_pokemon_rarity(p['pokemon_id'])
         p['pokemon_types'] = get_pokemon_types(p['pokemon_id'])
         p['encounter_id'] = str(p['encounter_id'])
         if args.china:

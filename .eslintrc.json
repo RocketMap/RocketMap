@@ -63,6 +63,9 @@
 
     "pokemonLabel": true,
     "updatePokemonLabel": true,
-    "updatePokemonLabels": true
+    "updatePokemonLabels": true,
+
+    "getPokemonRarity": true,
+    "updatePokemonRarities": true
   }
 }

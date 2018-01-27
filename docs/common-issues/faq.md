@@ -4,6 +4,12 @@
 
 No, it is gross to charge people for maps when the information should be provided by Niantic! We do not endorse paid maps, which is why this platform is opensource.
 
+### All Pokemon are set as ultra rare, what is going on?
+We now use a dynamic rarity system to determine the rarity of pokemon, the rarity is calculated by what you scan so it unique to your area. The rarity is updated every hour so when you start an initial scan everything will probably say it is ultra rare for the first hour and then will adjust itself.
+
+### Does dynamic rarity mean that all future pokemon will get a rarity automatically?
+Yes.
+
 ### What do the spawn point colors mean?
 
 * A **grey** dot represents a spawn point that is more than 5 minutes from spawning.

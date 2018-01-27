@@ -527,8 +527,10 @@ function getDateStr(t) {
 }
 
 function pokemonLabel(item) {
+    const pokemonRarity = getPokemonRarity(item['pokemon_id'])
+
     var name = item['pokemon_name']
-    var rarityDisplay = item['pokemon_rarity'] ? '(' + item['pokemon_rarity'] + ')' : ''
+    var rarityDisplay = pokemonRarity ? '(' + pokemonRarity + ')' : ''
     var types = item['pokemon_types']
     var typesDisplay = ''
     var encounterId = item['encounter_id']
@@ -1068,7 +1070,8 @@ function isNotifyPerfectionPoke(poke) {
 }
 
 function isNotifyPoke(poke) {
-    const isOnNotifyList = notifiedPokemon.indexOf(poke['pokemon_id']) > -1 || notifiedRarity.indexOf(poke['pokemon_rarity']) > -1
+    const pokemonRarity = getPokemonRarity(poke['pokemon_id'])
+    const isOnNotifyList = notifiedPokemon.indexOf(poke['pokemon_id']) > -1 || notifiedRarity.indexOf(pokemonRarity) > -1
     const isNotifyPerfectionPkmn = isNotifyPerfectionPoke(poke)
     const showStats = Store.get('showPokemonStats')
 
@@ -1396,10 +1399,8 @@ function clearStaleMarkers() {
         // Limit choice to our options [0, 5].
         const excludedRarityOption = Math.min(Math.max(Store.get('excludedRarity'), 0), 5)
         const excludedRarity = excludedRaritiesList[excludedRarityOption]
-        const hasRarity = pokemon.hasOwnProperty('pokemon_rarity')
-        // Not beautiful code with null as fallback, but it's more readable than a one-liner.
-        const rarity = hasRarity ? pokemon['pokemon_rarity'].toLowerCase() : null
-        const isRarityExcluded = (hasRarity && excludedRarity.indexOf(rarity) !== -1)
+        const pokemonRarity = getPokemonRarity(pokemon['pokemon_id']).toLowerCase()
+        const isRarityExcluded = excludedRarity.indexOf(pokemonRarity) !== -1
 
         if (isPokeExpired || isPokeExcluded || isRarityExcluded) {
             const oldMarker = pokemon.marker
@@ -1649,10 +1650,8 @@ function processPokemon(item) {
     // Limit choice to our options [0, 5].
     const excludedRarityOption = Math.min(Math.max(Store.get('excludedRarity'), 0), 5)
     const excludedRarity = excludedRaritiesList[excludedRarityOption]
-    const hasRarity = item.hasOwnProperty('pokemon_rarity')
-    // Not beautiful code with null as fallback, but it's more readable than a one-liner.
-    const rarity = hasRarity ? item['pokemon_rarity'].toLowerCase() : null
-    const isRarityExcluded = (hasRarity && excludedRarity.indexOf(rarity) !== -1)
+    const pokemonRarity = getPokemonRarity(item['pokemon_id'])
+    const isRarityExcluded = excludedRarity.indexOf(pokemonRarity) !== -1
     const isPokeExcludedByRarity = excludedPokemonByRarity.indexOf(item['pokemon_id']) !== -1
 
     var oldMarker = null
@@ -2430,8 +2429,16 @@ $(function () {
 })
 
 $(function () {
+    /* TODO: Some items are being loaded asynchronously, but synchronous code
+     * depends on it. Restructure to make sure these "loading" tasks are
+     * completed before continuing. Right now it "works" because the first
+     * map update is scheduled after 5s. */
+
     // populate Navbar Style menu
     $selectStyle = $('#map-style')
+
+    // Load dynamic rarity.
+    updatePokemonRarities()
 
     // Load Stylenames, translate entries, and populate lists
     $.getJSON('static/dist/data/mapstyle.min.json').done(function (data) {
