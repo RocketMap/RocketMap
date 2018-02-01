@@ -226,6 +226,7 @@ A `pokemon` event is sent every time RocketMap detects that a Pokémon has spawn
 | `gender`                | The Pokémon's gender<sup>1</sup>                                    |       `2` |
 | `cp`                    | The Pokémon's CP<sup>2</sup>                                          |      `""` |
 | `form`                  | The Pokémon's form<sup>2</sup>                                        |      `""` |
+| `costume`               | The Pokémon's costume id<sup>2</sup>                                  |	     `""` |
 | `individual_attack`     | The Pokémon's attack IV<sup>2</sup>                                   |      `""` |
 | `individual_defense`    | The Pokémon's defence IV<sup>2</sup>                                  |      `""` |
 | `individual_stamina`    | The Pokémon's stamina IV<sup>2</sup>                                  |      `""` |
@@ -338,6 +339,7 @@ A `gym-info` event is sent whenever RocketMap fetches a gym's details.
 | `height`                   | The Pokémon's height                              | `1.746612787246704` |
 | `weight`                   | The Pokémon's weight                              | `51.84344482421875` |
 | `form`                     | The Pokémon's form                                       |          `0` |
+| `costume`                  | The Pokémon's costume                                    |          `0` |
 | `iv_attack`                | The Pokémon's attack IV                                  |         `12` |
 | `iv_defense`               | The Pokémon's defense IV                                 |         `14` |
 | `iv_stamina`               | The Pokémon's stamina IV                                 |         `14` |
