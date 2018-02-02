@@ -533,7 +533,7 @@ function pokemonLabel(item) {
     const pokemonRarity = getPokemonRarity(item['pokemon_id'])
 
     var name = item['pokemon_name']
-    var rarityDisplay = pokemonRarity ? '(' + pokemonRarity + ')' : ''
+    var rarityDisplay = pokemonRarity ? '(' + i8ln(pokemonRarity) + ')' : ''
     var types = item['pokemon_types']
     var typesDisplay = ''
     var encounterId = item['encounter_id']
