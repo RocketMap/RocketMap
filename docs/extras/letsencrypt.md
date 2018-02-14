@@ -8,7 +8,7 @@ After installing certbot, you can use one of many methods to obtain a certificat
 
 Before continuing, be sure to create backups of your web server configurations as it cannot be guaranteed that certbot will not break them.
 
-# Webroot
+## Webroot
 
 Certbot can automatically detect your webserver's webroot, and complete the verification automatically, in addition to updating your webserver configuration itself.
 
@@ -34,7 +34,7 @@ If you want to update your webserver configuration manually, you should manually
 sudo certbot certonly --webroot -w /var/www/example.com/ -d example.com
 ```
 
-# Standalone Webserver
+## Standalone Webserver
 You can also have Certbot generate a certificate using its own webserver. If you want to keep certbot's grubby hands off your webserver, this is the best method.
 
 This method is slightly different from the webroot method, as it requires you to stop your webserver so that certbot can spin up its own. The best method to do this is with pre and post hooks. For example:
@@ -58,7 +58,7 @@ sudo service nginx/apache2 start
 
 Note that these examples will automatically edit the webserver configuration. If you wish to update the configuration yourself, simply remove --installer apache/nginx from the command.
 
-# Renewing Certificates
+## Renewing Certificates
 Let's Encrypt will send you emails when the certificate is reaching expiration. If your certificate is reaching expiration, you will need to renew it. The command for renewing certificates will vary depending on the method you used to generate the certificate.
 
 If you used the webroot authenticator with automatic install, you can simply execute `sudo certbot renew`.
@@ -76,7 +76,7 @@ For Apache users:
 sudo certbot renew --pre-hook "service apache2 stop" --post-hook "service apache2 start"
 ```
 
-# Automatic Renewals
+## Automatic Renewals
 Setting up automatic renewals is very simple with cron. The example below runs the renewal task daily, you can change this to run weekly, but it is not recommended. To start, you need to become root on your system (if you aren't already), either by using `su` directly, or `sudo su`.
 
 Afterwards, run `crontab -e`. This will open the crontab for the root user.
