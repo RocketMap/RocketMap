@@ -512,7 +512,7 @@ function getTypeSpan(type) {
 function openMapDirections(lat, lng) { // eslint-disable-line no-unused-vars
     var url = ''
     if (Store.get('mapServiceProvider') === 'googlemaps') {
-        url = 'https://www.google.com/maps/?daddr=' + lat + ',' + lng
+        url = 'https://maps.google.com/maps?daddr=' + lat + ',' + lng
         window.open(url, '_blank')
     } else if (Store.get('mapServiceProvider') === 'applemaps') {
         url = 'https://maps.apple.com/maps?daddr=' + lat + ',' + lng
