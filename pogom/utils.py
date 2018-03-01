@@ -496,6 +496,11 @@ def get_args():
                               'environment and auto-upload to ' +
                               'hastebin.com.'),
                         action='store_true', default=False)
+    parser.add_argument('-exg', '--ex-gyms',
+                        help=('Fetch OSM parks within geofence and flag ' +
+                              'gyms that are candidates for EX raids. ' +
+                              'Only required once per area.'),
+                        action='store_true', default=False)
     verbose = parser.add_mutually_exclusive_group()
     verbose.add_argument('-v',
                          help=('Show debug messages from RocketMap ' +
