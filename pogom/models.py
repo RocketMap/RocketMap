@@ -40,7 +40,7 @@ args = get_args()
 flaskDb = FlaskDB()
 cache = TTLCache(maxsize=100, ttl=60 * 5)
 
-db_schema_version = 26
+db_schema_version = 27
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -506,6 +506,7 @@ class Gym(LatLongModel):
                            GymPokemon.pokemon_id,
                            GymPokemon.costume,
                            GymPokemon.form,
+                           GymPokemon.shiny,
                            Trainer.name.alias('trainer_name'),
                            Trainer.level.alias('trainer_level'))
                        .join(Gym, on=(GymMember.gym_id == Gym.gym_id))
@@ -590,6 +591,7 @@ class Gym(LatLongModel):
                            GymPokemon.iv_stamina,
                            GymPokemon.costume,
                            GymPokemon.form,
+                           GymPokemon.shiny,
                            Trainer.name.alias('trainer_name'),
                            Trainer.level.alias('trainer_level'))
                    .join(Gym, on=(GymMember.gym_id == Gym.gym_id))
@@ -1719,6 +1721,7 @@ class GymPokemon(BaseModel):
     iv_attack = SmallIntegerField(null=True)
     costume = SmallIntegerField(null=True)
     form = SmallIntegerField(null=True)
+    shiny = SmallIntegerField(null=True)
     last_seen = DateTimeField(default=datetime.utcnow)
 
 
@@ -2543,6 +2546,7 @@ def parse_gyms(args, gym_responses, wh_update_queue, db_update_queue):
                 'iv_attack': pokemon.individual_attack,
                 'costume': pokemon.pokemon_display.costume,
                 'form': pokemon.pokemon_display.form,
+                'shiny': pokemon.pokemon_display.shiny,
                 'last_seen': datetime.utcnow(),
             }
 
@@ -3267,7 +3271,15 @@ def database_migrate(db, old_ver):
     if old_ver < 26:
         migrate(
             # Add `park` column to `gym`
-            migrator.add_column('gym', 'park', BooleanField(default=False)))
+            migrator.add_column('gym', 'park', BooleanField(default=False))
+        )
+
+    if old_ver < 27:
+        migrate(
+            # Add `shiny` column to `gympokemon`
+            migrator.add_column('gympokemon', 'shiny',
+                                SmallIntegerField(null=True))
+        )
 
     # Always log that we're done.
     log.info('Schema upgrade complete.')
