@@ -638,10 +638,11 @@ class Gym(LatLongModel):
 
     @staticmethod
     def get_gyms_park(id):
-        gym_by_id = Gym.select(Gym.park).where(
-            Gym.gym_id == id).dicts()
-        if gym_by_id:
-            return gym_by_id[0]['park']
+        with Gym.database().execution_context():
+            gym_by_id = Gym.select(Gym.park).where(
+                Gym.gym_id == id).dicts()
+            if gym_by_id:
+                return gym_by_id[0]['park']
         return False
 
 
