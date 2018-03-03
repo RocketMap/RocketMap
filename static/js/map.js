@@ -92,16 +92,7 @@ const excludedRaritiesList = [
   ['common', 'uncommon', 'rare', 'very rare', 'ultra rare']
 ]
 
-const weatherTypes = ['none', 'clear', 'rain', 'partly_cloudy', 'cloudy', 'windy', 'snow', 'fog']
-
-function weatherImage(weatherCondition, timeOfDay) {
-    var weatherType = weatherTypes[weatherCondition]
-    if (timeOfDay && ((weatherCondition === 1) || (weatherCondition === 3))) {
-        return `weather_${weatherType}_${timeOfDay}.png`
-    } else {
-        return `weather_${weatherType}.png`
-    }
-}
+const weatherEmojis = [ '', '☀️', '☔️', '⛅', '☁️', '💨', '⛄️', '🌁' ]
 
 /*
  text place holders:
@@ -569,9 +560,6 @@ function pokemonLabel(item) {
     var cpMultiplier = item['cp_multiplier']
     var weatherBoostedCondition = item['weather_boosted_condition']
     var weatherDisplay = ''
-    var currentDate = new Date()
-    var currentHour = currentDate.getHours()
-    var timeOfDay = (currentHour >= 6 && currentHour < 19) ? 'day' : 'night'
     const showStats = Store.get('showPokemonStats')
 
     $.each(types, function (index, type) {
@@ -579,7 +567,7 @@ function pokemonLabel(item) {
     })
 
     if (weatherBoostedCondition) {
-        weatherDisplay = `<img src='static/images/weather/${weatherImage(weatherBoostedCondition, timeOfDay)}' style="width: 24px; vertical-align: middle;">`
+        weatherDisplay = `<span class="pokemon weather-boost">${weatherEmojis[weatherBoostedCondition]}</span>`
     }
 
     var details = ''
