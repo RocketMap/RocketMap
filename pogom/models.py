@@ -1286,11 +1286,11 @@ class SpawnPoint(LatLongModel):
 
         return list(spawnpoints.values())
 
-    # Confirm if tth has been found.
+    # Confirm if TTH has been found.
     @staticmethod
     def tth_found(sp):
-        # Fully indentified if no '?' in links and
-        # latest_seen == earliest_unseen.
+        # Fully identified if no '?' in links and
+        # latest_seen % 3600 == earliest_unseen % 3600.
         # Warning: python uses modulo as the least residue, not as
         # remainder, so we don't apply it to the result.
         latest_seen = (sp['latest_seen'] % 3600)
