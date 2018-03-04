@@ -43,7 +43,7 @@ If your output looks as above, you can proceed with installation:
 
 	cd ~/
 	sudo apt-get install git
-	git clone https://github.com/RocketMap/RocketMap.git
+	git clone --recursive https://github.com/RocketMap/RocketMap.git
 	cd RocketMap
 	sudo -H pip install -r requirements.txt
 	npm install

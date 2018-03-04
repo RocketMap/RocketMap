@@ -30,7 +30,7 @@ To run a copy from the latest ``develop`` branch in ``git`` you can clone the re
 
 .. code-block:: bash
 
-  git clone https://github.com/RocketMap/RocketMap.git
+  git clone --recursive https://github.com/RocketMap/RocketMap.git
 
 Installing Modules
 ******************

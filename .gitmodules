@@ -1,3 +1,3 @@
-[submodule "pokecrypt-pgoapi"]
-	path = pokecrypt-pgoapi
-	url = https://github.com/pokecrypt/pokecrypt-pgoapi.git
+[submodule "static/data/pokedex"]
+	path = static/data/pokedex
+	url = https://github.com/sebastienvercammen/Pokemon-Go-Pokedex.git
