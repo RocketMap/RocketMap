@@ -1223,15 +1223,18 @@ def search_worker_thread(args, account_queue, account_sets, account_failures,
 
 
 def upsertKeys(keys, key_scheduler, db_updates_queue):
-    # Prepare hashing keys to be sent to the db. But only
-    # sent latest updates of the 'peak' value per key.
+    # Prepare hashing keys to be sent to the database.
+    # Keep highest peak value stored.
     hashkeys = {}
-    for key in keys:
-        key_instance = key_scheduler.keys[key]
-        hashkeys[key] = key_instance
+    stored_peaks = HashKeys.get_stored_peaks()
+    for key, instance in key_scheduler.keys.iteritems():
+        hashkeys[key] = instance
         hashkeys[key]['key'] = key
-        hashkeys[key]['peak'] = max(key_instance['peak'],
-                                    HashKeys.getStoredPeak(key))
+
+        if key in stored_peaks:
+            max_peak = max(instance['peak'], stored_peaks[key])
+            hashkeys[key]['peak'] = max_peak
+
     db_updates_queue.put((HashKeys, hashkeys))
 
 

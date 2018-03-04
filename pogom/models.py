@@ -1092,19 +1092,41 @@ class MainWorker(BaseModel):
     elapsed = IntegerField(default=0)
 
     @staticmethod
-    def get_account_stats():
+    def get_account_stats(age_minutes=30):
+        stats = {'working': 0, 'captcha': 0, 'failed': 0}
+        timeout = datetime.utcnow() - timedelta(minutes=age_minutes)
         with MainWorker.database().execution_context():
             account_stats = (MainWorker
                              .select(fn.SUM(MainWorker.accounts_working),
                                      fn.SUM(MainWorker.accounts_captcha),
                                      fn.SUM(MainWorker.accounts_failed))
+                             .where(MainWorker.last_modified >= timeout)
                              .scalar(as_tuple=True))
-        dict = {'working': 0, 'captcha': 0, 'failed': 0}
-        if account_stats[0] is not None:
-            dict = {'working': int(account_stats[0]),
+            if account_stats[0] is not None:
+                stats.update({
+                    'working': int(account_stats[0]),
                     'captcha': int(account_stats[1]),
-                    'failed': int(account_stats[2])}
-        return dict
+                    'failed': int(account_stats[2])
+                })
+        return stats
+
+    @staticmethod
+    def get_recent(age_minutes=30):
+        status = []
+        timeout = datetime.utcnow() - timedelta(minutes=age_minutes)
+        try:
+            with MainWorker.database().execution_context():
+                query = (MainWorker
+                         .select()
+                         .where(MainWorker.last_modified >= timeout)
+                         .order_by(MainWorker.worker_name.asc())
+                         .dicts())
+
+                status = [dbmw for dbmw in query]
+        except Exception as e:
+            log.exception('Failed to retrieve main worker status: %s.', e)
+
+        return status
 
 
 class WorkerStatus(LatLongModel):
@@ -1139,18 +1161,21 @@ class WorkerStatus(LatLongModel):
                 'longitude': status.get('longitude', None)}
 
     @staticmethod
-    def get_recent():
+    def get_recent(age_minutes=30):
         status = []
-        with WorkerStatus.database().execution_context():
-            query = (WorkerStatus
-                     .select()
-                     .where((WorkerStatus.last_modified >=
-                             (datetime.utcnow() - timedelta(minutes=5))))
-                     .order_by(WorkerStatus.username)
-                     .dicts())
+        timeout = datetime.utcnow() - timedelta(minutes=age_minutes)
+        try:
+            with WorkerStatus.database().execution_context():
+                query = (WorkerStatus
+                         .select()
+                         .where(WorkerStatus.last_modified >= timeout)
+                         .order_by(WorkerStatus.username.asc())
+                         .dicts())
 
-            for s in query:
-                status.append(s)
+                status = [dbws for dbws in query]
+        except Exception as e:
+            log.exception('Failed to retrieve worker status: %s.', e)
+
         return status
 
     @staticmethod
@@ -1760,17 +1785,18 @@ class Token(BaseModel):
                          .select()
                          .where(Token.last_updated > valid_time)
                          .order_by(Token.last_updated.asc())
-                         .limit(limit))
+                         .limit(limit)
+                         .dicts())
                 for t in query:
-                    token_ids.append(t.id)
-                    tokens.append(t.token)
+                    token_ids.append(t['id'])
+                    tokens.append(t['token'])
                 if tokens:
-                    log.debug('Retrived Token IDs: {}'.format(token_ids))
-                    result = DeleteQuery(Token).where(
-                        Token.id << token_ids).execute()
-                    log.debug('Deleted {} tokens.'.format(result))
+                    log.debug('Retrieved Token IDs: %s.', token_ids)
+                    query = DeleteQuery(Token).where(Token.id << token_ids)
+                    rows = query.execute()
+                    log.debug('Claimed and removed %d captcha tokens.', rows)
         except OperationalError as e:
-            log.error('Failed captcha token transactional query: {}'.format(e))
+            log.exception('Failed captcha token transactional query: %s.', e)
 
         return tokens
 
@@ -1783,36 +1809,31 @@ class HashKeys(BaseModel):
     expires = DateTimeField(null=True)
     last_updated = DateTimeField(default=datetime.utcnow)
 
-    @staticmethod
-    def get_by_key(key):
-        query = (HashKeys
-                 .select()
-                 .where(HashKeys.key == key)
-                 .dicts())
-
-        return query[0] if query else {
-            'maximum': 0,
-            'remaining': 0,
-            'peak': 0,
-            'expires': None,
-            'last_updated': None
-        }
-
+    # Obfuscate hashing keys before sending them to the front-end.
     @staticmethod
     def get_obfuscated_keys():
-        # Obfuscate hashing keys before we sent them to the front-end.
         hashkeys = HashKeys.get_all()
         for i, s in enumerate(hashkeys):
             hashkeys[i]['key'] = s['key'][:-9] + '*'*9
         return hashkeys
 
+    # Retrieve stored 'peak' value from recently used hashing keys.
     @staticmethod
-    # Retrieve the last stored 'peak' value for each hashing key.
-    def getStoredPeak(key):
-        with Token.database().execution_context():
-            query = HashKeys.select(HashKeys.peak).where(HashKeys.key == key)
-            result = query[0].peak if query else 0
-            return result
+    def get_stored_peaks():
+        hashkeys = {}
+        try:
+            with HashKeys.database().execution_context():
+                query = (HashKeys
+                         .select(HashKeys.key, HashKeys.peak)
+                         .where(HashKeys.last_updated >
+                                (datetime.utcnow() - timedelta(minutes=30)))
+                         .dicts())
+                for dbhk in query:
+                    hashkeys[dbhk['key']] = dbhk['peak']
+        except OperationalError as e:
+            log.exception('Failed to get hashing keys stored peaks: %s.', e)
+
+        return hashkeys
 
 
 def hex_bounds(center, steps=None, radius=None):
@@ -2652,61 +2673,287 @@ def db_updater(q, db):
 
 
 def clean_db_loop(args):
+    # Run regular database cleanup once every minute.
+    regular_cleanup_secs = 60
+    # Run full database cleanup once every 10 minutes.
+    full_cleanup_timer = default_timer()
+    full_cleanup_secs = 600
     while True:
         try:
-            with MainWorker.database().execution_context():
-                query = (MainWorker
-                         .delete()
-                         .where((MainWorker.last_modified <
-                                 (datetime.utcnow() - timedelta(minutes=30)))))
-                query.execute()
+            db_cleanup_regular()
 
-                query = (WorkerStatus
-                         .delete()
-                         .where((WorkerStatus.last_modified <
-                                 (datetime.utcnow() - timedelta(minutes=30)))))
-                query.execute()
+            # Remove old worker status entries.
+            if args.db_cleanup_worker > 0:
+                db_cleanup_worker_status(args.db_cleanup_worker)
 
-                # Remove active modifier from expired lured pokestops.
-                query = (Pokestop.update(
-                    lure_expiration=None, active_fort_modifier=None).where(
-                        Pokestop.lure_expiration < datetime.utcnow()))
-                query.execute()
+            # Check if it's time to run full database cleanup.
+            now = default_timer()
+            if now - full_cleanup_timer > full_cleanup_secs:
+                # Remove old pokemon spawns.
+                if args.db_cleanup_pokemon > 0:
+                    db_clean_pokemons(args.db_cleanup_pokemon)
 
-                # Remove old (unusable) captcha tokens
-                query = (Token
-                         .delete()
-                         .where((Token.last_updated <
-                                 (datetime.utcnow() - timedelta(minutes=2)))))
-                query.execute()
+                # Remove old gym data.
+                if args.db_cleanup_gym > 0:
+                    db_clean_gyms(args.db_cleanup_gym)
 
-                # Remove expired HashKeys
-                query = (HashKeys
-                         .delete()
-                         .where(HashKeys.expires <
-                                (datetime.now() - timedelta(days=1))))
-                query.execute()
+                # Remove old and extinct spawnpoint data.
+                if args.db_cleanup_spawnpoint > 0:
+                    db_clean_spawnpoints(args.db_cleanup_spawnpoint)
 
-                # If desired, clear old Pokemon spawns.
-                if args.purge_data > 0:
-                    log.info("Beginning purge of old Pokemon spawns.")
-                    start = datetime.utcnow()
-                    query = (Pokemon
-                             .delete()
-                             .where((Pokemon.disappear_time <
-                                     (datetime.utcnow() -
-                                      timedelta(hours=args.purge_data)))))
-                    rows = query.execute()
-                    end = datetime.utcnow()
-                    diff = end - start
-                    log.info("Completed purge of old Pokemon spawns. "
-                             "%i deleted in %f seconds.",
-                             rows, diff.total_seconds())
+                # Remove old pokestop and gym locations.
+                if args.db_cleanup_forts > 0:
+                    db_clean_forts(args.db_cleanup_forts)
 
-            log.info('Regular database cleaning complete.')
-            time.sleep(60)
+                log.info('Full database cleanup completed.')
+                full_cleanup_timer = now
+
+            time.sleep(regular_cleanup_secs)
         except Exception as e:
-            log.exception('Exception in clean_db_loop: %s', repr(e))
+            log.exception('Database cleanup failed: %s.', e)
+
+
+def db_cleanup_regular():
+    log.debug('Regular database cleanup started.')
+    start_timer = default_timer()
+
+    now = datetime.utcnow()
+    # http://docs.peewee-orm.com/en/latest/peewee/database.html#advanced-connection-management
+    # When using an execution context, a separate connection from the pool
+    # will be used inside the wrapped block and a transaction will be started.
+    with Token.database().execution_context():
+        # Remove unusable captcha tokens.
+        query = (Token
+                 .delete()
+                 .where(Token.last_updated < now - timedelta(seconds=120)))
+        query.execute()
+
+        # Remove active modifier from expired lured pokestops.
+        query = (Pokestop
+                 .update(lure_expiration=None, active_fort_modifier=None)
+                 .where(Pokestop.lure_expiration < now))
+        query.execute()
+
+        # Remove expired or inactive hashing keys.
+        query = (HashKeys
+                 .delete()
+                 .where((HashKeys.expires < now - timedelta(days=1)) |
+                        (HashKeys.last_updated < now - timedelta(days=7))))
+        query.execute()
+
+    time_diff = default_timer() - start_timer
+    log.debug('Completed regular cleanup in %.6f seconds.', time_diff)
+
+
+def db_cleanup_worker_status(age_minutes):
+    log.debug('Beginning cleanup of old worker status.')
+    start_timer = default_timer()
+
+    worker_status_timeout = datetime.utcnow() - timedelta(minutes=age_minutes)
+
+    with MainWorker.database().execution_context():
+        # Remove status information from inactive instances.
+        query = (MainWorker
+                 .delete()
+                 .where(MainWorker.last_modified < worker_status_timeout))
+        query.execute()
+
+        # Remove worker status information that are inactive.
+        query = (WorkerStatus
+                 .delete()
+                 .where(MainWorker.last_modified < worker_status_timeout))
+        query.execute()
+
+    time_diff = default_timer() - start_timer
+    log.debug('Completed cleanup of old worker status in %.6f seconds.',
+              time_diff)
+
+
+def db_clean_pokemons(age_hours):
+    log.debug('Beginning cleanup of old pokemon spawns.')
+    start_timer = default_timer()
+
+    pokemon_timeout = datetime.utcnow() - timedelta(hours=age_hours)
+
+    with Pokemon.database().execution_context():
+        query = (Pokemon
+                 .delete()
+                 .where(Pokemon.disappear_time < pokemon_timeout))
+        rows = query.execute()
+        log.debug('Deleted %d old Pokemon entries.', rows)
+
+    time_diff = default_timer() - start_timer
+    log.debug('Completed cleanup of old pokemon spawns in %.6f seconds.',
+              time_diff)
+
+
+def db_clean_gyms(age_hours, gyms_age_days=30):
+    log.debug('Beginning cleanup of old gym data.')
+    start_timer = default_timer()
+
+    gym_info_timeout = datetime.utcnow() - timedelta(hours=age_hours)
+
+    with Gym.database().execution_context():
+        # Remove old GymDetails entries.
+        query = (GymDetails
+                 .delete()
+                 .where(GymDetails.last_scanned < gym_info_timeout))
+        rows = query.execute()
+        log.debug('Deleted %d old GymDetails entries.', rows)
+
+        # Remove old Raid entries.
+        query = (Raid
+                 .delete()
+                 .where(Raid.end < gym_info_timeout))
+        rows = query.execute()
+        log.debug('Deleted %d old Raid entries.', rows)
+
+        # Remove old GymMember entries.
+        query = (GymMember
+                 .delete()
+                 .where(GymMember.last_scanned < gym_info_timeout))
+        rows = query.execute()
+        log.debug('Deleted %d old GymMember entries.', rows)
+
+        # Remove old GymPokemon entries.
+        query = (GymPokemon
+                 .delete()
+                 .where(GymPokemon.last_seen < gym_info_timeout))
+        rows = query.execute()
+        log.debug('Deleted %d old GymPokemon entries.', rows)
+
+    time_diff = default_timer() - start_timer
+    log.debug('Completed cleanup of old gym data in %.6f seconds.',
+              time_diff)
+
+
+def db_clean_spawnpoints(age_hours, missed=5):
+    log.debug('Beginning cleanup of old spawnpoint data.')
+    start_timer = default_timer()
+    # Maximum number of variables to include in a single query.
+    step = 500
+
+    spawnpoint_timeout = datetime.utcnow() - timedelta(hours=age_hours)
+
+    with SpawnPoint.database().execution_context():
+        # Select old SpawnPoint entries.
+        query = (SpawnPoint
+                 .select(SpawnPoint.id)
+                 .where((SpawnPoint.last_scanned < spawnpoint_timeout) &
+                        (SpawnPoint.missed_count > missed))
+                 .dicts())
+        old_sp = [(sp['id']) for sp in query]
+
+        num_records = len(old_sp)
+        log.debug('Found %d old SpawnPoint entries.', num_records)
+
+        # Remove SpawnpointDetectionData entries associated to old spawnpoints.
+        num_rows = 0
+        for i in range(0, num_records, step):
+            query = (SpawnpointDetectionData
+                     .delete()
+                     .where((SpawnpointDetectionData.spawnpoint_id <<
+                             old_sp[i:min(i + step, num_records)])))
+            num_rows += query.execute()
+
+        # Remove old SpawnPointDetectionData entries.
+        query = (SpawnpointDetectionData
+                 .delete()
+                 .where((SpawnpointDetectionData.scan_time <
+                         spawnpoint_timeout)))
+        num_rows += query.execute()
+        log.debug('Deleted %d old SpawnpointDetectionData entries.', num_rows)
+
+        # Select ScannedLocation entries associated to old spawnpoints.
+        sl_delete = set()
+        for i in range(0, num_records, step):
+            query = (ScanSpawnPoint
+                     .select()
+                     .where((ScanSpawnPoint.spawnpoint <<
+                             old_sp[i:min(i + step, num_records)]))
+                     .dicts())
+            for sp in query:
+                sl_delete.add(sp['scannedlocation'])
+        log.debug('Found %d ScannedLocation entries from old spawnpoints.',
+                  len(sl_delete))
+
+        # Remove ScanSpawnPoint entries associated to old spawnpoints.
+        num_rows = 0
+        for i in range(0, num_records, step):
+            query = (ScanSpawnPoint
+                     .delete()
+                     .where((ScanSpawnPoint.spawnpoint <<
+                             old_sp[i:min(i + step, num_records)])))
+            num_rows += query.execute()
+        log.debug('Deleted %d ScanSpawnPoint entries from old spawnpoints.',
+                  num_rows)
+
+        # Remove old and invalid SpawnPoint entries.
+        num_rows = 0
+        for i in range(0, num_records, step):
+            query = (SpawnPoint
+                     .delete()
+                     .where((SpawnPoint.id <<
+                             old_sp[i:min(i + step, num_records)])))
+            num_rows += query.execute()
+        log.debug('Deleted %d old SpawnPoint entries.', num_rows)
+
+        sl_delete = list(sl_delete)
+        num_records = len(sl_delete)
+
+        # Remove ScanSpawnPoint entries associated with old scanned locations.
+        num_rows = 0
+        for i in range(0, num_records, step):
+            query = (ScanSpawnPoint
+                     .delete()
+                     .where((ScanSpawnPoint.scannedlocation <<
+                             sl_delete[i:min(i + step, num_records)])))
+            num_rows += query.execute()
+        log.debug('Deleted %d ScanSpawnPoint entries from old scan locations.',
+                  num_rows)
+
+        # Remove ScannedLocation entries associated with old spawnpoints.
+        num_rows = 0
+        for i in range(0, num_records, step):
+            query = (ScannedLocation
+                     .delete()
+                     .where((ScannedLocation.cellid <<
+                             sl_delete[i:min(i + step, num_records)]) &
+                            (ScannedLocation.last_modified <
+                             spawnpoint_timeout)))
+            num_rows += query.execute()
+        log.debug('Deleted %d ScannedLocation entries from old spawnpoints.',
+                  num_rows)
+
+    time_diff = default_timer() - start_timer
+    log.debug('Completed cleanup of old spawnpoint data in %.6f seconds.',
+              time_diff)
+
+
+def db_clean_forts(age_hours):
+    log.debug('Beginning cleanup of old forts.')
+    start_timer = default_timer()
+
+    fort_timeout = datetime.utcnow() - timedelta(hours=age_hours)
+
+    with Gym.database().execution_context():
+        # Remove old Gym entries.
+        query = (Gym
+                 .delete()
+                 .where(Gym.last_scanned < fort_timeout))
+        rows = query.execute()
+        log.debug('Deleted %d old Gym entries.', rows)
+
+        # Remove old Pokestop entries.
+        query = (Pokestop
+                 .delete()
+                 .where(Pokestop.last_updated < fort_timeout))
+        rows = query.execute()
+        log.debug('Deleted %d old Pokestop entries.', rows)
+
+    time_diff = default_timer() - start_timer
+    log.debug('Completed cleanup of old forts in %.6f seconds.',
+              time_diff)
 
 
 def bulk_upsert(cls, data, db):
