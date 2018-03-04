@@ -45,7 +45,10 @@ def get_location_forts(api, account, location):
     cells = response['responses']['GET_MAP_OBJECTS'].map_cells
     forts = []
     for i, cell in enumerate(cells):
-        forts += cell.forts
+        for fort in cell.forts:
+            # Only use stops.
+            if fort.type == 1:
+                forts.append(fort)
     if not forts:
         return (ErrorType.no_stops, None)
     return (None, forts)
