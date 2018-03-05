@@ -35,7 +35,7 @@ To run the script, go to RM's root folder and execute:
 python tools/levelup.py
 ```
 
-All command line flags available in RM can be used here too (b(but not all of them will have an effect). So you could increase `account-max-spins` and change location and workers from the command line without needing to modify the config file with something like:
+All command line flags available in RM can be used here too (but not all of them will have an effect). So you could increase `account-max-spins` and change location and workers from the command line without needing to modify the config file with something like:
 
 ```
 python tools/levelup.py -w 30 -l 40.417281,-3.683235 -ams 1000
