@@ -2077,7 +2077,8 @@ def parse_map(args, map_dict, scan_coords, scan_location, db_update_queue,
                     'height': pokemon_info.height_m,
                     'weight': pokemon_info.weight_kg,
                     'cp': pokemon_info.cp,
-                    'cp_multiplier': pokemon_info.cp_multiplier
+                    'cp_multiplier': pokemon_info.cp_multiplier,
+                    'gender': pokemon_info.pokemon_display.gender
                 })
 
             if 'pokemon' in args.wh_types:
