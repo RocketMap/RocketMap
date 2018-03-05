@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import os
 import sys
 import logging
 import time
@@ -38,19 +39,24 @@ class ErrorType(Enum):
 
 def get_location_forts(api, account, location):
     response = gmo(api, account, location)
+
     if len(response['responses']['CHECK_CHALLENGE'].challenge_url) > 1:
         log.error('account: %s got captcha: %s', account['username'],
                   response['responses']['CHECK_CHALLENGE'].challenge_url)
         return (ErrorType.captcha, None)
+
     cells = response['responses']['GET_MAP_OBJECTS'].map_cells
     forts = []
-    for i, cell in enumerate(cells):
+
+    for cell in cells:
         for fort in cell.forts:
-            # Only use stops.
+            # Only use Pokestops.
             if fort.type == 1:
                 forts.append(fort)
+
     if not forts:
         return (ErrorType.no_stops, None)
+
     return (None, forts)
 
 
@@ -76,24 +82,43 @@ def level_up_account(args, location, accounts, errors):
                 'proxy_display': None,
                 'proxy_url': None,
             }
+
             api = setup_api(args, status, account)
-            api.set_position(*location)
             key = key_scheduler.next()
+
+            api.set_position(*location)
             api.activate_hash_server(key)
             check_login(args, account, api, status['proxy_url'])
-            log.info('Account %s, level %d.', account['username'],
+
+            log.info('Logged in account %s, level %d.', account['username'],
                      account['level'])
+
             (error, forts) = get_location_forts(api, account, location)
+
             if error:
                 errors[error].append(account)
                 accounts.task_done()
                 continue
-            log.info('%d stops in range', len(forts))
-            for fort in forts:
-                if pokestop_spinnable(fort, location):
-                    spin_pokestop(api, account, args, fort, location)
-            log.info('Ended with account %s.', account['username'])
-            log.info('Account %s, level %d.', account['username'],
+
+            spinnable_pokestops = filter(
+                lambda fort: pokestop_spinnable(fort, location), forts)
+
+            # No stops in spin range.
+            first_fort = forts[0]
+            if not spinnable_pokestops:
+                log.critical('No Pokestops in spinnable range. Please move'
+                             " the location. There's a Pokestop at"
+                             ' %s, %s.',
+                             first_fort.latitude,
+                             first_fort.longitude)
+                os._exit(1)
+
+            # Past this point, guaranteed to have a spinnable stop.
+            fort = spinnable_pokestops[0]
+            spin_pokestop(api, account, args, fort, location)
+
+            log.info('Spun Pokestop with account %s, level %d.',
+                     account['username'],
                      account['level'])
         except TooManyLoginAttempts:
             errors[ErrorType.login_error].append(account)
@@ -101,8 +126,8 @@ def level_up_account(args, location, accounts, errors):
             errors[ErrorType.banned].append(account)
         except Exception as e:
             if error_count < 2:
-                log.exception('Exception in worker: %s. retrying.', e)
-                accounts.put((account, error_count+1))
+                log.exception('Exception in worker: %s. Retrying.', e)
+                accounts.put((account, error_count + 1))
             else:
                 errors[ErrorType.generic].append(account)
 
@@ -111,37 +136,38 @@ def level_up_account(args, location, accounts, errors):
 
 log = logging.getLogger()
 set_log_and_verbosity(log)
-
-
 args = get_args()
 
 # Abort if we don't have a hash key set.
 if not args.hash_key:
-    log.critical('Hash key is required for leveling up accounts. Exiting.')
+    log.critical('Hashing key is required. Exiting.')
     sys.exit(1)
 
 fake_queue = FakeQueue()
 key_scheduler = KeyScheduler(args.hash_key, fake_queue)
 position = extract_coordinates(args.location)
-startup_db(None, args.clear_db)
 args.player_locale = PlayerLocale.get_locale(args.location)
+
 if not args.player_locale:
     args.player_locale = gmaps_reverse_geolocate(
         args.gmaps_key,
         args.locale,
         str(position[0]) + ', ' + str(position[1]))
 
+startup_db(None, args.clear_db)
 initialize_proxies(args)
+
 account_queue = Queue()
 errors = {}
+
 for error in ErrorType:
     errors[error] = []
 
-for i, account in enumerate(args.accounts):
+for account in args.accounts:
     account_queue.put((account, 0))
 
 for i in range(0, args.workers):
-    log.debug('Starting levelup worker thread %d...', i)
+    log.debug('Starting level-up worker thread %d...', i)
     t = Thread(target=level_up_account,
                name='worker-{}'.format(i),
                args=(args, position, account_queue, errors))
@@ -155,14 +181,16 @@ try:
         else:
             break
 except KeyboardInterrupt:
-    log.info('Process killed')
+    log.info('Process killed.')
     exit(1)
 
 account_queue.join()
-log.info('Process finished')
+log.info('Process finished.')
+
 for error_type in ErrorType:
     if len(errors[error_type]) > 0:
         log.warning('Some accounts did not finish properly (%s):',
                     error_type.name)
+
         for account in errors[error_type]:
             log.warning('\t%s', account['username'])
