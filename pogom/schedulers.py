@@ -49,6 +49,8 @@ import logging
 import math
 import time
 import sys
+import os
+
 from timeit import default_timer
 from threading import Lock
 from copy import deepcopy
@@ -57,6 +59,7 @@ from collections import Counter
 from queue import Empty
 from operator import itemgetter
 from datetime import datetime, timedelta
+
 from .transform import get_new_coords
 from .models import (hex_bounds, SpawnPoint, ScannedLocation,
                      ScanSpawnPoint, HashKeys)
@@ -278,7 +281,7 @@ class HexSearch(BaseScheduler):
             if not results:
                 log.error('No cells regarded as valid for desired scan area. '
                           'Check your provided geofences. Aborting.')
-                sys.exit()
+                os._exit(1)
 
         # Add the required appear and disappear times.
         locationsZeroed = []
@@ -401,7 +404,7 @@ class SpawnScan(BaseScheduler):
             if not self.locations:
                 log.error('No cells regarded as valid for desired scan area. '
                           'Check your provided geofences. Aborting.')
-                sys.exit()
+                os._exit(1)
 
         # Well shit...
         if not self.locations:
@@ -613,7 +616,7 @@ class SpeedScan(HexSearch):
             if not results:
                 log.error('No cells regarded as valid for desired scan area. '
                           'Check your provided geofences. Aborting.')
-                sys.exit()
+                os._exit(1)
 
         generated_locations = []
         for step, location in enumerate(results):
