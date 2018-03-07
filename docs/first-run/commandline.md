@@ -430,7 +430,7 @@ environment variables which override config file values which override defaults.
                             valid scan. Default: 720, 0 to disable.
                             [env var: POGOMAP_DB_CLEANUP_SPAWNPOINT]
       -DCf DB_CLEANUP_FORTS, --db-cleanup-forts DB_CLEANUP_FORTS
-                            Clear gyms and pokestops from database X days after
+                            Clear gyms and pokestops from database X hours after
                             last valid scan. Default: 0, 0 to disable.
                             [env var: POGOMAP_DB_CLEANUP_FORTS]
 

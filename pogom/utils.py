@@ -411,8 +411,8 @@ def get_args():
                              'Default: 720, 0 to disable.'),
                        type=int, default=720)
     group.add_argument('-DCf', '--db-cleanup-forts',
-                       help=('Clear gyms and pokestops from database X days ' +
-                             'after last valid scan. ' +
+                       help=('Clear gyms and pokestops from database X hours '
+                             'after last valid scan. '
                              'Default: 0, 0 to disable.'),
                        type=int, default=0)
     parser.add_argument(
