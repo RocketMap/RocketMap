@@ -611,7 +611,7 @@ def clear_inventory(api, account):
             clear_response = resp['responses']['RECYCLE_INVENTORY_ITEM']
             clear_result = clear_response.result
             if clear_result == 1:
-                log.info('Clearing %s %ss succeeded.', item_count,
+                log.info('Clearing %s %ss succeeded.', drop_count,
                          item_name)
             elif clear_result == 2:
                 log.debug('Not enough items to clear, parsing failed.')
