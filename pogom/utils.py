@@ -22,6 +22,7 @@ from requests.packages.urllib3.util.retry import Retry
 from requests.adapters import HTTPAdapter
 from cHaversine import haversine
 from pprint import pformat
+from time import strftime
 from timeit import default_timer
 
 log = logging.getLogger(__name__)
@@ -512,6 +513,13 @@ def get_args():
     parser.add_argument('--log-path',
                         help=('Defines directory to save log files to.'),
                         default='logs/')
+    parser.add_argument('--log-filename',
+                        help=('Defines the log filename to be saved.'
+                              ' Allows date formatting, and replaces <SN>'
+                              " with the instance's status name. Read the"
+                              ' python time module docs for details.'
+                              ' Default: %%Y%%m%%d_%%H%%M_<SN>.log.'),
+                        default='%Y%m%d_%H%M_<SN>.log'),
     parser.add_argument('--dump',
                         help=('Dump censored debug info about the ' +
                               'environment and auto-upload to ' +
@@ -552,6 +560,11 @@ def get_args():
     parser.set_defaults(DEBUG=False)
 
     args = parser.parse_args()
+
+    # Allow status name and date formatting in log filename.
+    args.log_filename = strftime(args.log_filename)
+    args.log_filename = args.log_filename.replace('<sn>', '<SN>')
+    args.log_filename = args.log_filename.replace('<SN>', args.status_name)
 
     if args.only_server:
         if args.location is None:
@@ -1257,6 +1270,7 @@ def _censor_args_namespace(args, censored_tag):
         'db',
         'proxy_file',
         'log_path',
+        'log_filename',
         'encrypt_lib',
         'ssl_certificate',
         'ssl_privatekey',

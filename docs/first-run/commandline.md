@@ -18,8 +18,8 @@
                     [-ld LOGIN_DELAY] [-lr LOGIN_RETRIES] [-mf MAX_FAILURES]
                     [-me MAX_EMPTY] [-bsr BAD_SCAN_RETRY]
                     [-msl MIN_SECONDS_LEFT] [-dc] [-H HOST] [-P PORT]
-                    [-L LOCALE] [-c] [-m MOCK] [-ns] [-os] [-sc] [-nfl]
-                    -k GMAPS_KEY [--skip-empty] [-C] [-cd] [-np] [-ng] [-nr]
+                    [-L LOCALE] [-c] [-m MOCK] [-ns] [-os] [-sc] [-nfl] -k
+                    GMAPS_KEY [--skip-empty] [-C] [-cd] [-np] [-ng] [-nr]
                     [-nk] [-ss] [-ssct SS_CLUSTER_TIME] [-speed] [-spin]
                     [-ams ACCOUNT_MAX_SPINS] [-kph KPH] [-hkph HLVL_KPH]
                     [-ldur LURE_DURATION] [-px PROXY] [-pxsc]
@@ -44,18 +44,19 @@
                     [-novc] [-vci VERSION_CHECK_INTERVAL]
                     [-odt ON_DEMAND_TIMEOUT] [--disable-blacklist]
                     [-tp TRUSTED_PROXIES] [--api-version API_VERSION]
-                    [--no-file-logs] [--log-path LOG_PATH] [--dump] [-exg]
+                    [--no-file-logs] [--log-path LOG_PATH]
+                    [--log-filename LOG_FILENAME] [--dump] [-exg]
                     [-v | --verbosity VERBOSE] [-Rh RARITY_HOURS]
                     [-Rf RARITY_UPDATE_FREQUENCY] [-SPp STATUS_PAGE_PASSWORD]
                     [-SPf STATUS_PAGE_FILTER]
 
 Args that start with '--' (eg. -a) can also be set in a config file
-(config/config.ini or specified via -cf or -scf). The recognized syntax
+(/config/config.ini or specified via -cf or -scf). The recognized syntax
 for setting (key, value) pairs is based on the INI and YAML formats
-(e.g. key=value or foo=TRUE). For full documentation of the differences
-from the standards please refer to the ConfigArgParse documentation. If an
-arg is specified in more than one place, then commandline values override
-environment variables which override config file values which override defaults.
+(e.g. key=value or foo=TRUE). For full documentation of the differences from
+the standards please refer to the ConfigArgParse documentation. If an arg is
+specified in more than one place, then commandline values override environment
+variables which override config file values which override defaults.
 
     optional arguments:
       -h, --help            show this help message and exit [env var:
@@ -388,6 +389,12 @@ environment variables which override config file values which override defaults.
                             logs. [env var: POGOMAP_NO_FILE_LOGS]
       --log-path LOG_PATH   Defines directory to save log files to. [env var:
                             POGOMAP_LOG_PATH]
+      --log-filename LOG_FILENAME
+                            Defines the log filename to be saved. Allows date
+                            formatting, and replaces <SN> with the instance's
+                            status name. Read the python time module docs for
+                            details. Default: %Y%m%d_%H%M_<SN>.log. [env var:
+                            POGOMAP_LOG_FILENAME]
       --dump                Dump censored debug info about the environment and
                             auto-upload to hastebin.com. [env var: POGOMAP_DUMP]
       -exg, --ex-gyms       Fetch OSM parks within geofence and flag gyms that are
@@ -399,36 +406,36 @@ environment variables which override config file values which override defaults.
                             var: POGOMAP_VERBOSITY]
 
     Database:
-      --db-name DB_NAME     Name of the database to be used.
-                            [env var: POGOMAP_DB_NAME]
+      --db-name DB_NAME     Name of the database to be used. [env var:
+                            POGOMAP_DB_NAME]
       --db-user DB_USER     Username for the database. [env var: POGOMAP_DB_USER]
       --db-pass DB_PASS     Password for the database. [env var: POGOMAP_DB_PASS]
-      --db-host DB_HOST     IP or hostname for the database.
-                            [env var: POGOMAP_DB_HOST]
+      --db-host DB_HOST     IP or hostname for the database. [env var:
+                            POGOMAP_DB_HOST]
       --db-port DB_PORT     Port for the database. [env var: POGOMAP_DB_PORT]
       --db-threads DB_THREADS
                             Number of db threads; increase if the db queue falls
                             behind. [env var: POGOMAP_DB_THREADS]
 
     Database Cleanup:
-      -DC, --db-cleanup     Enable regular database cleanup thread.
-                            [env var: POGOMAP_DB_CLEANUP]
+      -DC, --db-cleanup     Enable regular database cleanup thread. [env var:
+                            POGOMAP_DB_CLEANUP]
       -DCw DB_CLEANUP_WORKER, --db-cleanup-worker DB_CLEANUP_WORKER
                             Clear worker status from database after X minutes of
-                            inactivity. Default: 30, 0 to disable.
-                            [env var: POGOMAP_DB_CLEANUP_WORKER]
+                            inactivity. Default: 30, 0 to disable. [env var:
+                            POGOMAP_DB_CLEANUP_WORKER]
       -DCp DB_CLEANUP_POKEMON, --db-cleanup-pokemon DB_CLEANUP_POKEMON
                             Clear pokemon from database X hours after they
-                            disappeared. Default: 0, 0 to disable.
-                            [env var: POGOMAP_DB_CLEANUP_POKEMON]
+                            disappeared. Default: 0, 0 to disable. [env var:
+                            POGOMAP_DB_CLEANUP_POKEMON]
       -DCg DB_CLEANUP_GYM, --db-cleanup-gym DB_CLEANUP_GYM
                             Clear gym details from database X hours after last gym
-                            scan. Default: 8, 0 to disable.
-                            [env var: POGOMAP_DB_CLEANUP_GYM]
+                            scan. Default: 8, 0 to disable. [env var:
+                            POGOMAP_DB_CLEANUP_GYM]
       -DCs DB_CLEANUP_SPAWNPOINT, --db-cleanup-spawnpoint DB_CLEANUP_SPAWNPOINT
                             Clear spawnpoint from database X hours after last
-                            valid scan. Default: 720, 0 to disable.
-                            [env var: POGOMAP_DB_CLEANUP_SPAWNPOINT]
+                            valid scan. Default: 720, 0 to disable. [env var:
+                            POGOMAP_DB_CLEANUP_SPAWNPOINT]
       -DCf DB_CLEANUP_FORTS, --db-cleanup-forts DB_CLEANUP_FORTS
                             Clear gyms and pokestops from database X hours after
                             last valid scan. Default: 0, 0 to disable.
@@ -446,9 +453,9 @@ environment variables which override config file values which override defaults.
 
     Status Page:
       -SPp STATUS_PAGE_PASSWORD, --status-page-password STATUS_PAGE_PASSWORD
-                            Set the status page password.
-                            [env var: POGOMAP_STATUS_PAGE_PASSWORD]
+                            Set the status page password. [env var:
+                            POGOMAP_STATUS_PAGE_PASSWORD]
       -SPf STATUS_PAGE_FILTER, --status-page-filter STATUS_PAGE_FILTER
                             Filter worker status that are inactive for X minutes.
-                            Default: 30, 0 to disable.
-                            [env var: POGOMAP_STATUS_PAGE_FILTER]
+                            Default: 30, 0 to disable. [env var:
+                            POGOMAP_STATUS_PAGE_FILTER]
