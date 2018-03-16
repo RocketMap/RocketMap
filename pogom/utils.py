@@ -484,7 +484,11 @@ def get_args():
                         help=('Enable status page database update using ' +
                               'STATUS_NAME as main worker name.'))
     parser.add_argument('-hk', '--hash-key', default=None, action='append',
-                        help='Key for hash server')
+                        help='Key for hash server.')
+    parser.add_argument('-hs', '--hash-service', default='bossland', type=str,
+                        help=('Hash service name. Supports bossland and'
+                              ' devkat hashing.'),
+                        choices=['bossland', 'devkat'])
     parser.add_argument('-novc', '--no-version-check', action='store_true',
                         help='Disable API version check.',
                         default=False)

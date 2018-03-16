@@ -67,6 +67,7 @@ log.addHandler(stderr_hdlr)
 try:
     import pgoapi
     from pgoapi import PGoApi, utilities as util
+    from pgoapi.hash_server import HashServer
 except ImportError:
     log.critical(
         "It seems `pgoapi` is not installed. Try running " +
@@ -281,6 +282,19 @@ def main():
     if not args.no_server and not validate_assets(args):
         sys.exit(1)
 
+    # Set hashing endpoint. 'bossland' doesn't need to be added here, it's
+    # the default in the API.
+    legal_endpoints = {
+        'devkat': 'https://hashing.devkat.org'
+    }
+
+    hash_service = args.hash_service.lower()
+    endpoint = legal_endpoints.get(hash_service, False)
+    if endpoint:
+        log.info('Using hash service: %s.', hash_service)
+        HashServer.endpoint = endpoint
+
+    # Make sure they are warned.
     if args.no_version_check and not args.only_server:
         log.warning('You are running RocketMap in No Version Check mode. '
                     "If you don't know what you're doing, this mode "
