@@ -60,8 +60,6 @@ When gym info parsing is enabled, gym details will be sent to webhooks. A sample
 			"stamina": 46,
 			"pokemon_uid": 9278614152997308833,
 			"iv_attack": 12,
-			"trainer_name": "SportyGator",
-			"trainer_level": 18,
 			"cp": 138,
 			"iv_stamina": 8
 		}, {
@@ -78,8 +76,6 @@ When gym info parsing is enabled, gym details will be sent to webhooks. A sample
 			"stamina": 250,
 			"pokemon_uid": 6103380929145641793,
 			"iv_attack": 5,
-			"trainer_name": "Meckelangelo",
-			"trainer_level": 22,
 			"cp": 1353,
 			"iv_stamina": 15
 		}, {
@@ -96,8 +92,6 @@ When gym info parsing is enabled, gym details will be sent to webhooks. A sample
 			"stamina": 252,
 			"pokemon_uid": 3580711458547635980,
 			"iv_attack": 10,
-			"trainer_name": "Plaidflamingo",
-			"trainer_level": 23,
 			"cp": 1670,
 			"iv_stamina": 11
 		}]

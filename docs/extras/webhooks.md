@@ -326,8 +326,6 @@ A `gym-info` event is sent whenever RocketMap fetches a gym's details.
 
 | Field                      | Details                                                  | Example      |
 | -------------------------- | -------------------------------------------------------- | ------------ |
-| `trainer_name`             | The name of the trainer that the Pokémon belongs to   | `"johndoe9876"` |
-| `trainer_level`            | The trainer's level<sup>1</sup>                          |         `34` |
 | `pokemon_uid`              | The Pokémon's unique ID                         | `4348002772281054056` |
 | `pokemon_id`               | The Pokémon's ID                                         |        `242` |
 | `cp`                       | The Pokémon's base CP                                    |       `2940` |
@@ -348,7 +346,6 @@ A `gym-info` event is sent whenever RocketMap fetches a gym's details.
 | `num_upgrades`             | The number of times that the Pokémon has been powered up |         `31` |
 | `deployment_time`          | The time at which the Pokémon was added to the gym       | `1504361277` |
 
-1. The trainer's level at the time that they added their Pokémon to the gym.
 
 ### `egg`
 

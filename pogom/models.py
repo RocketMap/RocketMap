@@ -40,7 +40,7 @@ args = get_args()
 flaskDb = FlaskDB()
 cache = TTLCache(maxsize=100, ttl=60 * 5)
 
-db_schema_version = 28
+db_schema_version = 29
 
 
 class MyRetryDB(RetryOperationalError, PooledMySQLDatabase):
@@ -507,14 +507,10 @@ class Gym(LatLongModel):
                            GymPokemon.pokemon_id,
                            GymPokemon.costume,
                            GymPokemon.form,
-                           GymPokemon.shiny,
-                           Trainer.name.alias('trainer_name'),
-                           Trainer.level.alias('trainer_level'))
+                           GymPokemon.shiny)
                        .join(Gym, on=(GymMember.gym_id == Gym.gym_id))
                        .join(GymPokemon, on=(GymMember.pokemon_uid ==
                                              GymPokemon.pokemon_uid))
-                       .join(Trainer, on=(GymPokemon.trainer_name ==
-                                          Trainer.name))
                        .where(GymMember.gym_id << gym_ids)
                        .where(GymMember.last_scanned > Gym.last_modified)
                        .distinct()
@@ -592,13 +588,10 @@ class Gym(LatLongModel):
                            GymPokemon.iv_stamina,
                            GymPokemon.costume,
                            GymPokemon.form,
-                           GymPokemon.shiny,
-                           Trainer.name.alias('trainer_name'),
-                           Trainer.level.alias('trainer_level'))
+                           GymPokemon.shiny)
                    .join(Gym, on=(GymMember.gym_id == Gym.gym_id))
                    .join(GymPokemon,
                          on=(GymMember.pokemon_uid == GymPokemon.pokemon_uid))
-                   .join(Trainer, on=(GymPokemon.trainer_name == Trainer.name))
                    .where(GymMember.gym_id == id)
                    .where(GymMember.last_scanned > Gym.last_modified)
                    .order_by(GymMember.deployment_time.desc())
@@ -1733,7 +1726,6 @@ class GymPokemon(BaseModel):
     pokemon_uid = UBigIntegerField(primary_key=True)
     pokemon_id = SmallIntegerField()
     cp = SmallIntegerField()
-    trainer_name = Utf8mb4CharField(index=True)
     num_upgrades = SmallIntegerField(null=True)
     move_1 = SmallIntegerField(null=True)
     move_2 = SmallIntegerField(null=True)
@@ -1749,13 +1741,6 @@ class GymPokemon(BaseModel):
     costume = SmallIntegerField(null=True)
     form = SmallIntegerField(null=True)
     shiny = SmallIntegerField(null=True)
-    last_seen = DateTimeField(default=datetime.utcnow)
-
-
-class Trainer(BaseModel):
-    name = Utf8mb4CharField(primary_key=True, max_length=50)
-    team = SmallIntegerField()
-    level = SmallIntegerField()
     last_seen = DateTimeField(default=datetime.utcnow)
 
 
@@ -2522,7 +2507,6 @@ def parse_gyms(args, gym_responses, wh_update_queue, db_update_queue):
     gym_details = {}
     gym_members = {}
     gym_pokemon = {}
-    trainers = {}
     i = 0
     for g in gym_responses.values():
         gym_state = g.gym_status_and_defenders
@@ -2565,7 +2549,6 @@ def parse_gyms(args, gym_responses, wh_update_queue, db_update_queue):
                 'pokemon_uid': pokemon.id,
                 'pokemon_id': pokemon.pokemon_id,
                 'cp': member.motivated_pokemon.cp_when_deployed,
-                'trainer_name': pokemon.owner_name,
                 'num_upgrades': pokemon.num_upgrades,
                 'move_1': pokemon.move_1,
                 'move_2': pokemon.move_2,
@@ -2584,21 +2567,12 @@ def parse_gyms(args, gym_responses, wh_update_queue, db_update_queue):
                 'last_seen': datetime.utcnow(),
             }
 
-            trainers[i] = {
-                'name': member.trainer_public_profile.name,
-                'team': member.trainer_public_profile.team_color,
-                'level': member.trainer_public_profile.level,
-                'last_seen': datetime.utcnow(),
-            }
-
             if 'gym-info' in args.wh_types:
                 wh_pokemon = gym_pokemon[i].copy()
                 del wh_pokemon['last_seen']
                 wh_pokemon.update({
                     'cp_decayed':
                         member.motivated_pokemon.cp_now,
-                    'trainer_level':
-                        member.trainer_public_profile.level,
                     'deployment_time': calendar.timegm(
                         gym_members[i]['deployment_time'].timetuple())
                 })
@@ -2622,8 +2596,6 @@ def parse_gyms(args, gym_responses, wh_update_queue, db_update_queue):
         db_update_queue.put((GymDetails, gym_details))
     if gym_pokemon:
         db_update_queue.put((GymPokemon, gym_pokemon))
-    if trainers:
-        db_update_queue.put((Trainer, trainers))
 
     # Get rid of all the gym members, we're going to insert new records.
     if gym_details:
@@ -3103,7 +3075,7 @@ def bulk_upsert(cls, data, db):
 
 def create_tables(db):
     tables = [Pokemon, Pokestop, Gym, Raid, ScannedLocation, GymDetails,
-              GymMember, GymPokemon, Trainer, MainWorker, WorkerStatus,
+              GymMember, GymPokemon, MainWorker, WorkerStatus,
               SpawnPoint, ScanSpawnPoint, SpawnpointDetectionData,
               Token, LocationAltitude, PlayerLocale, HashKeys]
     with db.execution_context():
@@ -3118,7 +3090,7 @@ def create_tables(db):
 
 def drop_tables(db):
     tables = [Pokemon, Pokestop, Gym, Raid, ScannedLocation, Versions,
-              GymDetails, GymMember, GymPokemon, Trainer, MainWorker,
+              GymDetails, GymMember, GymPokemon, MainWorker,
               WorkerStatus, SpawnPoint, ScanSpawnPoint,
               SpawnpointDetectionData, LocationAltitude, PlayerLocale,
               Token, HashKeys]
@@ -3205,205 +3177,6 @@ def database_migrate(db, old_ver):
 
     # Perform migrations here.
     migrator = MySQLMigrator(db)
-
-    if old_ver < 2:
-        migrate(migrator.add_column('pokestop', 'encounter_id',
-                                    Utf8mb4CharField(max_length=50,
-                                                     null=True)))
-
-    if old_ver < 3:
-        migrate(
-            migrator.add_column('pokestop', 'active_fort_modifier',
-                                Utf8mb4CharField(max_length=50, null=True)),
-            migrator.drop_column('pokestop', 'encounter_id'),
-            migrator.drop_column('pokestop', 'active_pokemon_id')
-        )
-
-    if old_ver < 4:
-        db.drop_tables([ScannedLocation])
-
-    if old_ver < 5:
-        # Some Pokemon were added before the 595 bug was "fixed".
-        # Clean those up for a better UX.
-        query = (Pokemon
-                 .delete()
-                 .where(Pokemon.disappear_time >
-                        (datetime.utcnow() - timedelta(hours=24))))
-        query.execute()
-
-    if old_ver < 6:
-        migrate(
-            migrator.add_column('gym', 'last_scanned',
-                                DateTimeField(null=True)),
-        )
-
-    if old_ver < 7:
-        migrate(
-            migrator.drop_column('gymdetails', 'description'),
-            migrator.add_column('gymdetails', 'description',
-                                TextField(null=True, default=""))
-        )
-
-    if old_ver < 8:
-        migrate(
-            migrator.add_column('pokemon', 'individual_attack',
-                                IntegerField(null=True, default=0)),
-            migrator.add_column('pokemon', 'individual_defense',
-                                IntegerField(null=True, default=0)),
-            migrator.add_column('pokemon', 'individual_stamina',
-                                IntegerField(null=True, default=0)),
-            migrator.add_column('pokemon', 'move_1',
-                                IntegerField(null=True, default=0)),
-            migrator.add_column('pokemon', 'move_2',
-                                IntegerField(null=True, default=0))
-        )
-
-    if old_ver < 9:
-        migrate(
-            migrator.add_column('pokemon', 'last_modified',
-                                DateTimeField(null=True, index=True)),
-            migrator.add_column('pokestop', 'last_updated',
-                                DateTimeField(null=True, index=True))
-        )
-
-    if old_ver < 10:
-        # Information in ScannedLocation and Member Status is probably
-        # out of date.  Drop and recreate with new schema.
-
-        db.drop_tables([ScannedLocation])
-        db.drop_tables([WorkerStatus])
-
-    if old_ver < 11:
-
-        db.drop_tables([ScanSpawnPoint])
-
-    if old_ver < 13:
-
-        db.drop_tables([WorkerStatus])
-        db.drop_tables([MainWorker])
-
-    if old_ver < 14:
-        migrate(
-            migrator.add_column('pokemon', 'weight',
-                                DoubleField(null=True, default=0)),
-            migrator.add_column('pokemon', 'height',
-                                DoubleField(null=True, default=0)),
-            migrator.add_column('pokemon', 'gender',
-                                IntegerField(null=True, default=0))
-        )
-
-    if old_ver < 15:
-        db.execute_sql('ALTER TABLE `pokemon` '
-                       'MODIFY COLUMN `weight` FLOAT NULL DEFAULT NULL,'
-                       'MODIFY COLUMN `height` FLOAT NULL DEFAULT NULL,'
-                       'MODIFY COLUMN `gender` SMALLINT NULL DEFAULT NULL'
-                       ';')
-
-    if old_ver < 16:
-        log.info('This DB schema update can take some time. '
-                 'Please be patient.')
-
-        # change some column types from INT to SMALLINT
-        db.execute_sql(
-            'ALTER TABLE `pokemon` '
-            'MODIFY COLUMN `pokemon_id` SMALLINT NOT NULL,'
-            'MODIFY COLUMN `individual_attack` SMALLINT '
-            'NULL DEFAULT NULL,'
-            'MODIFY COLUMN `individual_defense` SMALLINT '
-            'NULL DEFAULT NULL,'
-            'MODIFY COLUMN `individual_stamina` SMALLINT '
-            'NULL DEFAULT NULL,'
-            'MODIFY COLUMN `move_1` SMALLINT NULL DEFAULT NULL,'
-            'MODIFY COLUMN `move_2` SMALLINT NULL DEFAULT NULL;'
-        )
-        db.execute_sql(
-            'ALTER TABLE `gym` '
-            'MODIFY COLUMN `team_id` SMALLINT NOT NULL,'
-            'MODIFY COLUMN `guard_pokemon_id` SMALLINT NOT NULL;'
-        )
-        db.execute_sql(
-            'ALTER TABLE `scannedlocation` '
-            'MODIFY COLUMN `band1` SMALLINT NOT NULL,'
-            'MODIFY COLUMN `band2` SMALLINT NOT NULL,'
-            'MODIFY COLUMN `band3` SMALLINT NOT NULL,'
-            'MODIFY COLUMN `band4` SMALLINT NOT NULL,'
-            'MODIFY COLUMN `band5` SMALLINT NOT NULL,'
-            'MODIFY COLUMN `midpoint` SMALLINT NOT NULL,'
-            'MODIFY COLUMN `width` SMALLINT NOT NULL;'
-        )
-        db.execute_sql(
-            'ALTER TABLE `spawnpoint` '
-            'MODIFY COLUMN `latest_seen` SMALLINT NOT NULL,'
-            'MODIFY COLUMN `earliest_unseen` SMALLINT NOT NULL;'
-        )
-        db.execute_sql(
-            'ALTER TABLE `spawnpointdetectiondata` '
-            'MODIFY COLUMN `tth_secs` SMALLINT NULL DEFAULT NULL;'
-        )
-        db.execute_sql(
-            'ALTER TABLE `versions` '
-            'MODIFY COLUMN `val` SMALLINT NOT NULL;'
-        )
-        db.execute_sql(
-            'ALTER TABLE `gympokemon` '
-            'MODIFY COLUMN `pokemon_id` SMALLINT NOT NULL,'
-            'MODIFY COLUMN `cp` SMALLINT NOT NULL,'
-            'MODIFY COLUMN `num_upgrades` SMALLINT NULL DEFAULT NULL,'
-            'MODIFY COLUMN `move_1` SMALLINT NULL DEFAULT NULL,'
-            'MODIFY COLUMN `move_2` SMALLINT NULL DEFAULT NULL,'
-            'MODIFY COLUMN `stamina` SMALLINT NULL DEFAULT NULL,'
-            'MODIFY COLUMN `stamina_max` SMALLINT NULL DEFAULT NULL,'
-            'MODIFY COLUMN `iv_defense` SMALLINT NULL DEFAULT NULL,'
-            'MODIFY COLUMN `iv_stamina` SMALLINT NULL DEFAULT NULL,'
-            'MODIFY COLUMN `iv_attack` SMALLINT NULL DEFAULT NULL;'
-        )
-        db.execute_sql(
-            'ALTER TABLE `trainer` '
-            'MODIFY COLUMN `team` SMALLINT NOT NULL,'
-            'MODIFY COLUMN `level` SMALLINT NOT NULL;'
-        )
-
-        # add some missing indexes
-        migrate(
-            migrator.add_index('gym', ('last_scanned',), False),
-            migrator.add_index('gymmember', ('last_scanned',), False),
-            migrator.add_index('gymmember', ('pokemon_uid',), False),
-            migrator.add_index('gympokemon', ('trainer_name',), False),
-            migrator.add_index('pokestop', ('active_fort_modifier',), False),
-            migrator.add_index('spawnpointdetectiondata', ('spawnpoint_id',),
-                               False),
-            migrator.add_index('token', ('last_updated',), False)
-        )
-        # pokestop.last_updated was missing in a previous migration
-        # check whether we have to add it
-        has_last_updated_index = False
-        for index in db.get_indexes('pokestop'):
-            if index.columns[0] == 'last_updated':
-                has_last_updated_index = True
-                break
-        if not has_last_updated_index:
-            log.debug('pokestop.last_updated index is missing. Creating now.')
-            migrate(
-                migrator.add_index('pokestop', ('last_updated',), False)
-            )
-
-    if old_ver < 17:
-        migrate(
-            migrator.add_column('pokemon', 'form',
-                                SmallIntegerField(null=True))
-        )
-
-    if old_ver < 18:
-        migrate(
-            migrator.add_column('pokemon', 'cp',
-                                SmallIntegerField(null=True))
-        )
-
-    if old_ver < 19:
-        migrate(
-            migrator.add_column('pokemon', 'cp_multiplier',
-                                FloatField(null=True))
-        )
 
     if old_ver < 20:
         migrate(
@@ -3547,6 +3320,13 @@ def database_migrate(db, old_ver):
         migrate(
             migrator.add_column('pokemon', 'weather_boosted_condition',
                                 SmallIntegerField(null=True))
+        )
+
+    if old_ver < 29:
+        db.execute_sql('DROP TABLE `trainer`;')
+        migrate(
+            # drop trainer from gympokemon
+            migrator.drop_column('gympokemon', 'trainer_name')
         )
 
     # Always log that we're done.
