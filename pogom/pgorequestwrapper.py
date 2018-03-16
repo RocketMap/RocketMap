@@ -8,6 +8,7 @@ import logging
 from .utils import get_args
 from .proxy import get_new_proxy
 
+from pgoapi.hash_server import HashServer
 from pgoapi.exceptions import (HashingQuotaExceededException,
                                ServerSideRequestThrottlingException,
                                NianticThrottlingException,
@@ -54,11 +55,29 @@ class PGoRequestWrapper:
                 log.debug('Sending wrapped API request.')
                 return self.request.call(*args, **kwargs)
             except HashingQuotaExceededException:
-                # Sleep a minimum to free some RPM and don't use one of our
-                # retries, just retry until we have RPM left.
-                time.sleep(random.uniform(0.75, 1.5))
+                # Sleep until the RPM reset to free some RPM and don't use
+                # one of our retries, just retry until we have RPM left.
+                # If RPM reset was in the past, we'll still sleep for a
+                # little bit to introduce variation.
+                now = int(time.time())
+                rpm_reset = HashServer.status.get('period', now)
+                secs_till_reset = rpm_reset - now
+                random_sleep_secs = random.uniform(0.75, 1.5)
+                secs_to_sleep = random_sleep_secs
+
+                # Could be outdated key header, or already passed.
+                if secs_till_reset > 0:
+                    secs_to_sleep = secs_till_reset + random_sleep_secs
+
+                # Don't be too enthusiastic about sleeping. Failsafe against a
+                # bugged header, timezone problems, ...
+                secs_to_sleep = min(secs_to_sleep, 60)
+
+                # Shhhhhh. Only happy dreams now.
                 log.debug('Hashing quota exceeded. If this delays requests for'
-                          ' too long, consider adding more RPM. Retrying...')
+                          ' too long, consider adding more RPM. Sleeping for'
+                          ' %ss before retrying...', secs_to_sleep)
+                time.sleep(secs_to_sleep)
             except (ServerSideRequestThrottlingException,
                     NianticThrottlingException) as ex:
                 # Raised when too many requests were made in a short period.
