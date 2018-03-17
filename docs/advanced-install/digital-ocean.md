@@ -19,13 +19,13 @@ Check the "User Data" box lower on the page and enter the following:
 
 apt-get -y update
 apt-get -y install python python-pip git
-git clone --recursive https://github.com/RocketMap/RocketMap.git /root/PoGoMap
-cd /root/PoGoMap
+git clone --recursive https://github.com/RocketMap/RocketMap.git /root/RocketMap
+cd /root/RocketMap
 pip install -r requirements.txt
 python runserver.py -u [USERNAME] -p [PASSWORD] -st 10 -k [Google Maps API key] -l "[LOCATION]" -H 0.0.0.0 -P 80
 ```
 
-**Important:** Be sure to replace `[USERNAME]`, `[PASSWORD]`, [API Key]`, and `[LOCATION]` with your Pokemon Trainers Club Username and Password, your Google Maps API Key, and your location (Latitude and Longitude), respectively. You will be able to change locations later on the site.
+**Important:** Be sure to replace `[USERNAME]`, `[PASSWORD]`, `[API Key]`, and `[LOCATION]` with your Pokemon Trainers Club Username and Password, your Google Maps API Key, and your location (Latitude and Longitude), respectively. You will be able to change locations later on the site.
 
 Once you have that, create your Droplet. Setup will take a few minutes initially, but once it's done your map will be accessible at `http://[YOURDROPLET]/`, replacing that of course with your Droplet's IP address.
 
@@ -34,7 +34,7 @@ Once you have that, create your Droplet. Setup will take a few minutes initially
 On the first boot the server will start automatically so this step isn't necessary, however if you have to restart the Droplet for any reason, you can start PoGoMap with the following two commands:
 
 ```
-cd /root/PoGoMap
+cd /root/RocketMap
 python runserver.py -u [USERNAME] -p [PASSWORD] -st 10 -k [Google Maps API key] -l "[LOCATION]" -H 0.0.0.0 -P 80
 ```
 
