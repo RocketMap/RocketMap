@@ -25,6 +25,8 @@ from pprint import pformat
 from time import strftime
 from timeit import default_timer
 
+from pgoapi.hash_server import HashServer
+
 log = logging.getLogger(__name__)
 
 
@@ -847,6 +849,19 @@ def get_args():
 
     args.locales_dir = 'static/dist/locales'
     args.data_dir = 'static/dist/data'
+
+    # Set hashing endpoint. 'bossland' doesn't need to be added here, it's
+    # the default in the API.
+    legal_endpoints = {
+        'devkat': 'https://hashing.devkat.org'
+    }
+
+    hash_service = args.hash_service.lower()
+    endpoint = legal_endpoints.get(hash_service, False)
+    if endpoint:
+        log.info('Using hash service: %s.', hash_service)
+        HashServer.endpoint = endpoint
+
     return args
 
 
