@@ -136,9 +136,13 @@ class Pokemon(LatLongModel):
 
     @staticmethod
     def get_active(swLat, swLng, neLat, neLng, timestamp=0, oSwLat=None,
-                   oSwLng=None, oNeLat=None, oNeLng=None):
+                   oSwLng=None, oNeLat=None, oNeLng=None, exclude=None):
         now_date = datetime.utcnow()
         query = Pokemon.select()
+
+        if exclude:
+            query = query.where(Pokemon.pokemon_id.not_in(list(exclude)))
+
         if not (swLat and swLng and neLat and neLng):
             query = (query
                      .where(Pokemon.disappear_time > now_date)
@@ -170,8 +174,7 @@ class Pokemon(LatLongModel):
                                (Pokemon.longitude <= oNeLng))))
                      .dicts())
         else:
-            query = (Pokemon
-                     .select()
+            query = (query
                      # Add 1 hour buffer to include spawnpoints that persist
                      # after tth, like shsh.
                      .where((Pokemon.disappear_time > now_date) &
