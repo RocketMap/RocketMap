@@ -491,6 +491,11 @@ def get_args():
                         help=('Hash service name. Supports bossland and'
                               ' devkat hashing.'),
                         choices=['bossland', 'devkat'])
+    parser.add_argument('--hash-header-sleep',
+                        help=('Use the BossLand headers to determine how long'
+                              ' a worker should sleep if it exceeds the'
+                              ' hashing quota. Default: False.'),
+                        action='store_true', default=False)
     parser.add_argument('-novc', '--no-version-check', action='store_true',
                         help='Disable API version check.',
                         default=False)
